@@ -101,13 +101,13 @@ MiddlewareRegistry.register(store => next => action => {
             console.log("TRANSLATE OPENAI");
             store.dispatch(setIsRecording(false));
             // If transcribeAndTranslateServiceOpenAi returns a Promise, handle it accordingly
-            transcribeAndTranslateServiceOpenAi(store)
-                .then(() => {
-                    // Handle successful translation if needed
-                })
-                .catch(err => {
-                    console.error('Error in OpenAI translate service:', err);
-                });
+            // transcribeAndTranslateServiceOpenAi(store)
+            //     .then(() => {
+            //         // Handle successful translation if needed
+            //     })
+            //     .catch(err => {
+            //         console.error('Error in OpenAI translate service:', err);
+            //     });
             break;
 
         case RECOGNITION_RESULT:
