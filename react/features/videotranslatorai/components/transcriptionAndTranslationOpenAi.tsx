@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { IReduxState } from '../../app/types';
 import { startRecordingOpenAi, stopRecordingOpenAi, translateOpenAi, setRecordingBlobOpenAi } from '../action.web';
-import { ReactMic } from 'react-mic';
+//import { ReactMic } from 'react-mic';
 import { transcribeAndTranslateServiceOpenAi } from '../services/transcriptionServiceOpenAi';
 
 const TranscriptionAndTranslationButton: FC = () => {
