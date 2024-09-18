@@ -33,9 +33,6 @@ export const transcribeAndTranslateService = async (store: IStore) => {
         let speechRegion = process.env.REACT_APP_SPEECH_REGION_MICROSOFT_SDK;
         const subscriptionKey = process.env.REACT_APP_SUBSCRIPTION_KEY_MICROSOFT_SDK;
 
-        console.log('SPEECH_REGION_MICROSOFT_SDK:', process.env.REACT_APP_SPEECH_REGION_MICROSOFT_SDK);
-        console.log('SUBSCRIPTION_KEY_MICROSOFT_SDK:', process.env.REACT_APP_SUBSCRIPTION_KEY_MICROSOFT_SDK);
-
         // Error checking for environment variables
         if (!speechRegion || !subscriptionKey) {
             throw new Error('Required environment variables are missing.');
