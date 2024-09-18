@@ -103,7 +103,7 @@ export const transcribeAndTranslateServiceOpenAi = async (store: IStore, audioBl
     //const moderatorData = toState(state)['features/videotranslatorai'].moderatorData;
     const moderatorData: any = mockModeratorData;
 
-    //const entityData: any = toState(state)['features/videotranslatorai'].thisEnityData;
+    //const entityData: any = toState(state)['features/videotranslatorai'].thisEntityData;
     const entityData: any = mockEntityData;
 
     const conference = toState(state)["features/base/conference"].conference;

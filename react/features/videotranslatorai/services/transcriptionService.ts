@@ -21,7 +21,7 @@ export const transcribeAndTranslateService = async (store: IStore) => {
     const participantName = toState(state)['features/videotranslatorai'].participantName;
     const meetingData: any = toState(state)['features/videotranslatorai'].meetingData;
     const moderatorData = toState(state)['features/videotranslatorai'].moderatorData;
-    const entityData: any = toState(state)['features/videotranslatorai'].thisEnityData;
+    const entityData: any = toState(state)['features/videotranslatorai'].thisEntityData;
     const conference = toState(state)['features/base/conference'].conference;
 
 

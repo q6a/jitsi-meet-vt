@@ -58,7 +58,7 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
         recipient: '',
         timestamp: 0,
     }, 
-    thisEnityData: {
+    thisEntityData: {
         participant_id: 0,
         name: '',
         email: '',
@@ -150,7 +150,7 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
             case SET_ENTITY_DATA:
                 return {
                     ...state,
-                    thisEnityData: action.payload,
+                    thisEntityData: action.payload,
                 };
 
             case SET_LINGUIST_DATA:
