@@ -3,7 +3,7 @@
  * none is applied. Other browsers already support selecting within inputs while
  * user-select is none. As such, disallow user-select except on inputs.
  */
-* {
+ * {
     -webkit-user-select: none;
     user-select: none;
 
@@ -115,8 +115,8 @@ form {
 }
 
 .leftwatermark {
-    max-width: 140px;
-    max-height:70px;
+    // max-width: 140px;
+    // max-height:70px;
     left: 32px;
     top: 32px;
     background-position: center left;

@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-no-bind */
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { connect, useDispatch } from 'react-redux';
+import { connect, useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
 import { IReduxState } from '../../../app/types';
@@ -209,6 +209,10 @@ const useStyles = makeStyles()(theme => {
     };
 });
 
+//videotranslatorai
+let initialParticipantName = '';
+
+
 const Prejoin = ({
     deviceStatusVisible,
     hasJoinByPhoneButton,
@@ -240,6 +244,9 @@ const Prejoin = ({
     const { classes } = useStyles();
     const { t } = useTranslation();
     const dispatch = useDispatch();
+    //videotranslatorai
+    
+    initialParticipantName = useSelector(((state: IReduxState) => state['features/videotranslatorai'].participantName));
 
     /**
      * Handler for the join button.
@@ -393,6 +400,14 @@ const Prejoin = ({
     }
     const hasExtraJoinButtons = Boolean(extraButtonsToRender.length);
 
+    //videotranslatorai
+    setName("");
+    if(initialParticipantName)
+    {
+        setName(initialParticipantName);
+        name = initialParticipantName;
+    }
+    //videotranslatorai
     return (
         <PreMeetingScreen
             showDeviceStatus = { deviceStatusVisible }
@@ -484,7 +499,8 @@ const Prejoin = ({
  * @returns {Object}
  */
 function mapStateToProps(state: IReduxState) {
-    const name = getDisplayName(state);
+    //const name =  getDisplayName(state); //videotranslatorai
+    const name =  getDisplayName(state) || initialParticipantName || '' //videotranslatorai
     const showErrorOnJoin = isDisplayNameRequired(state) && !name;
     const { id: participantId } = getLocalParticipant(state) ?? {};
     const { joiningInProgress } = state['features/prejoin'];
@@ -500,7 +516,8 @@ function mapStateToProps(state: IReduxState) {
         name,
         participantId,
         prejoinConfig: state['features/base/config'].prejoinConfig,
-        readOnlyName: isNameReadOnly(state),
+        //readOnlyName: isNameReadOnly(state), //videotranslatorai
+        readOnlyName: true, //videotranslatorai
         showCameraPreview: !isVideoMutedByUser(state),
         showDialog: isJoinByPhoneDialogVisible(state),
         showErrorOnJoin,

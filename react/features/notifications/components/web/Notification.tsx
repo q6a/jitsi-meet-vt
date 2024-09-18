@@ -20,6 +20,9 @@ import { NOTIFICATION_ICON, NOTIFICATION_TYPE } from '../../constants';
 import { INotificationProps } from '../../types';
 import { NotificationsTransitionContext } from '../NotificationsTransition';
 
+import { useSelector } from 'react-redux'; //videotranslatorai
+import { IReduxState } from '../../../app/types'; //videotranslatorai
+
 interface IProps extends INotificationProps {
 
     /**
@@ -190,6 +193,8 @@ const Notification = ({
     const { classes, cx, theme } = useStyles();
     const { t } = useTranslation();
     const { unmounting } = useContext(NotificationsTransitionContext);
+    //videotranslatorai
+    const isNotificationOnVideoTranslatorAi = useSelector((state: IReduxState) => state['features/videotranslatorai'].messageNotification);
 
     const ICON_COLOR = {
         error: theme.palette.iconError,
@@ -308,6 +313,12 @@ const Notification = ({
 
         return iconToDisplay;
     }, [ icon, appearance ]);
+
+    //videotranslatorai
+    if (!isNotificationOnVideoTranslatorAi) {
+        return null; // Do not render anything if notification is not on
+    }
+    //videotranslatorai
 
     return (
         <div

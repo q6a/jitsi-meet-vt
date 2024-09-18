@@ -22,6 +22,7 @@ import { setSeeWhatIsBeingShared } from '../actions.web';
 import { getLargeVideoParticipant } from '../functions';
 
 import ScreenSharePlaceholder from './ScreenSharePlaceholder.web';
+import { toState } from '../../base/redux/functions'; //videotranslatorai
 
 // Hack to detect Spot.
 const SPOT_DISPLAY_NAME = 'Meeting Room';
@@ -114,12 +115,24 @@ interface IProps {
      */
     _whiteboardEnabled: boolean;
 
+    _messages: Array<Object>; //videotranslatorai
+ 
+    _state: IReduxState; //videotranslatorai
+
     /**
      * The Redux dispatch function.
      */
     dispatch: IStore['dispatch'];
 }
 
+//videotranslatorai
+import PrivateMessageDisplay from '../../videotranslatorai/components/displayTranslationOnScreen';
+import { 
+    setMessages
+} from '../../videotranslatorai/action.web';
+
+let messageToDisplay = '';
+//videotranslatorai
 /** .
  * Implements a React {@link Component} which represents the large video (a.k.a.
  * The conference participant who is on the local stage) on Web/React.
@@ -156,6 +169,9 @@ class LargeVideo extends Component<IProps> {
      */
     componentDidUpdate(prevProps: IProps) {
         const {
+            _messages, //videotranslatorai
+            _state, //videotranslatorai
+            dispatch, //videotranslatorai
             _visibleFilmstrip,
             _isScreenSharing,
             _seeWhatIsBeingShared,
@@ -179,6 +195,14 @@ class LargeVideo extends Component<IProps> {
             && prevProps._hideSelfView !== _hideSelfView) {
             VideoLayout.updateLargeVideo(_largeVideoParticipantId, true, false);
         }
+
+        //videotranslatorai
+        if (prevProps._messages !== _messages) {
+            dispatch(setMessages())
+            messageToDisplay = toState(_state)['features/videotranslatorai'].latestPrivateMessage;
+        }
+        //videotranslatorai
+
     }
 
     /**
@@ -204,6 +228,8 @@ class LargeVideo extends Component<IProps> {
                 id = 'largeVideoContainer'
                 ref = { this._containerRef }
                 style = { style }>
+                {/* videotranslatorai */}
+                <PrivateMessageDisplay message ={messageToDisplay}/> 
                 <SharedVideo />
                 {_whiteboardEnabled && <Whiteboard />}
                 <div id = 'etherpad' />
@@ -360,6 +386,7 @@ function _mapStateToProps(state: IReduxState) {
     const isLocalScreenshareOnLargeVideo = largeVideoParticipant?.id?.includes(localParticipantId ?? '')
         && videoTrack?.videoType === VIDEO_TYPE.DESKTOP;
     const isOnSpot = defaultLocalDisplayName === SPOT_DISPLAY_NAME;
+    const messages  = state['features/videotranslatorai'].messages; //videotranslatorai
 
     return {
         _backgroundAlpha: state['features/base/config'].backgroundAlpha,
@@ -378,7 +405,9 @@ function _mapStateToProps(state: IReduxState) {
         _verticalFilmstripWidth: verticalFilmstripWidth.current,
         _verticalViewMaxWidth: getVerticalViewMaxWidth(state),
         _visibleFilmstrip: visible,
-        _whiteboardEnabled: isWhiteboardEnabled(state)
+        _whiteboardEnabled: isWhiteboardEnabled(state),
+        _messages: messages, //videotranslatorai
+        _state: state //videotranslatorai
     };
 }
 

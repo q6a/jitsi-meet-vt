@@ -1,27 +1,28 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { makeStyles } from 'tss-react/mui';
+import React from "react";
+import { useSelector } from "react-redux";
+import { makeStyles } from "tss-react/mui";
 
-import { IReduxState } from '../../../app/types';
-import { isDisplayNameVisible } from '../../../base/config/functions.any';
+import { IReduxState } from "../../../app/types";
+import { isDisplayNameVisible } from "../../../base/config/functions.any";
 import {
     getLocalParticipant,
     getParticipantDisplayName,
-    isWhiteboardParticipant
-} from '../../../base/participants/functions';
-import { withPixelLineHeight } from '../../../base/styles/functions.web';
-import { getVideospaceFloatingElementsBottomSpacing } from '../../../base/ui/functions.web';
-import { getLargeVideoParticipant } from '../../../large-video/functions';
-import { getTransitionParamsForElementsAboveToolbox, isToolboxVisible } from '../../../toolbox/functions.web';
-import { isLayoutTileView } from '../../../video-layout/functions.web';
+    isWhiteboardParticipant,
+} from "../../../base/participants/functions";
+import { withPixelLineHeight } from "../../../base/styles/functions.web";
+import { getVideospaceFloatingElementsBottomSpacing } from "../../../base/ui/functions.web";
+import { getLargeVideoParticipant } from "../../../large-video/functions";
+import { getTransitionParamsForElementsAboveToolbox, isToolboxVisible } from "../../../toolbox/functions.web";
+import { isLayoutTileView } from "../../../video-layout/functions.web";
+import { createDisplayNameAndDialect } from "../../../videotranslatorai/services/displayNameAndDialectService"; //videotranslatorai
 
-import DisplayNameBadge from './DisplayNameBadge';
+import DisplayNameBadge from "./DisplayNameBadge";
 import {
     getStageParticipantFontSizeRange,
     getStageParticipantNameLabelLineHeight,
     getStageParticipantTypography,
-    scaleFontProperty
-} from './styles';
+    scaleFontProperty,
+} from "./styles";
 
 interface IOptions {
     clientHeight?: number;
@@ -29,11 +30,11 @@ interface IOptions {
 
 const useStyles = makeStyles<IOptions>()((theme, options: IOptions = {}) => {
     const typography = {
-        ...getStageParticipantTypography(theme)
+        ...getStageParticipantTypography(theme),
     };
     const { clientHeight } = options;
 
-    if (typeof clientHeight === 'number' && clientHeight > 0) {
+    if (typeof clientHeight === "number" && clientHeight > 0) {
         // We want to show the fontSize and lineHeight configured in theme on a screen with height 1080px. In this case
         // the clientHeight will be 960px if there are some titlebars, toolbars, addressbars, etc visible.For any other
         // screen size we will decrease/increase the font size based on the screen size.
@@ -45,22 +46,22 @@ const useStyles = makeStyles<IOptions>()((theme, options: IOptions = {}) => {
     return {
         badgeContainer: {
             ...withPixelLineHeight(typography),
-            alignItems: 'center',
-            display: 'inline-flex',
-            justifyContent: 'center',
+            alignItems: "center",
+            display: "inline-flex",
+            justifyContent: "center",
             marginBottom: getVideospaceFloatingElementsBottomSpacing(theme, false),
             transition: `margin-bottom ${getTransitionParamsForElementsAboveToolbox(false)}`,
-            pointerEvents: 'none',
-            position: 'absolute',
+            pointerEvents: "none",
+            position: "absolute",
             bottom: 0,
             left: 0,
-            width: '100%',
-            zIndex: 1
+            width: "100%",
+            zIndex: 1,
         },
         containerElevated: {
             marginBottom: getVideospaceFloatingElementsBottomSpacing(theme, true),
-            transition: `margin-bottom ${getTransitionParamsForElementsAboveToolbox(true)}`
-        }
+            transition: `margin-bottom ${getTransitionParamsForElementsAboveToolbox(true)}`,
+        },
     };
 });
 
@@ -70,11 +71,22 @@ const useStyles = makeStyles<IOptions>()((theme, options: IOptions = {}) => {
  * @returns {ReactElement|null}
  */
 const StageParticipantNameLabel = () => {
-    const clientHeight = useSelector((state: IReduxState) => state['features/base/responsive-ui'].clientHeight);
+    const clientHeight = useSelector((state: IReduxState) => state["features/base/responsive-ui"].clientHeight);
     const { classes, cx } = useStyles({ clientHeight });
     const largeVideoParticipant = useSelector(getLargeVideoParticipant);
     const selectedId = largeVideoParticipant?.id;
-    const nameToDisplay = useSelector((state: IReduxState) => getParticipantDisplayName(state, selectedId ?? ''));
+
+    //const nameToDisplay = useSelector((state: IReduxState) => getParticipantDisplayName(state, selectedId ?? '')); //videotranslatorai
+
+    //videotranslatorai
+    const nameOfParticipant = useSelector((state: IReduxState) => getParticipantDisplayName(state, selectedId ?? ""));
+    const modData = useSelector((state: IReduxState) => state["features/videotranslatorai"].moderatorData);
+    const participantData = useSelector((state: IReduxState) => state["features/videotranslatorai"].participantData);
+    const linguistData = useSelector((state: IReduxState) => state["features/videotranslatorai"].linguistData);
+    const bothNameAndDialect = createDisplayNameAndDialect(nameOfParticipant, modData, participantData, linguistData);
+    const nameToDisplay = bothNameAndDialect.displayName;
+    const dialectToDisplay = bothNameAndDialect.displayDialect;
+    //videotranslatorai
 
     const localParticipant = useSelector(getLocalParticipant);
     const localId = localParticipant?.id;
@@ -83,19 +95,18 @@ const StageParticipantNameLabel = () => {
     const toolboxVisible: boolean = useSelector(isToolboxVisible);
     const showDisplayName = useSelector(isDisplayNameVisible);
 
-    if (showDisplayName
-        && nameToDisplay
-        && selectedId !== localId
-        && !isTileView
-        && !isWhiteboardParticipant(largeVideoParticipant)
+    if (
+        showDisplayName &&
+        nameToDisplay &&
+        selectedId !== localId &&
+        !isTileView &&
+        !isWhiteboardParticipant(largeVideoParticipant)
     ) {
         return (
-            <div
-                className = { cx(
-                    classes.badgeContainer,
-                    toolboxVisible && classes.containerElevated
-                ) }>
-                <DisplayNameBadge name = { nameToDisplay } />
+            <div className={cx(classes.badgeContainer, toolboxVisible && classes.containerElevated)}>
+                <DisplayNameBadge name={nameToDisplay} />
+                {/* videotranslatorai */}
+                <DisplayNameBadge name={dialectToDisplay} />
             </div>
         );
     }

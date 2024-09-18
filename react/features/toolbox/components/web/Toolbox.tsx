@@ -8,6 +8,9 @@ import { isMobileBrowser } from '../../../base/environment/utils';
 import { getLocalParticipant, isLocalParticipantModerator } from '../../../base/participants/functions';
 import ContextMenu from '../../../base/ui/components/web/ContextMenu';
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from '../../../reactions/functions.web';
+import TranscriptionAndTranslationButton from '../../../videotranslatorai/components/transcriptionAndTranslationButton'; //videotranslatorai
+import TranscriptionAndTranslationOpenAi from '../../../videotranslatorai/components/transcriptionAndTranslationOpenAi'; //videotranslatorai
+
 import {
     setHangupMenuVisible,
     setOverflowMenuVisible,
@@ -253,7 +256,10 @@ export default function Toolbox({
                                 { ...rest }
                                 buttonKey = { key }
                                 key = { key } />))}
-
+                        {/* videotranslatorai */}
+                        {conference && <TranscriptionAndTranslationButton /> } 
+                        {/* <TranscriptionAndTranslationOpenAi/> */} 
+                        {/* videotranslatorai */}
                         {Boolean(overflowMenuButtons.length) && (
                             <OverflowMenuButton
                                 ariaControls = 'overflow-menu'

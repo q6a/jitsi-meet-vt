@@ -1,11 +1,13 @@
 /* global __dirname */
 
 const CircularDependencyPlugin = require('circular-dependency-plugin');
+const Dotenv = require('dotenv-webpack');
 const fs = require('fs');
 const { join, resolve } = require('path');
 const process = require('process');
 const webpack = require('webpack');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+
 
 /**
  * The URL of the Jitsi Meet deployment to be proxy to in the context of
@@ -189,7 +191,9 @@ function getConfig(options = {}) {
                     allowAsyncCycles: false,
                     exclude: /node_modules/,
                     failOnError: false
-                })
+                }),
+                new Dotenv()
+
         ].filter(Boolean),
         resolve: {
             alias: {
@@ -291,6 +295,7 @@ module.exports = (_env, argv) => {
                 new webpack.ProvidePlugin({
                     process: 'process/browser'
                 })
+
             ],
 
             performance: getPerformanceHints(perfHintOptions, 5 * 1024 * 1024)

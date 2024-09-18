@@ -1,27 +1,35 @@
-import { AnyAction } from 'redux';
+import { AnyAction } from "redux";
 
-import { createConnectionEvent } from '../analytics/AnalyticsEvents';
-import { sendAnalytics } from '../analytics/functions';
-import { appWillNavigate } from '../base/app/actions';
-import { SET_ROOM } from '../base/conference/actionTypes';
-import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from '../base/connection/actionTypes';
-import { getURLWithoutParams } from '../base/connection/utils';
-import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
-import { inIframe } from '../base/util/iframeUtils';
+import { PARTICIPANT_JOINED } from "../base/participants/actionTypes";
+import { CONFERENCE_JOINED } from "../base/conference/actionTypes";
+import { setRoomParams, fetchMeetingData, debugging } from "../videotranslatorai/action.web"; // Make sure this is the correct path to your action creator
 
-import { reloadNow } from './actions';
-import { _getRouteToRender } from './getRouteToRender';
-import { IStore } from './types';
+import { createConnectionEvent } from "../analytics/AnalyticsEvents";
+import { sendAnalytics } from "../analytics/functions";
+import { appWillNavigate } from "../base/app/actions";
+import { SET_ROOM } from "../base/conference/actionTypes";
+import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from "../base/connection/actionTypes";
+import { getURLWithoutParams } from "../base/connection/utils";
+import MiddlewareRegistry from "../base/redux/MiddlewareRegistry";
+import { inIframe } from "../base/util/iframeUtils";
 
-MiddlewareRegistry.register(store => next => action => {
+import { reloadNow } from "./actions";
+import { _getRouteToRender } from "./getRouteToRender";
+import { IStore } from "./types";
+
+MiddlewareRegistry.register((store) => (next) => (action) => {
     switch (action.type) {
-    case CONNECTION_ESTABLISHED:
-        return _connectionEstablished(store, next, action);
-    case CONNECTION_FAILED:
-        return _connectionFailed(store, next, action);
+        case CONNECTION_ESTABLISHED:
+            return _connectionEstablished(store, next, action);
+        case CONNECTION_FAILED:
+            return _connectionFailed(store, next, action);
 
-    case SET_ROOM:
-        return _setRoom(store, next, action);
+        case SET_ROOM: //videotranslatorai
+            return _setRoom(store, next, action);
+        case PARTICIPANT_JOINED: //videotranslatorai
+            return _participantJoinedRoom(store, next, action);
+        case CONFERENCE_JOINED: //videotranslatorai
+            return _participantJoinedConference(store, next, action);
     }
 
     return next(action);
@@ -56,19 +64,13 @@ function _connectionEstablished(store: IStore, next: Function, action: AnyAction
         return;
     }
 
-    if (history
-            && location
-            && history.length
-            && typeof history.replaceState === 'function') {
+    if (history && location && history.length && typeof history.replaceState === "function") {
         // @ts-ignore
         const replacement = getURLWithoutParams(location);
 
         // @ts-ignore
         if (location !== replacement) {
-            history.replaceState(
-                history.state,
-                document?.title || '',
-                replacement);
+            history.replaceState(history.state, document?.title || "", replacement);
         }
     }
 
@@ -109,29 +111,29 @@ function _connectionFailed({ dispatch, getState }: IStore, next: Function, actio
  * @private
  * @returns {boolean}
  */
-function _isMaybeSplitBrainError(getState: IStore['getState'], action: AnyAction) {
+function _isMaybeSplitBrainError(getState: IStore["getState"], action: AnyAction) {
     const { error } = action;
-    const isShardChangedError = error
-        && error.message === 'item-not-found'
-        && error.details
-        && error.details.shard_changed;
+    const isShardChangedError =
+        error && error.message === "item-not-found" && error.details && error.details.shard_changed;
 
     if (isShardChangedError) {
         const state = getState();
-        const { timeEstablished } = state['features/base/connection'];
-        const { _immediateReloadThreshold } = state['features/base/config'];
+        const { timeEstablished } = state["features/base/connection"];
+        const { _immediateReloadThreshold } = state["features/base/config"];
 
         const timeSinceConnectionEstablished = Number(timeEstablished && Date.now() - timeEstablished);
-        const reloadThreshold = typeof _immediateReloadThreshold === 'number' ? _immediateReloadThreshold : 1500;
+        const reloadThreshold = typeof _immediateReloadThreshold === "number" ? _immediateReloadThreshold : 1500;
 
         const isWithinSplitBrainThreshold = !timeEstablished || timeSinceConnectionEstablished <= reloadThreshold;
 
-        sendAnalytics(createConnectionEvent('failed', {
-            ...error,
-            connectionEstablished: timeEstablished,
-            splitBrain: isWithinSplitBrainThreshold,
-            timeSinceConnectionEstablished
-        }));
+        sendAnalytics(
+            createConnectionEvent("failed", {
+                ...error,
+                connectionEstablished: timeEstablished,
+                splitBrain: isWithinSplitBrainThreshold,
+                timeSinceConnectionEstablished,
+            })
+        );
 
         return isWithinSplitBrainThreshold;
     }
@@ -149,7 +151,7 @@ function _isMaybeSplitBrainError(getState: IStore['getState'], action: AnyAction
  */
 function _navigate({ dispatch, getState }: IStore) {
     const state = getState();
-    const { app } = state['features/base/app'];
+    const { app } = state["features/base/app"];
 
     _getRouteToRender(state).then((route: Object) => {
         dispatch(appWillNavigate(app, route));
@@ -175,7 +177,60 @@ function _navigate({ dispatch, getState }: IStore) {
 function _setRoom(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
 
+    //videotranslatorai
+    const params = new URLSearchParams(window.location.search);
+    const initialMeetingName = params.get("meetingName");
+    const initialParticipantName = params.get("participantName");
+    const jwtToken = params.get("jwt");
+
+    if (initialMeetingName && initialParticipantName && jwtToken) {
+        store.dispatch(
+            setRoomParams({
+                meetingName: initialMeetingName,
+                participantName: initialParticipantName,
+                jwtToken,
+            })
+        );
+
+        store.dispatch(
+            fetchMeetingData({
+                meetingNameQuery: initialMeetingName,
+                token: jwtToken,
+                initialName: initialParticipantName,
+            })
+        );
+    }
+    //videotranslatorai
+
     _navigate(store);
 
     return result;
 }
+
+//videotranslatorai
+/**
+ * Middleware to grant moderator rights after the conference is joined.
+ *
+ * @param {IStore} store - The Redux store.
+ * @param {Function} next - The redux `dispatch` function.
+ * @param {AnyAction} action - The action being dispatched.
+ */
+function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
+    const result = next(action);
+    store.dispatch(debugging());
+    return result;
+}
+//videotranslatorai
+/**
+ * Middleware to grant moderator rights based on a parameter.
+ *
+ * @param {IStore} store - The Redux store.
+ * @param {Function} next - The redux `dispatch` function.
+ * @param {AnyAction} action - The action being dispatched.
+ */
+function _participantJoinedRoom(store: IStore, next: Function, action: AnyAction) {
+    const result = next(action);
+    store.dispatch(debugging());
+    return result;
+}
+//videotranslatorai

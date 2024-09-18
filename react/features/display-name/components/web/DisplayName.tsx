@@ -1,24 +1,21 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
-import { makeStyles } from 'tss-react/mui';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { makeStyles } from "tss-react/mui";
 
-import { IReduxState } from '../../../app/types';
-import {
-    getParticipantById,
-    getParticipantDisplayName
-} from '../../../base/participants/functions';
-import { updateSettings } from '../../../base/settings/actions';
-import { withPixelLineHeight } from '../../../base/styles/functions.web';
-import Tooltip from '../../../base/tooltip/components/Tooltip';
-import { getIndicatorsTooltipPosition } from '../../../filmstrip/functions.web';
-import { appendSuffix } from '../../functions';
+import { IReduxState } from "../../../app/types";
+import { getParticipantById, getParticipantDisplayName } from "../../../base/participants/functions";
+import { updateSettings } from "../../../base/settings/actions";
+import { withPixelLineHeight } from "../../../base/styles/functions.web";
+import Tooltip from "../../../base/tooltip/components/Tooltip";
+import { getIndicatorsTooltipPosition } from "../../../filmstrip/functions.web";
+import { appendSuffix } from "../../functions";
+import { createDisplayNameAndDialect } from "../../../videotranslatorai/services/displayNameAndDialectService"; //videotranslatorai
 
 /**
  * The type of the React {@code Component} props of {@link DisplayName}.
  */
 interface IProps {
-
     /**
      * Whether or not the display name should be editable on click.
      */
@@ -46,41 +43,46 @@ interface IProps {
     thumbnailType?: string;
 }
 
-const useStyles = makeStyles()(theme => {
+const useStyles = makeStyles()((theme) => {
     return {
         displayName: {
             ...withPixelLineHeight(theme.typography.labelBold),
             color: theme.palette.text01,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
         },
 
         editDisplayName: {
-            outline: 'none',
-            border: 'none',
-            background: 'none',
-            boxShadow: 'none',
+            outline: "none",
+            border: "none",
+            background: "none",
+            boxShadow: "none",
             padding: 0,
             ...withPixelLineHeight(theme.typography.labelBold),
-            color: theme.palette.text01
-        }
+            color: theme.palette.text01,
+        },
     };
 });
 
-const DisplayName = ({
-    allowEditing,
-    displayNameSuffix,
-    elementID,
-    participantID,
-    thumbnailType
-}: IProps) => {
+const DisplayName = ({ allowEditing, displayNameSuffix, elementID, participantID, thumbnailType }: IProps) => {
     const { classes } = useStyles();
-    const configuredDisplayName = useSelector((state: IReduxState) =>
-        getParticipantById(state, participantID))?.name ?? '';
-    const nameToDisplay = useSelector((state: IReduxState) => getParticipantDisplayName(state, participantID));
-    const [ editDisplayNameValue, setEditDisplayNameValue ] = useState('');
-    const [ isEditing, setIsEditing ] = useState(false);
+    const configuredDisplayName =
+        useSelector((state: IReduxState) => getParticipantById(state, participantID))?.name ?? "";
+
+    // const nameToDisplay = useSelector((state: IReduxState) => getParticipantDisplayName(state, participantID)); //videotranslatorai
+
+    //videotranslator
+    const nameOfParticipant = useSelector((state: IReduxState) => getParticipantDisplayName(state, participantID));
+    const modData = useSelector((state: IReduxState) => state["features/videotranslatorai"].moderatorData);
+    const participantData = useSelector((state: IReduxState) => state["features/videotranslatorai"].participantData);
+    const linguistData = useSelector((state: IReduxState) => state["features/videotranslatorai"].linguistData);
+    const bothNameAndDialect = createDisplayNameAndDialect(nameOfParticipant, modData, participantData, linguistData);
+    const nameToDisplay = bothNameAndDialect.displayName + " " + bothNameAndDialect.displayDialect;
+    //videotranslator
+
+    const [editDisplayNameValue, setEditDisplayNameValue] = useState("");
+    const [isEditing, setIsEditing] = useState(false);
     const dispatch = useDispatch();
     const { t } = useTranslation();
     const nameInputRef = useRef<HTMLInputElement | null>(null);
@@ -89,7 +91,7 @@ const DisplayName = ({
         if (isEditing && nameInputRef.current) {
             nameInputRef.current.select();
         }
-    }, [ isEditing ]);
+    }, [isEditing]);
 
     const onClick = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
@@ -100,60 +102,66 @@ const DisplayName = ({
     }, []);
 
     const onSubmit = useCallback(() => {
-        dispatch(updateSettings({
-            displayName: editDisplayNameValue
-        }));
+        dispatch(
+            updateSettings({
+                displayName: editDisplayNameValue,
+            })
+        );
 
-        setEditDisplayNameValue('');
+        setEditDisplayNameValue("");
         setIsEditing(false);
         nameInputRef.current = null;
-    }, [ editDisplayNameValue, nameInputRef ]);
+    }, [editDisplayNameValue, nameInputRef]);
 
-    const onKeyDown = useCallback((event: React.KeyboardEvent) => {
-        if (event.key === 'Enter') {
-            onSubmit();
-        }
-    }, [ onSubmit ]);
+    const onKeyDown = useCallback(
+        (event: React.KeyboardEvent) => {
+            if (event.key === "Enter") {
+                onSubmit();
+            }
+        },
+        [onSubmit]
+    );
 
-    const onStartEditing = useCallback((e: React.MouseEvent) => {
-        if (allowEditing) {
-            e.stopPropagation();
-            setIsEditing(true);
-            setEditDisplayNameValue(configuredDisplayName);
-        }
-    }, [ allowEditing ]);
+    const onStartEditing = useCallback(
+        (e: React.MouseEvent) => {
+            if (allowEditing) {
+                e.stopPropagation();
+                setIsEditing(true);
+                setEditDisplayNameValue(configuredDisplayName);
+            }
+        },
+        [allowEditing]
+    );
 
     if (allowEditing && isEditing) {
         return (
             <input
-                autoFocus = { true }
-                className = { classes.editDisplayName }
-                id = 'editDisplayName'
-                onBlur = { onSubmit }
-                onChange = { onChange }
-                onClick = { onClick }
-                onKeyDown = { onKeyDown }
-                placeholder = { t('defaultNickname') }
-                ref = { nameInputRef }
-                spellCheck = { 'false' }
-                type = 'text'
-                value = { editDisplayNameValue } />
+                autoFocus={true}
+                className={classes.editDisplayName}
+                id="editDisplayName"
+                onBlur={onSubmit}
+                onChange={onChange}
+                onClick={onClick}
+                onKeyDown={onKeyDown}
+                placeholder={t("defaultNickname")}
+                ref={nameInputRef}
+                spellCheck={"false"}
+                type="text"
+                value={editDisplayNameValue}
+            />
         );
     }
 
     return (
         <Tooltip
-            content = { appendSuffix(nameToDisplay, displayNameSuffix) }
-            position = { getIndicatorsTooltipPosition(thumbnailType) }>
-            <span
-                className = { `displayname ${classes.displayName}` }
-                id = { elementID }
-                onClick = { onStartEditing }>
+            content={appendSuffix(nameToDisplay, displayNameSuffix)}
+            position={getIndicatorsTooltipPosition(thumbnailType)}
+        >
+            <span className={`displayname ${classes.displayName}`} id={elementID} onClick={onStartEditing}>
                 {appendSuffix(nameToDisplay, displayNameSuffix)}
             </span>
         </Tooltip>
     );
 };
-
 
 export default DisplayName;
