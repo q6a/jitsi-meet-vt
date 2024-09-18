@@ -83,6 +83,7 @@ import { IVirtualBackground } from '../virtual-background/reducer';
 import { IVisitorsState } from '../visitors/reducer';
 import { IWebHid } from '../web-hid/reducer';
 import { IWhiteboardState } from '../whiteboard/reducer';
+import { IVideoTranslatorAiState } from '../videotranslatorai/types'; //videotranslatorai
 
 export interface IStore {
     dispatch: ThunkDispatch<IReduxState, void, AnyAction>;
@@ -172,6 +173,7 @@ export interface IReduxState {
     'features/video-quality': IVideoQualityState;
     'features/video-quality-persistent-storage': IVideoQualityPersistedState;
     'features/videosipgw': IVideoSipGW;
+    'features/videotranslatorai': IVideoTranslatorAiState; //videotranslatorai
     'features/virtual-background': IVirtualBackground;
     'features/visitors': IVisitorsState;
     'features/web-hid': IWebHid;
