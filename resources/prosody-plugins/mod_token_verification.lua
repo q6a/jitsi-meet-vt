@@ -8,6 +8,16 @@ local um_is_admin = require "core.usermanager".is_admin;
 local jid_split = require 'util.jid'.split;
 local jid_bare = require 'util.jid'.bare;
 
+-- qbl changes
+local jwt = module:require "luajwtjitsi";
+local secret = module:get_option_string("app_secret");
+local signatureAlgorithm = "HS256"; 
+local appId = module:get_option_string("app_id");
+local acceptedIssuers = module:get_option_array('asap_accepted_issuers',{appId});
+local acceptedAudiences = module:get_option_array('asap_accepted_audiences',{'*'});
+-- end qbl changes
+
+
 local DEBUG = false;
 
 local measure_success = module:measure('success', 'counter');
@@ -54,7 +64,35 @@ end
 load_config();
 
 -- verify user and whether he is allowed to join a room based on the token information
-local function verify_user(session, stanza)
+local function verify_user(session, stanza, event)     
+    
+    -- qbl modification start
+    if session.auth_token and event.occupant and event.room then   
+    	local claims, err = jwt.verify(session.auth_token, signatureAlgorithm, secret, acceptedIssuers, acceptedAudiences);
+    
+    	module:log("error", "SECRET %s ALGO %s", tostring(secret), tostring(signatureAlgorithm));
+    	module:log("error", "SESSION token %s token type %s", tostring(session.auth_token), type(session.auth_token));
+    	module:log("error", "CLAIM %s", tostring(claims));
+    	module:log("error", "CLAIM ERROR %s", tostring(err)); 
+
+    	if claims then
+        	local room = event.room;
+        	local occupant = event.occupant;
+
+        	module:log("error", "ROOM %s OCCUPANT %s ISUSERMODERATOR %s", room, occupant, claims.context.user.moderator);
+
+    		if room and occupant and claims.context.user.moderator then
+       			occupant.role = "moderator";
+                        module:log("error", "AFTER CHECK ROOM %s OCCUPANT %s, BAREJID %s", room, occupant, occupant.bare_jid);
+                        room:set_affiliation(true, occupant.bare_jid, "owner");
+                end
+        end
+    end
+
+    -- end qbl changes
+
+
+
     if DEBUG then
         module:log("debug", "Session token: %s, session room: %s",
             tostring(session.auth_token), tostring(session.jitsi_meet_room));
@@ -87,13 +125,14 @@ local function verify_user(session, stanza)
         return false; -- we need to just return non nil
     end
     if DEBUG then module:log("debug", "allowed: %s to enter/create room: %s", user_jid, stanza.attr.to); end
+     
     return true;
 end
 
 module:hook("muc-room-pre-create", function(event)
     local origin, stanza = event.origin, event.stanza;
     if DEBUG then module:log("debug", "pre create: %s %s", tostring(origin), tostring(stanza)); end
-    if not verify_user(origin, stanza) then
+    if not verify_user(origin, stanza, event) then
         measure_fail(1);
         return true; -- Returning any value other than nil will halt processing of the event
     end
@@ -103,7 +142,7 @@ end, 99);
 module:hook("muc-occupant-pre-join", function(event)
     local origin, room, stanza = event.origin, event.room, event.stanza;
     if DEBUG then module:log("debug", "pre join: %s %s", tostring(room), tostring(stanza)); end
-    if not verify_user(origin, stanza) then
+    if not verify_user(origin, stanza, event) then
         measure_fail(1);
         return true; -- Returning any value other than nil will halt processing of the event
     end
