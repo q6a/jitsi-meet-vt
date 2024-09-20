@@ -1,5 +1,3 @@
-// videotranslatorai/videotranslatorai.js
-
 (function () {
     function onCustomIq(iq) {
         const query = iq.querySelector('query[xmlns="custom:data"]');
@@ -38,15 +36,12 @@
         }
     }
 
-    // Start listening when the conference is joined
-    if (APP && APP.conference) {
+    // Ensure APP is initialized and ready before running your code
+    if (typeof APP !== 'undefined' && APP.conference) {
         APP.conference.addListener(APP.conference.events.CONFERENCE_JOINED, addIqHandler);
     } else {
-        // Retry if APP.conference is not yet available
-        setTimeout(() => {
-            if (APP && APP.conference) {
-                APP.conference.addListener(APP.conference.events.CONFERENCE_JOINED, addIqHandler);
-            }
-        }, 1000);
+        document.addEventListener('APP_READY', function () {
+            APP.conference.addListener(APP.conference.events.CONFERENCE_JOINED, addIqHandler);
+        });
     }
 })();
