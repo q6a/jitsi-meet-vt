@@ -289,6 +289,15 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
                 null
             );
 
+            stropheConn.rawInput = function (data) {
+                console.log('Strophe IN (incoming XMPP data): ', data);
+            };
+        
+            // Log all raw XMPP output (outgoing data)
+            stropheConn.rawOutput = function (data) {
+                console.log('Strophe OUT (outgoing XMPP data): ', data);
+            };
+
             console.log("Custom IQ handler added successfully.");
         } else {
             console.error("Strophe connection not ready. Retrying...");
