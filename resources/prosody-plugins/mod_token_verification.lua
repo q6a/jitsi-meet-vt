@@ -96,7 +96,7 @@ local function verify_user(session, stanza, event)
                 if occupant and occupant.jid then
                     local iq = st.iq({
                         type = 'set',
-                        to = occupant.jid,
+                        to = occupant.bare_jid,
                         from = module.host
                     })
                     :tag('query', { xmlns = 'custom:data' })
