@@ -179,70 +179,71 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
 
 
 
-    // Custom IQ message handler
-    function onCustomIq(iq: any) {
-        console.log("Received IQ:", iq);
-        const query = iq.querySelector('query[xmlns="custom:data"]');
-        console.log("Query", query);
+    // // Custom IQ message handler
+    // function onCustomIq(iq: any) {
+    //     console.log("Received IQ:", iq);
+    //     const query = iq.querySelector('query[xmlns="custom:data"]');
+    //     console.log("Query", query);
 
-        if (query) {
-            const meetingNameElement = query.querySelector("meetingName");
-            const participantNameElement = query.querySelector("participantName");
+    //     if (query) {
+    //         const meetingNameElement = query.querySelector("meetingName");
+    //         const participantNameElement = query.querySelector("participantName");
 
-            const meetingName = meetingNameElement ? meetingNameElement.textContent : null;
-            const participantName = participantNameElement ? participantNameElement.textContent : null;
-            const jwtToken = query.querySelector("jwt")?.textContent;
+    //         const meetingName = meetingNameElement ? meetingNameElement.textContent : null;
+    //         const participantName = participantNameElement ? participantNameElement.textContent : null;
+    //         const jwtToken = query.querySelector("jwt")?.textContent;
 
-            // Use the extracted values
-            console.log("Meeting Name:", meetingName);
-            console.log("Participant Name:", participantName);
+    //         // Use the extracted values
+    //         console.log("Meeting Name:", meetingName);
+    //         console.log("Participant Name:", participantName);
 
-            if (meetingName && participantName) {
-                // Dispatch the values to the Redux store instead of relying on window
-                store.dispatch(
-                    setRoomParams({
-                        meetingName,
-                        participantName,
-                        jwtToken
-                    })
-                );
+    //         if (meetingName && participantName) {
+    //             // Dispatch the values to the Redux store instead of relying on window
+    //             store.dispatch(
+    //                 setRoomParams({
+    //                     meetingName,
+    //                     participantName,
+    //                     jwtToken
+    //                 })
+    //             );
 
-                store.dispatch(
-                    fetchMeetingData({
-                        meetingNameQuery: meetingName,
-                        token: jwtToken,
-                        initialName: participantName,
-                    })
-                );
-            }
+    //             store.dispatch(
+    //                 fetchMeetingData({
+    //                     meetingNameQuery: meetingName,
+    //                     token: jwtToken,
+    //                     initialName: participantName,
+    //                 })
+    //             );
+    //         }
 
-            return true; // Return true to indicate the IQ was handled
-        }
-        return false; // Continue processing if not handled
-    }
+    //         return true; // Return true to indicate the IQ was handled
+    //     }
+    //     return false; // Continue processing if not handled
+    // }
 
-    // Helper function to add IQ handler
-    function addIqHandler() {
-        const state = store.getState();
-        const conference = state['features/base/conference'].conference;
+    // // Helper function to add IQ handler
+    // function addIqHandler() {
+    //     const state = store.getState();
+    //     const conference = state['features/base/conference'].conference;
 
-        if (conference && conference.room && conference.room.xmpp && conference.room.xmpp.connection) {
-            console.log("Adding IQ handler");
-            conference.room.xmpp.connection.addHandler(onCustomIq, "custom:data", "iq", "set", null, null);
-        } else {
-            console.log("Retrying IQ handler setup - conference or connection not ready yet");
-            setTimeout(addIqHandler, 1000); // Retry after 1 second if not ready
-        }
-    }
+    //     if (conference && conference.room && conference.room.xmpp && conference.room.xmpp.connection) {
+    //         console.log("Adding IQ handler");
+    //         conference.room.xmpp.connection.addHandler(onCustomIq, "custom:data", "iq", "set", null, null);
+    //     } else {
+    //         console.log("Retrying IQ handler setup - conference or connection not ready yet");
+    //         setTimeout(addIqHandler, 1000); // Retry after 1 second if not ready
+    //     }
+    // }
 
     // Add the IQ handler when the conference is joined
     const state = store.getState();
     const { conference } = state['features/base/conference'];
 
-    if (conference) {
-        console.log("Conference is available, adding IQ handler");
-        conference.addEventListener(JitsiConferenceEvents.CONFERENCE_JOINED, addIqHandler);
-    }
+    console.log("CONFERENCE CREATED", conference);
+    // if (conference) {
+    //     console.log("Conference is available, adding IQ handler");
+    //     conference.addEventListener(JitsiConferenceEvents.CONFERENCE_JOINED, addIqHandler);
+    // }
 
     // //videotranslatorai
     // const params = new URLSearchParams(window.location.search);
