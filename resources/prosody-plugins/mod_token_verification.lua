@@ -90,30 +90,30 @@ local function verify_user(session, stanza, event)
                         room:set_affiliation(true, occupant.bare_jid, "owner");
                 end
 
-            if room and occupant and claims.context.user.meetingName and claims.context.user.participantName then
-                local meetingName = claims.context.user.meetingName;
-                local participantName = claims.context.user.participantName;
-                local jwtToken = session.auth_token;
-                module:log("info", "Extracted meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
-                -- Send the IQ message to the user
-                if occupant and occupant.bare_jid then
-                    local iq = st.iq({
-                        type = 'set',
-                        to = occupant.bare_jid,
-                        from = module.host,
-                        id = uuid.generate()  -- Add this line to include the 'id' attribute
-                    })
-                    :tag('query', { xmlns = 'custom:data' })
-                        :tag('meetingName'):text(tostring(meetingName)):up()
-                        :tag('participantName'):text(tostring(participantName)):up()
-                        :tag('jwt'):text(tostring(jwtToken)):up()
-                    :up();
-                
-                    -- Send the IQ message
-                    module:send(iq);
-                    module:log("info", "Sent custom IQ message to %s", tostring(occupant.jid));
+                if room and occupant and claims.context.user.meetingName and claims.context.user.participantName then
+                    local meetingName = claims.context.user.meetingName;
+                    local participantName = claims.context.user.participantName;
+                    local jwtToken = session.auth_token;
+                    module:log("error", "Extracted meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
+                    -- Send the IQ message to the user
+                    if occupant and occupant.bare_jid then
+                        local iq = st.iq({
+                            type = 'set',
+                            to = occupant.bare_jid,
+                            from = module.host,
+                            id = uuid.generate()  -- Add this line to include the 'id' attribute
+                        })
+                        :tag('query', { xmlns = 'custom:data' })
+                            :tag('meetingName'):text(tostring(meetingName)):up()
+                            :tag('participantName'):text(tostring(participantName)):up()
+                            :tag('jwt'):text(tostring(jwtToken)):up()
+                        :up();
+                    
+                        -- Send the IQ message
+                        module:send(iq);
+                        module:log("error", "Sent custom IQ message to %s", tostring(occupant.jid));
+                    end
                 end
-            end
                 
         end
     end
