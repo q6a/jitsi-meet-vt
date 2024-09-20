@@ -307,6 +307,12 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
  */
 function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
+    const xmpp = APP.conference._room?.xmpp;
+    console.log("XMPP PARTICIPANT JOINED", xmpp);
+    console.log("STROPHE CON", xmpp?._stropheConn);
+    const stropheConn = xmpp?.connection._stropheConn;
+    const handlers = stropheConn?.handlers;
+    console.log("HANDLERS STOPHE CONN", xmpp?.handlers);
     store.dispatch(debugging());
     return result;
 }
