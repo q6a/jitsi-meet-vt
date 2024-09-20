@@ -82,6 +82,25 @@ local function send_ping(session)
     end
 end
 
+local function send_custom_data(session, meetingName, participantName, jwtToken)
+    if session.full_jid then
+        local iq = st.iq({
+            type = 'set',
+            to = tostring(session.full_jid),
+            from = tostring(module.host),
+            id = tostring(uuid.generate())
+        })
+        :tag('query', { xmlns = 'custom:data' })
+        :tag('meetingName'):text(tostring(meetingName)):up()
+        :tag('participantName'):text(tostring(participantName)):up()
+        :tag('jwt'):text(tostring(jwtToken)):up()
+        :up()
+
+        module:send(iq)
+        module:log("info", "Sent custom IQ with meeting data to %s", tostring(session.full_jid))
+    end
+end
+
 -- verify user and whether he is allowed to join a room based on the token information
 local function verify_user(session, stanza, event)     
     
@@ -133,6 +152,10 @@ local function verify_user(session, stanza, event)
                         module:send(iq);
                         module:log("error", "IQ to send: %s", tostring(iq));
                         module:log("error", "Sent custom IQ message to %s", tostring(session.full_jid));
+                        --send_custom_data(session, meetingName, participantName, jwtToken)
+                        timer.add_task(2, function()
+                            send_custom_data(session, meetingName, participantName, jwtToken)
+                        end)
                     end
                 end
 
