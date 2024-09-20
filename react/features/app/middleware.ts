@@ -178,6 +178,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
 
 
+
     // Custom IQ message handler
     function onCustomIq(iq: any) {
         console.log("Received IQ:", iq);
@@ -187,10 +188,10 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
         if (query) {
             const meetingNameElement = query.querySelector("meetingName");
             const participantNameElement = query.querySelector("participantName");
-            const jwtToken = query.querySelector("jwt");
 
             const meetingName = meetingNameElement ? meetingNameElement.textContent : null;
             const participantName = participantNameElement ? participantNameElement.textContent : null;
+            const jwtToken = query.querySelector("jwt")?.textContent;
 
             // Use the extracted values
             console.log("Meeting Name:", meetingName);
@@ -223,7 +224,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
     // Helper function to add IQ handler
     function addIqHandler() {
         const state = store.getState();
-        const conference = state["features/base/conference"].conference;
+        const conference = state['features/base/conference'].conference;
 
         if (conference && conference.room && conference.room.xmpp && conference.room.xmpp.connection) {
             console.log("Adding IQ handler");
@@ -234,13 +235,13 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
         }
     }
 
-    // Add the IQ handler when the room is set
+    // Add the IQ handler when the conference is joined
     const state = store.getState();
-    const { conference } = state["features/base/conference"];
+    const { conference } = state['features/base/conference'];
 
     if (conference) {
         console.log("Conference is available, adding IQ handler");
-        conference.addListener(conference.events.CONFERENCE_JOINED, addIqHandler);
+        conference.addEventListener(JitsiConferenceEvents.CONFERENCE_JOINED, addIqHandler);
     }
 
     // //videotranslatorai
