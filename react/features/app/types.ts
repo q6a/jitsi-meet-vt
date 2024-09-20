@@ -79,11 +79,11 @@ import { ITranscribingState } from '../transcribing/reducer';
 import { IVideoLayoutState } from '../video-layout/reducer';
 import { IVideoQualityPersistedState, IVideoQualityState } from '../video-quality/reducer';
 import { IVideoSipGW } from '../videosipgw/reducer';
+import { IVideoTranslatorAiState } from '../videotranslatorai/types'; //videotranslatorai
 import { IVirtualBackground } from '../virtual-background/reducer';
 import { IVisitorsState } from '../visitors/reducer';
 import { IWebHid } from '../web-hid/reducer';
 import { IWhiteboardState } from '../whiteboard/reducer';
-import { IVideoTranslatorAiState } from '../videotranslatorai/types'; //videotranslatorai
 
 export interface IStore {
     dispatch: ThunkDispatch<IReduxState, void, AnyAction>;
