@@ -1,5 +1,6 @@
 (function () {
     function onCustomIq(iq) {
+        console.log("Received IQ:", iq);
         const query = iq.querySelector('query[xmlns="custom:data"]');
         if (query) {
             const meetingNameElement = query.querySelector("meetingName");
@@ -27,20 +28,29 @@
     }
 
     function addIqHandler() {
+        console.log("addevent iq handler1 - videotranslatorai")
+
         const room = APP.conference._room;
         if (room && room.xmpp && room.xmpp.connection) {
+            console.log("addevent iq handler2 - videotranslatorai")
+
             room.xmpp.connection.addHandler(onCustomIq, "custom:data", "iq", "set", null, null);
         } else {
             // Retry if the connection is not yet available
+            console.log("addevent iq handler3 - videotranslatorai")
             setTimeout(addIqHandler, 1000);
         }
     }
 
     // Ensure APP is initialized and ready before running your code
     if (typeof APP !== 'undefined' && APP.conference) {
+        console.log("addevent listener1 - videotranslatorai")
+
         APP.conference.addListener(APP.conference.events.CONFERENCE_JOINED, addIqHandler);
     } else {
         document.addEventListener('APP_READY', function () {
+            console.log("addevent listener2 - videotranslatorai")
+
             APP.conference.addListener(APP.conference.events.CONFERENCE_JOINED, addIqHandler);
         });
     }
