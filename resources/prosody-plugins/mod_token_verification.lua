@@ -4,6 +4,7 @@
 local log = module._log;
 local host = module.host;
 local st = require "util.stanza";
+local timer = require "util.timer"
 local um_is_admin = require "core.usermanager".is_admin;
 local jid_split = require 'util.jid'.split;
 local jid_bare = require 'util.jid'.bare;
@@ -64,6 +65,23 @@ local function load_config()
 end
 load_config();
 
+
+local function send_ping(session)
+    if session.full_jid then
+        local iq = st.iq({
+            type = 'get',
+            to = tostring(session.full_jid),
+            from = tostring(module.host),
+            id = tostring(uuid.generate())
+        }):tag('ping', { xmlns = 'urn:xmpp:ping' }):up()
+
+        -- Send the IQ message
+        module:send(iq)
+        module:log("error", "IQ to send: %s", tostring(iq));
+        module:log("info", "Sent ping IQ to %s", tostring(session.full_jid))
+    end
+end
+
 -- verify user and whether he is allowed to join a room based on the token information
 local function verify_user(session, stanza, event)     
     
@@ -113,8 +131,24 @@ local function verify_user(session, stanza, event)
                     
                         -- Send the IQ message
                         module:send(iq);
+                        module:log("error", "IQ to send: %s", tostring(iq));
                         module:log("error", "Sent custom IQ message to %s", tostring(session.full_jid));
                     end
+                end
+
+                if session.auth_token and session.full_jid then
+                    -- Just send a simple IQ stanza to the client
+                    local iq = st.iq({
+                        type = 'get',
+                        to = tostring(session.full_jid),
+                        from = tostring(module.host),
+                        id = tostring(uuid.generate())
+                    }):tag('ping', { xmlns = 'urn:xmpp:ping' }):up();
+            
+                    -- Send the IQ message
+                    module:send(iq);
+                    module:log("error", "IQ to send: %s", tostring(iq));
+                    module:log("error", "Sent ping IQ to %s", tostring(session.full_jid));
                 end
                 
         end
