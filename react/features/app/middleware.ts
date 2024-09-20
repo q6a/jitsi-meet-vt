@@ -177,52 +177,7 @@ function _navigate({ dispatch, getState }: IStore) {
 function _setRoom(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
 
-    // if (conference) {
-    //     console.log("Conference is available, adding IQ handler");
-    //     conference.addEventListener(JitsiConferenceEvents.CONFERENCE_JOINED, addIqHandler);
-    // }
-
-    // //videotranslatorai
-    // const params = new URLSearchParams(window.location.search);
-    // const initialMeetingName = params.get("meetingName");
-    // const initialParticipantName = params.get("participantName");
-    // const jwtToken = params.get("jwt");
-
-    // if (initialMeetingName && initialParticipantName && jwtToken) {
-    //     store.dispatch(
-    //         setRoomParams({
-    //             meetingName: initialMeetingName,
-    //             participantName: initialParticipantName,
-    //             jwtToken,
-    //         })
-    //     );
-
-    //     store.dispatch(
-    //         fetchMeetingData({
-    //             meetingNameQuery: initialMeetingName,
-    //             token: jwtToken,
-    //             initialName: initialParticipantName,
-    //         })
-    //     );
-    // }
-    // //videotranslatorai
-
-    _navigate(store);
-
-    return result;
-}
-
-//videotranslatorai
-/**
- * Middleware to grant moderator rights after the conference is joined.
- *
- * @param {IStore} store - The Redux store.
- * @param {Function} next - The redux `dispatch` function.
- * @param {AnyAction} action - The action being dispatched.
- */
-function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
-    const result = next(action);
-
+    
     console.log("Next action dispatched:", action);
 
     // Custom IQ message handler
@@ -306,6 +261,52 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
     } else {
         console.error("Conference not available yet.");
     }
+
+    // if (conference) {
+    //     console.log("Conference is available, adding IQ handler");
+    //     conference.addEventListener(JitsiConferenceEvents.CONFERENCE_JOINED, addIqHandler);
+    // }
+
+    // //videotranslatorai
+    // const params = new URLSearchParams(window.location.search);
+    // const initialMeetingName = params.get("meetingName");
+    // const initialParticipantName = params.get("participantName");
+    // const jwtToken = params.get("jwt");
+
+    // if (initialMeetingName && initialParticipantName && jwtToken) {
+    //     store.dispatch(
+    //         setRoomParams({
+    //             meetingName: initialMeetingName,
+    //             participantName: initialParticipantName,
+    //             jwtToken,
+    //         })
+    //     );
+
+    //     store.dispatch(
+    //         fetchMeetingData({
+    //             meetingNameQuery: initialMeetingName,
+    //             token: jwtToken,
+    //             initialName: initialParticipantName,
+    //         })
+    //     );
+    // }
+    // //videotranslatorai
+
+    _navigate(store);
+
+    return result;
+}
+
+//videotranslatorai
+/**
+ * Middleware to grant moderator rights after the conference is joined.
+ *
+ * @param {IStore} store - The Redux store.
+ * @param {Function} next - The redux `dispatch` function.
+ * @param {AnyAction} action - The action being dispatched.
+ */
+function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
+    const result = next(action);
     store.dispatch(debugging());
     return result;
 }
