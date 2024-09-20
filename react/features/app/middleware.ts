@@ -225,7 +225,6 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
 function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
     
-    // Custom IQ message handler
     function onCustomIq(stanza: any) {
         const query = stanza.querySelector('query[xmlns="custom:data"]');
         if (query) {
@@ -256,37 +255,33 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
                 );
             }
         }
-        return true;
+        return true; // Continue processing stanzas
     }
 
-    
     // Helper function to add IQ handler
     function addIqHandler() {
-        const state = store.getState();
-        // const connection = state['features/base/connection'].connection;
-        // connection.
+        // Access the Strophe connection via the xmpp object
+        const xmpp = APP.conference._room.xmpp;
+        const connection = xmpp.connection;
 
-        // if (connection) {
-        //     console.log("Adding IQ handler for custom:data");
+        if (connection) {
+            console.log("Adding IQ handler for custom:data");
 
-        //     // Add a custom IQ handler for the namespace "custom:data"
-        //     connection.addHandler(onCustomIq, 'custom:data', 'iq', 'set', null, null);
-        // } else {
-        //     console.log("Retrying IQ handler setup - connection not ready yet");
-        //     setTimeout(addIqHandler, 1000); // Retry after 1 second if the connection isn't ready
-        // }
+            // Use the Strophe.js addHandler method for handling IQ stanzas
+            connection.addHandler(onCustomIq, 'custom:data', 'iq', 'set', null, null);
+        } else {
+            console.log("Retrying IQ handler setup - connection not ready yet");
+            setTimeout(addIqHandler, 1000); // Retry after 1 second if the connection isn't ready
+        }
     }
 
     // Add the IQ handler when the conference is joined
     const state = store.getState();
     const { conference } = state["features/base/conference"];
-    const xmpp = APP.conference._room.xmpp;
-
-    console.log("XMPP", xmpp);
 
     if (conference) {
         console.log("Conference is available, adding IQ handler");
-        addIqHandler(); // Directly call the IQ handler setup after conference is joined
+        addIqHandler(); // Add the IQ handler directly when conference is available
     }
     store.dispatch(debugging());
     return result;
