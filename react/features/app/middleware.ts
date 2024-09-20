@@ -279,11 +279,11 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
             console.log("Strophe connection found:", stropheConn);
     
             stropheConn.addHandler(
-                onCustomIq,      // Handler function
                 'custom:data',   // Namespace
                 'iq',            // Element name
                 'set',           // Type
                 null,            // ID
+                onCustomIq,      // Handler function
                 null             // From
             );
     
@@ -293,7 +293,7 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
             setTimeout(addIqHandler, 1000); // Retry after 1 second if the connection isn't ready
         }
     }
-    
+
     // Add the IQ handler when the conference is joined
     const conference = APP.conference;
     console.log("Conference object:", conference);
