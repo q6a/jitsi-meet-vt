@@ -275,7 +275,7 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
         const xmpp = APP.conference._room?.xmpp;
         console.log("XMPP PARTICIPANT JOINED", xmpp);
         console.log("STROPHE CON", xmpp?._stropheConn);
-        const stropheConn = xmpp?._stropheConn;
+        const stropheConn = xmpp?.connection._stropheConn;
         const handlers = stropheConn?.handlers;
         console.log("HANDLERS STOPHE CONN", xmpp?.handlers);
         if (handlers) {
