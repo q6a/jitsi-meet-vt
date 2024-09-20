@@ -81,6 +81,8 @@ local function verify_user(session, stanza, event)
         	local occupant = event.occupant;
 
         	module:log("error", "ROOM %s OCCUPANT %s ISUSERMODERATOR %s", room, occupant, claims.context.user.moderator);
+            module:log("error", "ROOM %s OCCUPANT %s MEETINGNAME %s", room, occupant, claims.context.user.meetingName);
+            module:log("error", "ROOM %s OCCUPANT %s participantName %s", room, occupant, claims.context.user.participantName);
 
     		if room and occupant and claims.context.user.moderator then
        			occupant.role = "moderator";
