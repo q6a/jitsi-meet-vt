@@ -83,7 +83,7 @@ local function verify_user(session, stanza, event)
         	module:log("error", "ROOM %s OCCUPANT %s ISUSERMODERATOR %s", room, occupant, claims.context.user.moderator);
             module:log("error", "ROOM %s OCCUPANT %s MEETINGNAME %s", room, occupant, claims.context.user.meetingName);
             module:log("error", "ROOM %s OCCUPANT %s participantName %s", room, occupant, claims.context.user.participantName);
-            module:log("error", "SESSION FULL JID %s", to_string(occupant.full_jid));
+            -- module:log("error", "SESSION FULL JID %s", to_string(occupant.full_jid));
     		if room and occupant and claims.context.user.moderator then
        			occupant.role = "moderator";
                         module:log("error", "AFTER CHECK ROOM %s OCCUPANT %s, BAREJID %s", room, occupant, occupant.bare_jid);
