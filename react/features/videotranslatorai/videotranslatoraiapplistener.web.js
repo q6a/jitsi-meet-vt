@@ -2,6 +2,8 @@
     function onCustomIq(iq) {
         console.log("Received IQ:", iq);
         const query = iq.querySelector('query[xmlns="custom:data"]');
+        console.log("Query", query);
+        console.log("Query Selector Meeting Name",query.querySelector("meetingName"))
         if (query) {
             const meetingNameElement = query.querySelector("meetingName");
             const participantNameElement = query.querySelector("participantName");
