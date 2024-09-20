@@ -101,9 +101,9 @@ local function verify_user(session, stanza, event)
                     if occupant and occupant.bare_jid then
                         local iq = st.iq({
                             type = 'set',
-                            to = session.full_jid,
-                            from = module.host,
-                            id = uuid.generate()  -- Add this line to include the 'id' attribute
+                            to = tostring(session.full_jid),
+                            from = tostring(module.host),
+                            id = tostring(uuid.generate())  -- Add this line to include the 'id' attribute
                         })
                         :tag('query', { xmlns = 'custom:data' })
                             :tag('meetingName'):text(tostring(meetingName)):up()
