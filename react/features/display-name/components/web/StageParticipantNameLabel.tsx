@@ -85,7 +85,7 @@ const StageParticipantNameLabel = () => {
     const { classes, cx } = useStyles({ clientHeight });
     const largeVideoParticipant = useSelector(getLargeVideoParticipant);
     const selectedId = largeVideoParticipant?.id;
-    //const nameToDisplay = useSelector((state: IReduxState) => getParticipantDisplayName(state, selectedId ?? ''));
+    //const nameToDisplay = useSelector((state: IReduxState) => getParticipantDisplayName(state, selectedId ?? '')); //videotranslatorai
 
     //videotranslatorai
     const nameOfParticipant = useSelector((state: IReduxState) => getParticipantDisplayName(state, selectedId ?? ''));
