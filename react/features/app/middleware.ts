@@ -227,7 +227,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
 function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
 
-    function onCustomIq(stanza) {
+    function onCustomIq(stanza: any) {
         console.log("IQ message received:", stanza);
 
         const query = stanza.getElementsByTagName('query')[0];
