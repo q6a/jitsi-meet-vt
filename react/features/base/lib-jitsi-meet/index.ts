@@ -22,3 +22,4 @@ export const JitsiSIPVideoGWStatus = JitsiMeetJS.constants.sipVideoGW;
 export const JitsiTrackErrors = JitsiMeetJS.errors.track;
 export const JitsiTrackEvents = JitsiMeetJS.events.track;
 export const RTCStatsEvents = JitsiMeetJS.events.rtcstats;
+export const JitsiConnection = JitsiMeetJS.JitsiConnection;

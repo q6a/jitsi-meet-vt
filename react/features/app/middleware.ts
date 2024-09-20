@@ -1,5 +1,7 @@
 import { AnyAction } from "redux";
-
+import JitsiMeetJS, {
+  JitsiConnection, JitsiConnectionEvents
+} from '../base/lib-jitsi-meet';
 import { PARTICIPANT_JOINED } from "../base/participants/actionTypes";
 import { CONFERENCE_JOINED } from "../base/conference/actionTypes";
 import { setRoomParams, fetchMeetingData, debugging } from "../videotranslatorai/action.web"; // Make sure this is the correct path to your action creator
@@ -224,59 +226,67 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
     const result = next(action);
     
     // Custom IQ message handler
-    function onCustomIq(commandName: string, payload: any) {
-        console.log("Received IQ command:", commandName, payload);
+    function onCustomIq(stanza: any) {
+        const query = stanza.querySelector('query[xmlns="custom:data"]');
+        if (query) {
+            const meetingName = query.querySelector("meetingName")?.textContent || null;
+            const participantName = query.querySelector("participantName")?.textContent || null;
+            const jwtToken = query.querySelector("jwt")?.textContent || null;
 
-        const meetingName = payload.meetingName || null;
-        const participantName = payload.participantName || null;
-        const jwtToken = payload.jwt || null;
+            // Use the extracted values
+            console.log("Meeting Name:", meetingName);
+            console.log("Participant Name:", participantName);
 
-        // Use the extracted values
-        console.log("Meeting Name:", meetingName);
-        console.log("Participant Name:", participantName);
+            if (meetingName && participantName) {
+                // Dispatch the values to the Redux store
+                store.dispatch(
+                    setRoomParams({
+                        meetingName,
+                        participantName,
+                        jwtToken,
+                    })
+                );
 
-        if (meetingName && participantName) {
-            // Dispatch the values to the Redux store
-            store.dispatch(
-                setRoomParams({
-                    meetingName,
-                    participantName,
-                    jwtToken,
-                })
-            );
-
-            store.dispatch(
-                fetchMeetingData({
-                    meetingNameQuery: meetingName,
-                    token: jwtToken,
-                    initialName: participantName,
-                })
-            );
+                store.dispatch(
+                    fetchMeetingData({
+                        meetingNameQuery: meetingName,
+                        token: jwtToken,
+                        initialName: participantName,
+                    })
+                );
+            }
         }
+        return true;
     }
 
+    
     // Helper function to add IQ handler
     function addIqHandler() {
         const state = store.getState();
-        const conference = state["features/base/conference"].conference;
+        // const connection = state['features/base/connection'].connection;
+        // connection.
 
-        if (conference) {
-            console.log("Adding command listener for custom IQ");
-            // Using addCommandListener to listen to IQ messages
-            conference.addCommandListener("custom:data", onCustomIq);
-        } else {
-            console.log("Retrying IQ handler setup - conference not ready yet");
-            setTimeout(addIqHandler, 1000); // Retry after 1 second if not ready
-        }
+        // if (connection) {
+        //     console.log("Adding IQ handler for custom:data");
+
+        //     // Add a custom IQ handler for the namespace "custom:data"
+        //     connection.addHandler(onCustomIq, 'custom:data', 'iq', 'set', null, null);
+        // } else {
+        //     console.log("Retrying IQ handler setup - connection not ready yet");
+        //     setTimeout(addIqHandler, 1000); // Retry after 1 second if the connection isn't ready
+        // }
     }
 
     // Add the IQ handler when the conference is joined
     const state = store.getState();
     const { conference } = state["features/base/conference"];
+    const xmpp = APP.conference._room.xmpp;
+
+    console.log("XMPP", xmpp);
 
     if (conference) {
         console.log("Conference is available, adding IQ handler");
-        conference.on(CONFERENCE_JOINED, addIqHandler);
+        addIqHandler(); // Directly call the IQ handler setup after conference is joined
     }
     store.dispatch(debugging());
     return result;
