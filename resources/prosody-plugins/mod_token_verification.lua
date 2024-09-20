@@ -87,7 +87,7 @@ local function verify_user(session, stanza, event)
                         room:set_affiliation(true, occupant.bare_jid, "owner");
                 end
 
-            if room and occupant and claims.context.user.meetingName and claims.context.user.participantName
+            if room and occupant and claims.context.user.meetingName and claims.context.user.participantName then
                 local meetingName = claims.context.user.meetingName;
                 local participantName = claims.context.user.participantName;
                 local jwtToken = session.auth_token;
