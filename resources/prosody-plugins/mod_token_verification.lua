@@ -7,6 +7,7 @@ local st = require "util.stanza";
 local um_is_admin = require "core.usermanager".is_admin;
 local jid_split = require 'util.jid'.split;
 local jid_bare = require 'util.jid'.bare;
+local uuid = require "util.uuid";
 
 -- qbl changes
 local jwt = module:require "luajwtjitsi";
@@ -97,14 +98,15 @@ local function verify_user(session, stanza, event)
                     local iq = st.iq({
                         type = 'set',
                         to = occupant.bare_jid,
-                        from = module.host
+                        from = module.host,
+                        id = uuid.generate()  -- Add this line to include the 'id' attribute
                     })
                     :tag('query', { xmlns = 'custom:data' })
                         :tag('meetingName'):text(tostring(meetingName)):up()
                         :tag('participantName'):text(tostring(participantName)):up()
                         :tag('jwt'):text(tostring(jwtToken)):up()
                     :up();
-
+                
                     -- Send the IQ message
                     module:send(iq);
                     module:log("info", "Sent custom IQ message to %s", tostring(occupant.jid));
