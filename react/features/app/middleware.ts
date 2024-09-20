@@ -289,12 +289,12 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
                 null
             );
 
-            stropheConn.rawInput = function (data) {
+            stropheConn.rawInput = function (data: any) {
                 console.log('Strophe IN (incoming XMPP data): ', data);
             };
         
             // Log all raw XMPP output (outgoing data)
-            stropheConn.rawOutput = function (data) {
+            stropheConn.rawOutput = function (data: any) {
                 console.log('Strophe OUT (outgoing XMPP data): ', data);
             };
 
