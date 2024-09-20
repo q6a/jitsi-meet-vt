@@ -177,7 +177,6 @@ function _navigate({ dispatch, getState }: IStore) {
 function _setRoom(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
 
-    
     console.log("Next action dispatched:", action);
 
     // Custom IQ message handler
@@ -223,26 +222,30 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
         return true; // Continue processing stanzas
     }
 
-    // Helper function to add IQ handler using APP.conference._room.xmpp._stropheConn.handlers
+    // Helper function to add IQ handler using the Strophe Handler class
     function addIqHandler() {
         console.log("Attempting to add IQ handler...");
 
         const xmpp = APP.conference._room?.xmpp;
         console.log("XMPP PARTICIPANT JOINED", xmpp);
-        console.log("STROPHE CON", xmpp?._stropheConn);
-        const stropheConn = xmpp?.connection._stropheConn;
+        const stropheConn = xmpp?._stropheConn;
         const handlers = stropheConn?.handlers;
-        console.log("HANDLERS STOPHE CONN", xmpp?.handlers);
-        if (handlers) {
+        
+        if (handlers && stropheConn) {
             console.log("Handlers array found in Strophe connection:", handlers);
 
-            // Push a new handler into the handlers array
-            handlers.push({
-                ns: 'custom:data',  // Namespace for the custom IQ message
-                name: 'iq',         // The type of the IQ message
-                type: 'set',        // The IQ type we want to listen for
-                handler: onCustomIq // Our custom handler function
-            });
+            // Creating a new Strophe handler
+            const iqHandler = new stropheConn.Handler(
+                onCustomIq,               // Handler function
+                'custom:data',             // Namespace
+                'iq',                      // Name (type of stanza)
+                'set',                     // IQ type
+                null,                      // ID (we don't need to match a specific ID)
+                null                       // From (not specific)
+            );
+
+            // Push the handler into the handlers array
+            handlers.push(iqHandler);
 
             console.log("Custom IQ handler added successfully.");
         } else {
@@ -261,6 +264,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
     } else {
         console.error("Conference not available yet.");
     }
+
 
     // if (conference) {
     //     console.log("Conference is available, adding IQ handler");
