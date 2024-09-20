@@ -240,7 +240,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
     const state = store.getState();
     console.log("CONFERENCE CREATED_2", state  );
     const { conference } = state['features/base/conference'];
-
+    console.log("connection items", conference?.getConnection());
     console.log("CONFERENCE CREATED", conference);
     // if (conference) {
     //     console.log("Conference is available, adding IQ handler");
