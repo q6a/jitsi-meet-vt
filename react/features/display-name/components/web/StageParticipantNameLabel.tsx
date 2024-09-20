@@ -23,6 +23,8 @@ import {
     scaleFontProperty,
 } from "./styles";
 
+import { createDisplayNameAndDialect }  from '../../../videotranslatorai/services/displayNameAndDialectService';
+
 interface IOptions {
     clientHeight?: number;
 }
@@ -83,7 +85,18 @@ const StageParticipantNameLabel = () => {
     const { classes, cx } = useStyles({ clientHeight });
     const largeVideoParticipant = useSelector(getLargeVideoParticipant);
     const selectedId = largeVideoParticipant?.id;
-    const nameToDisplay = useSelector((state: IReduxState) => getParticipantDisplayName(state, selectedId ?? ''));
+    //const nameToDisplay = useSelector((state: IReduxState) => getParticipantDisplayName(state, selectedId ?? ''));
+
+    //videotranslatorai
+    const nameOfParticipant = useSelector((state: IReduxState) => getParticipantDisplayName(state, selectedId ?? ''));
+    const modData = useSelector(((state: IReduxState) => state['features/videotranslatorai'].moderatorData));
+    const participantData = useSelector(((state: IReduxState) => state['features/videotranslatorai'].participantData));
+    const linguistData = useSelector(((state: IReduxState) => state['features/videotranslatorai'].linguistData));
+    const bothNameAndDialect = createDisplayNameAndDialect(nameOfParticipant, modData, participantData, linguistData);
+    const nameToDisplay =  bothNameAndDialect.displayName;
+    const dialectToDisplay = bothNameAndDialect.displayDialect;
+    //videotranslatorai
+
 
     const localParticipant = useSelector(getLocalParticipant);
     const localId = localParticipant?.id;
@@ -105,6 +118,8 @@ const StageParticipantNameLabel = () => {
                     toolboxVisible && classes.containerElevated
                 ) }>
                 <DisplayNameBadge name = { nameToDisplay } />
+                <DisplayNameBadge name = { dialectToDisplay } />
+
             </div>
         );
     }
