@@ -269,39 +269,31 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
 
         return true; // Continue processing stanzas
     }
-
-    // Helper function to add IQ handler using the Strophe Handler class
     function addIqHandler() {
         console.log("Attempting to add IQ handler...");
-
+    
         const xmpp = APP.conference._room?.xmpp;
-        console.log("XMPP PARTICIPANT JOINED", xmpp);
-        const stropheConn = xmpp?.connection._stropheConn;
-        const handlers = stropheConn?.handlers;
-        
-        if (handlers && stropheConn) {
-            console.log("Handlers array found in Strophe connection:", handlers);
-
-            // Creating a new Strophe handler
-            const iqHandler = new stropheConn.Handler(
-                onCustomIq,               // Handler function
-                'custom:data',             // Namespace
-                'iq',                      // Name (type of stanza)
-                'set',                     // IQ type
-                null,                      // ID (we don't need to match a specific ID)
-                null                       // From (not specific)
+        const stropheConn = xmpp?.connection?._stropheConn;
+    
+        if (stropheConn) {
+            console.log("Strophe connection found:", stropheConn);
+    
+            stropheConn.addHandler(
+                onCustomIq,      // Handler function
+                'custom:data',   // Namespace
+                'iq',            // Element name
+                'set',           // Type
+                null,            // ID
+                null             // From
             );
-
-            // Push the handler into the handlers array
-            handlers.push(iqHandler);
-
+    
             console.log("Custom IQ handler added successfully.");
         } else {
-            console.error("Strophe connection or handlers array not ready. Retrying...");
+            console.error("Strophe connection not ready. Retrying...");
             setTimeout(addIqHandler, 1000); // Retry after 1 second if the connection isn't ready
         }
     }
-
+    
     // Add the IQ handler when the conference is joined
     const conference = APP.conference;
     console.log("Conference object:", conference);
