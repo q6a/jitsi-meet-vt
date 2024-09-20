@@ -228,7 +228,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
 
         const xmpp = APP.conference._room?.xmpp;
         console.log("XMPP PARTICIPANT JOINED", xmpp);
-        const stropheConn = xmpp?._stropheConn;
+        const stropheConn = xmpp?.connection._stropheConn;
         const handlers = stropheConn?.handlers;
         
         if (handlers && stropheConn) {
