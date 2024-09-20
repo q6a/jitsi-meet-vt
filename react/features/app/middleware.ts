@@ -230,7 +230,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
 
     if (conference) {
         console.log("Conference is available, adding IQ handler");
-        conference.on(JitsiConferenceEvents.CONFERENCE_JOINED, addIqHandler);
+        conference.on(CONFERENCE_JOINED, addIqHandler);
     }
     // if (conference) {
     //     console.log("Conference is available, adding IQ handler");
