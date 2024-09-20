@@ -235,8 +235,10 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
     //     }
     // }
 
+    console.log("CONFERENCE CREATED_1");
     // Add the IQ handler when the conference is joined
     const state = store.getState();
+    console.log("CONFERENCE CREATED_2", state  );
     const { conference } = state['features/base/conference'];
 
     console.log("CONFERENCE CREATED", conference);
@@ -286,6 +288,12 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
 function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
     store.dispatch(debugging());
+    console.log("CONFERENCE CREATED_1");
+    // Add the IQ handler when the conference is joined
+    const state = store.getState();
+    console.log("CONFERENCE CREATED_2", state  );
+    const { conference } = state['features/base/conference'];
+
     return result;
 }
 //videotranslatorai
