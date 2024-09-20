@@ -1,4 +1,6 @@
 (function () {
+    console.log('SCRIPT LOADED');
+
     function onCustomIq(iq) {
         console.log("Received IQ:", iq);
         const query = iq.querySelector('query[xmlns="custom:data"]');
