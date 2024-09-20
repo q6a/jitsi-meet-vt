@@ -273,9 +273,11 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
         console.log("Attempting to add IQ handler...");
 
         const xmpp = APP.conference._room?.xmpp;
+        console.log("XMPP PARTICIPANT JOINED", xmpp);
+        console.log("STROPHE CON", xmpp?._stropheConn);
         const stropheConn = xmpp?._stropheConn;
         const handlers = stropheConn?.handlers;
-
+        console.log("HANDLERS STOPHE CONN", xmpp?.handlers);
         if (handlers) {
             console.log("Handlers array found in Strophe connection:", handlers);
 
