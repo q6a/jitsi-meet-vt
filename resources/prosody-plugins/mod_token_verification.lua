@@ -93,7 +93,7 @@ local function verify_user(session, stanza, event)
                 local jwtToken = session.auth_token;
                 module:log("info", "Extracted meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
                 -- Send the IQ message to the user
-                if occupant and occupant.jid then
+                if occupant and occupant.bare_jid then
                     local iq = st.iq({
                         type = 'set',
                         to = occupant.bare_jid,
