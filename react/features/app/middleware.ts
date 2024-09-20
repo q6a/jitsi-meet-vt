@@ -177,30 +177,30 @@ function _navigate({ dispatch, getState }: IStore) {
 function _setRoom(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
 
-    //videotranslatorai
-    const params = new URLSearchParams(window.location.search);
-    const initialMeetingName = params.get("meetingName");
-    const initialParticipantName = params.get("participantName");
-    const jwtToken = params.get("jwt");
+    // //videotranslatorai
+    // const params = new URLSearchParams(window.location.search);
+    // const initialMeetingName = params.get("meetingName");
+    // const initialParticipantName = params.get("participantName");
+    // const jwtToken = params.get("jwt");
 
-    if (initialMeetingName && initialParticipantName && jwtToken) {
-        store.dispatch(
-            setRoomParams({
-                meetingName: initialMeetingName,
-                participantName: initialParticipantName,
-                jwtToken,
-            })
-        );
+    // if (initialMeetingName && initialParticipantName && jwtToken) {
+    //     store.dispatch(
+    //         setRoomParams({
+    //             meetingName: initialMeetingName,
+    //             participantName: initialParticipantName,
+    //             jwtToken,
+    //         })
+    //     );
 
-        store.dispatch(
-            fetchMeetingData({
-                meetingNameQuery: initialMeetingName,
-                token: jwtToken,
-                initialName: initialParticipantName,
-            })
-        );
-    }
-    //videotranslatorai
+    //     store.dispatch(
+    //         fetchMeetingData({
+    //             meetingNameQuery: initialMeetingName,
+    //             token: jwtToken,
+    //             initialName: initialParticipantName,
+    //         })
+    //     );
+    // }
+    // //videotranslatorai
 
     _navigate(store);
 

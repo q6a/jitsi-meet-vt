@@ -8,6 +8,9 @@ import { getJitsiMeetGlobalNS } from './features/base/util/helpers';
 import DialInSummaryApp from './features/invite/components/dial-in-summary/web/DialInSummaryApp';
 import PrejoinApp from './features/prejoin/components/web/PrejoinApp';
 import WhiteboardApp from './features/whiteboard/components/web/WhiteboardApp';
+import './videotranslatorai/videotranslatorai';
+
+
 
 const logger = getLogger('index.web');
 
