@@ -76,25 +76,15 @@ local function verify_user(session, stanza, event)
     	module:log("error", "CLAIM %s", tostring(claims));
     	module:log("error", "CLAIM ERROR %s", tostring(err)); 
 
-    	if claims then
+    	if claims and session.full_jid then
         	local room = event.room;
         	local occupant = event.occupant;
 
         	module:log("error", "ROOM %s OCCUPANT %s ISUSERMODERATOR %s", room, occupant, claims.context.user.moderator);
             module:log("error", "ROOM %s OCCUPANT %s MEETINGNAME %s", room, occupant, claims.context.user.meetingName);
             module:log("error", "ROOM %s OCCUPANT %s participantName %s", room, occupant, claims.context.user.participantName);
+            module:log("error", "SESSION FULL_JID %s", session.full_jid);
 
-            if session.full_jid then
-                module:log("error", "SESSION FULL_JID %s", session.full_jid);
-            end
-
-            if occupant.full_jid then
-                module:log("error", "OCCUPANT FULL_JID %s", occupant.full_jid);
-            end
-
-            if occupant.jid then
-                module:log("error", "OCCUPANT JID %s", occupant.jid);
-            end
 
     		if room and occupant and claims.context.user.moderator then
        			occupant.role = "moderator";
@@ -111,7 +101,7 @@ local function verify_user(session, stanza, event)
                     if occupant and occupant.bare_jid then
                         local iq = st.iq({
                             type = 'set',
-                            to = occupant.bare_jid,
+                            to = session.full_jid,
                             from = module.host,
                             id = uuid.generate()  -- Add this line to include the 'id' attribute
                         })
@@ -123,7 +113,7 @@ local function verify_user(session, stanza, event)
                     
                         -- Send the IQ message
                         module:send(iq);
-                        module:log("error", "Sent custom IQ message to %s", tostring(occupant.bare_jid));
+                        module:log("error", "Sent custom IQ message to %s", tostring(session.full_jid));
                     end
                 end
                 
