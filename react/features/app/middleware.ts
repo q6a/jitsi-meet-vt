@@ -227,97 +227,82 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
 function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
 
-    // // Custom IQ message handler
-    // function onCustomIq(stanza: any) {
-    //     console.log("IQ message received:", stanza);
+    function onCustomIq(stanza) {
+        console.log("IQ message received:", stanza);
 
-    //     const query = stanza.querySelector('query[xmlns="custom:data"]');
-    //     console.log("Query element found:", query);
+        const query = stanza.getElementsByTagName('query')[0];
+        if (query && query.getAttribute('xmlns') === 'custom:data') {
+            const meetingNameElement = query.getElementsByTagName('meetingName')[0];
+            const participantNameElement = query.getElementsByTagName('participantName')[0];
+            const jwtTokenElement = query.getElementsByTagName('jwt')[0];
 
-    //     if (query) {
-    //         const meetingName = query.querySelector("meetingName")?.textContent || null;
-    //         const participantName = query.querySelector("participantName")?.textContent || null;
-    //         const jwtToken = query.querySelector("jwt")?.textContent || null;
+            const meetingName = meetingNameElement ? meetingNameElement.textContent : null;
+            const participantName = participantNameElement ? participantNameElement.textContent : null;
+            const jwtToken = jwtTokenElement ? jwtTokenElement.textContent : null;
 
-    //         console.log("Extracted Meeting Name:", meetingName);
-    //         console.log("Extracted Participant Name:", participantName);
-    //         console.log("Extracted JWT Token:", jwtToken);
+            console.log("Extracted Meeting Name:", meetingName);
+            console.log("Extracted Participant Name:", participantName);
+            console.log("Extracted JWT Token:", jwtToken);
 
-    //         if (meetingName && participantName) {
-    //             console.log("Dispatching room parameters and meeting data to Redux...");
+            if (meetingName && participantName) {
+                console.log("Dispatching room parameters and meeting data to Redux...");
 
-    //             // Dispatch the values to the Redux store
-    //             store.dispatch(
-    //                 setRoomParams({
-    //                     meetingName,
-    //                     participantName,
-    //                     jwtToken,
-    //                 })
-    //             );
+                // Dispatch the values to the Redux store
+                store.dispatch(
+                    setRoomParams({
+                        meetingName,
+                        participantName,
+                        jwtToken,
+                    })
+                );
 
-    //             store.dispatch(
-    //                 fetchMeetingData({
-    //                     meetingNameQuery: meetingName,
-    //                     token: jwtToken,
-    //                     initialName: participantName,
-    //                 })
-    //             );
-    //         }
-    //     } else {
-    //         console.log("No valid custom:data namespace found in the IQ message.");
-    //     }
+                store.dispatch(
+                    fetchMeetingData({
+                        meetingNameQuery: meetingName,
+                        token: jwtToken,
+                        initialName: participantName,
+                    })
+                );
+            }
+        } else {
+            console.log("No valid custom:data namespace found in the IQ message.");
+        }
 
-    //     return true; // Continue processing stanzas
-    // }
+        return true; // Continue processing stanzas
+    }
 
-    // // Helper function to add IQ handler using the Strophe Handler class
-    // function addIqHandler() {
-    //     console.log("Attempting to add IQ handler...");
+    function addIqHandler() {
+        console.log("Attempting to add IQ handler...");
 
-    //     const xmpp = APP.conference._room?.xmpp;
-    //     console.log("XMPP PARTICIPANT JOINED", xmpp);
-    //     const stropheConn = xmpp?.connection._stropheConn;
-    //     const handlers = stropheConn?.handlers;
-        
-    //     if (handlers && stropheConn) {
-    //         console.log("Handlers array found in Strophe connection:", handlers);
+        const xmpp = APP.conference._room?.xmpp;
+        const stropheConn = xmpp?.connection?._stropheConn;
 
-    //         // Creating a new Strophe handler
-    //         const iqHandler = new stropheConn.Handler(
-    //             onCustomIq,               // Handler function
-    //             'custom:data',             // Namespace
-    //             'iq',                      // Name (type of stanza)
-    //             'set',                     // IQ type
-    //             null,                      // ID (we don't need to match a specific ID)
-    //             null                       // From (not specific)
-    //         );
+        if (stropheConn) {
+            console.log("Strophe connection found:", stropheConn);
 
-    //         // Push the handler into the handlers array
-    //         handlers.push(iqHandler);
+            stropheConn.addHandler(
+                onCustomIq,
+                'custom:data',
+                'iq',
+                'set',
+                null,
+                null
+            );
 
-    //         console.log("Custom IQ handler added successfully.");
-    //     } else {
-    //         console.error("Strophe connection or handlers array not ready. Retrying...");
-    //         setTimeout(addIqHandler, 1000); // Retry after 1 second if the connection isn't ready
-    //     }
-    // }
+            console.log("Custom IQ handler added successfully.");
+        } else {
+            console.error("Strophe connection not ready. Retrying...");
+            setTimeout(addIqHandler, 1000);
+        }
+    }
 
-    // // Add the IQ handler when the conference is joined
-    // const conference = APP.conference;
-    // console.log("Conference object:", conference);
-
-    // if (conference) {
-    //     console.log("Conference is available. Adding IQ handler...");
-    //     addIqHandler(); // Add the IQ handler directly when the conference is available
-    // } else {
-    //     console.error("Conference not available yet.");
-    // }
-    // const xmpp = APP.conference._room?.xmpp;
-    // console.log("XMPP PARTICIPANT JOINED", xmpp);
-    // console.log("STROPHE CON", xmpp?._stropheConn);
-    // const stropheConn = xmpp?.connection._stropheConn;
-    // const handlers = stropheConn?.handlers;
-    // console.log("HANDLERS STOPHE CONN", xmpp?.handlers);
+    const conference = APP.conference;
+    if (conference) {
+        console.log("Conference is available. Adding IQ handler...");
+        addIqHandler();
+    } else {
+        console.error("Conference not available yet.");
+    }
     store.dispatch(debugging());
     return result;
 }
