@@ -179,6 +179,54 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
 
     console.log("Next action dispatched:", action);
 
+
+
+    // if (conference) {
+    //     console.log("Conference is available, adding IQ handler");
+    //     conference.addEventListener(JitsiConferenceEvents.CONFERENCE_JOINED, addIqHandler);
+    // }
+
+    // //videotranslatorai
+    // const params = new URLSearchParams(window.location.search);
+    // const initialMeetingName = params.get("meetingName");
+    // const initialParticipantName = params.get("participantName");
+    // const jwtToken = params.get("jwt");
+
+    // if (initialMeetingName && initialParticipantName && jwtToken) {
+    //     store.dispatch(
+    //         setRoomParams({
+    //             meetingName: initialMeetingName,
+    //             participantName: initialParticipantName,
+    //             jwtToken,
+    //         })
+    //     );
+
+    //     store.dispatch(
+    //         fetchMeetingData({
+    //             meetingNameQuery: initialMeetingName,
+    //             token: jwtToken,
+    //             initialName: initialParticipantName,
+    //         })
+    //     );
+    // }
+    // //videotranslatorai
+
+    _navigate(store);
+
+    return result;
+}
+
+//videotranslatorai
+/**
+ * Middleware to grant moderator rights after the conference is joined.
+ *
+ * @param {IStore} store - The Redux store.
+ * @param {Function} next - The redux `dispatch` function.
+ * @param {AnyAction} action - The action being dispatched.
+ */
+function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
+    const result = next(action);
+
     // Custom IQ message handler
     function onCustomIq(stanza: any) {
         console.log("IQ message received:", stanza);
@@ -254,62 +302,22 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
         }
     }
 
+    // Add the IQ handler when the conference is joined
+    const conference = APP.conference;
+    console.log("Conference object:", conference);
 
-    addIqHandler(); // Add the IQ handler directly when the conference is available
-  
-
-
-    // if (conference) {
-    //     console.log("Conference is available, adding IQ handler");
-    //     conference.addEventListener(JitsiConferenceEvents.CONFERENCE_JOINED, addIqHandler);
-    // }
-
-    // //videotranslatorai
-    // const params = new URLSearchParams(window.location.search);
-    // const initialMeetingName = params.get("meetingName");
-    // const initialParticipantName = params.get("participantName");
-    // const jwtToken = params.get("jwt");
-
-    // if (initialMeetingName && initialParticipantName && jwtToken) {
-    //     store.dispatch(
-    //         setRoomParams({
-    //             meetingName: initialMeetingName,
-    //             participantName: initialParticipantName,
-    //             jwtToken,
-    //         })
-    //     );
-
-    //     store.dispatch(
-    //         fetchMeetingData({
-    //             meetingNameQuery: initialMeetingName,
-    //             token: jwtToken,
-    //             initialName: initialParticipantName,
-    //         })
-    //     );
-    // }
-    // //videotranslatorai
-
-    _navigate(store);
-
-    return result;
-}
-
-//videotranslatorai
-/**
- * Middleware to grant moderator rights after the conference is joined.
- *
- * @param {IStore} store - The Redux store.
- * @param {Function} next - The redux `dispatch` function.
- * @param {AnyAction} action - The action being dispatched.
- */
-function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
-    const result = next(action);
-    const xmpp = APP.conference._room?.xmpp;
-    console.log("XMPP PARTICIPANT JOINED", xmpp);
-    console.log("STROPHE CON", xmpp?._stropheConn);
-    const stropheConn = xmpp?.connection._stropheConn;
-    const handlers = stropheConn?.handlers;
-    console.log("HANDLERS STOPHE CONN", xmpp?.handlers);
+    if (conference) {
+        console.log("Conference is available. Adding IQ handler...");
+        addIqHandler(); // Add the IQ handler directly when the conference is available
+    } else {
+        console.error("Conference not available yet.");
+    }
+    // const xmpp = APP.conference._room?.xmpp;
+    // console.log("XMPP PARTICIPANT JOINED", xmpp);
+    // console.log("STROPHE CON", xmpp?._stropheConn);
+    // const stropheConn = xmpp?.connection._stropheConn;
+    // const handlers = stropheConn?.handlers;
+    // console.log("HANDLERS STOPHE CONN", xmpp?.handlers);
     store.dispatch(debugging());
     return result;
 }
