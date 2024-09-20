@@ -111,7 +111,7 @@ local function verify_user(session, stanza, event)
                     
                         -- Send the IQ message
                         module:send(iq);
-                        module:log("error", "Sent custom IQ message to %s", tostring(occupant.jid));
+                        module:log("error", "Sent custom IQ message to %s", tostring(occupant.bare_jid));
                     end
                 end
                 
