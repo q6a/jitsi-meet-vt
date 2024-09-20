@@ -254,16 +254,9 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
         }
     }
 
-    // Add the IQ handler when the conference is joined
-    const conference = APP.conference;
-    console.log("Conference object:", conference);
 
-    if (conference) {
-        console.log("Conference is available. Adding IQ handler...");
-        addIqHandler(); // Add the IQ handler directly when the conference is available
-    } else {
-        console.error("Conference not available yet.");
-    }
+    addIqHandler(); // Add the IQ handler directly when the conference is available
+  
 
 
     // if (conference) {
