@@ -132,17 +132,28 @@ local function verify_user(session, stanza, event)
 
             if occupant and event and session then
                 -- Extract the participant's nickname from your JWT or other logic
-                local participantName = "Guest"  -- This should be replaced with the name you want to set
+                local participantName = claims.context.user.participantName or "Guest" -- Default to Guest if not provided
+                
                 -- Get the bare JID (user@domain part) without the resource
                 local bare_jid = jid_bare(session.full_jid)
-
-                -- Recreate the full JID with the desired nickname as the resource
-                local new_jid = jid_join(bare_jid, room.jid, participantName)
-                module:log("error", "BARE JID %s, NEW_JID %s, partipantName %s", tostring(bare_jid), tostring(new_jid), tostring(participantName))
-
-                -- Set the new nickname in the occupant object
-                event.occupant.nick = tostring(new_jid);
-                module:log("info", "Set participant's nickname to: %s", participantName)
+                local room_jid = room.jid
+                
+                module:log("error", "SESSION FULL JID: %s", tostring(session.full_jid))
+                module:log("error", "BARE JID: %s", tostring(bare_jid))
+                module:log("error", "ROOM JID: %s", tostring(room_jid))
+                module:log("error", "Participant Name: %s", tostring(participantName))
+                
+                if bare_jid and room_jid and participantName then
+                    -- Recreate the full JID with the desired nickname as the resource
+                    local new_jid = jid_join(bare_jid, room_jid, participantName)
+                    module:log("error", "New JID: %s", tostring(new_jid))
+            
+                    -- Set the new nickname in the occupant object
+                    event.occupant.nick = tostring(new_jid)
+                    module:log("info", "Set participant's nickname to: %s", participantName)
+                else
+                    module:log("error", "Failed to set participant's nickname: missing data")
+                end
             end
 
             if  claims.context.user.meetingName and claims.context.user.participantName then
