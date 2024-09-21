@@ -100,6 +100,19 @@ local function send_custom_data(session, meetingName, participantName, jwtToken)
     end
 end
 
+local function print_table(t, indent)
+    indent = indent or ""
+    for k, v in pairs(t) do
+        if type(v) == "table" then
+            module:log("error", "%s%s: {", indent, tostring(k))
+            print_table(v, indent .. "  ")
+            module:log("error", "%s}", indent)
+        else
+            module:log("error", "%s%s: %s", indent, tostring(k), tostring(v))
+        end
+    end
+end
+
 -- verify user and whether he is allowed to join a room based on the token information
 local function verify_user(session, stanza, event)     
     
@@ -111,6 +124,8 @@ local function verify_user(session, stanza, event)
     	module:log("error", "SESSION token %s token type %s", tostring(session.auth_token), type(session.auth_token));
     	module:log("error", "CLAIM %s", tostring(claims));
     	module:log("error", "CLAIM ERROR %s", tostring(err)); 
+
+        print_table(event)
 
     	if claims and session.full_jid then
         	local room = event.room;
@@ -197,7 +212,7 @@ end
 module:hook("muc-room-pre-create", function(event)
     local origin, stanza = event.origin, event.stanza;
 
-    if DEBUG then module:log("debug", "pre create: %s %s", tostring(origin), tostring(stanza)); end
+    if DEBUG then module:log("error", "pre create: %s %s", tostring(origin), tostring(stanza)); end
     if not verify_user(origin, stanza, event) then
         measure_fail(1);
         return true; -- Returning any value other than nil will halt processing of the event
@@ -209,11 +224,9 @@ end, 10);
 
 module:hook("muc-occupant-pre-join", function(event)
     module:log("error", "Occupant pre-join hook triggered")
-
     local origin, room, stanza = event.origin, event.room, event.stanza;
-    module:log("info", "Event Table: %s", tostring(event))
 
-    if DEBUG then module:log("debug", "pre join: %s %s", tostring(room), tostring(stanza)); end
+    if DEBUG then module:log("error", "pre join: %s %s", tostring(room), tostring(stanza)); end
     if not verify_user(origin, stanza, event) then
         measure_fail(1);
         return true; -- Returning any value other than nil will halt processing of the event
