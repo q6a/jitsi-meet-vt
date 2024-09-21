@@ -3,7 +3,6 @@
 import { IStore } from "../app/types"; // Import your Redux store type
 import { CONFERENCE_JOINED } from '../base/conference/actionTypes'; // Adjust path if necessary
 import { fetchMeetingData, setRoomParams } from "./action.web"; // Adjust the path as needed
-import { setDisplayName } from '../base/settings/functions.web;
 
 
 // Custom IQ message handler function
