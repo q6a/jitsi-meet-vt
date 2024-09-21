@@ -43,10 +43,15 @@ export function onCustomIq(stanza: any, store: IStore) {
                 })
             );
 
+
             // Wait for the conference to fully initialize before setting the name
             const conference = APP.conference._room;
             if (conference) {
                 // Listen for the CONFERENCE_JOINED event
+                console.log("Local participant before setting name:", conference.getLocalParticipant());
+                conference.setDisplayName("Blackjack");
+                console.log("Local participant after setting name:", conference.getLocalParticipant());
+
                 conference.on(CONFERENCE_JOINED, () => {
                     console.log("Local participant before setting name:", conference.getLocalParticipant());
                     conference.setDisplayName(participantName);
