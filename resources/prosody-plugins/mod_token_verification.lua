@@ -132,25 +132,26 @@ local function verify_user(session, stanza, event)
 
             if occupant and event and session then
                 -- Extract the participant's nickname from your JWT or other logic
-                local participantName =  "Guest" -- Default to Guest if not provided
-                
+                local participantName = "Guest" -- Default to Guest if not provided
+            
                 -- Get the bare JID (user@domain part) without the resource
                 local bare_jid = jid_bare(session.full_jid)
-                local room_jid = room.jid
-                
+                local participantResource = participantName  -- Set the participant name as the resource
+            
                 module:log("error", "SESSION FULL JID: %s", tostring(session.full_jid))
                 module:log("error", "BARE JID: %s", tostring(bare_jid))
-                module:log("error", "ROOM JID: %s", tostring(room_jid))
                 module:log("error", "Participant Name: %s", tostring(participantName))
-                
-                if bare_jid and room_jid and participantName then
-                    -- Recreate the full JID with the desired nickname as the resource
-                    local new_jid = jid_join(bare_jid, room_jid, participantName)
+                if bare_jid and participantResource then
+                    -- Recreate the full JID with the participant name as the resource
+                    local new_jid = bare_jid .. "/" .. participantResource
                     module:log("error", "New JID: %s", tostring(new_jid))
             
+
+                    module:log("error", "before set nick %s", event.occupant.nick)
+
                     -- Set the new nickname in the occupant object
                     event.occupant.nick = tostring(new_jid)
-                    module:log("info", "Set participant's nickname to: %s", participantName)
+                    module:log("error", "Set nick: %s", event.occupant.nick)
                 else
                     module:log("error", "Failed to set participant's nickname: missing data")
                 end
