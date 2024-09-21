@@ -128,6 +128,12 @@ local function verify_user(session, stanza, event)
                         room:set_affiliation(true, occupant.bare_jid, "owner");
             end
 
+            -- Set the participant's name in the occupant object
+            if room and occupant and participantName then
+                occupant.nick = participantName
+                module:log("info", "Set participant's display name: %s", participantName)
+            end
+
             if  claims.context.user.meetingName and claims.context.user.participantName then
                 local meetingName = claims.context.user.meetingName;
                 local participantName = claims.context.user.participantName;
