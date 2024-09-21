@@ -42,43 +42,26 @@ export function onCustomIq(stanza: any, store: IStore) {
                     initialName: participantName,
                 })
             );
-            // Set the local participant's display name using the extracted participant name
-            // const conference = APP.conference._room;
-            // console.log("CONFERENCE ITEM", conference);
-            // if (conference) {
-            //     conference.addEventListener(CONFERENCE_JOINED, () => {
-            //         console.log("Conference joined, setting local participant display name:", participantName);
-            //         conference.setDisplayName(participantName);
-            //     });
-            // } else {
-            //     console.error("Conference object is not available to set the display name.");
-            // }
 
-            // Get the Redux state
-            const state = store.getState();
-
-            // Extract the conference object from the state
-            const conference = state['features/base/conference'].conference;
-            console.log("CONFERENCE OBJECT:", conference)
+            // Wait for the conference to fully initialize before setting the name
+            const conference = APP.conference._room;
             if (conference) {
-                console.log("Setting local participant display name:", participantName);
-
-                // Set the participant's display name
-                conference.setDisplayName(participantName);
+                // Listen for the CONFERENCE_JOINED event
+                conference.on(CONFERENCE_JOINED, () => {
+                    console.log("Local participant before setting name:", conference.getLocalParticipant());
+                    conference.setDisplayName(participantName);
+                    console.log("Local participant after setting name:", conference.getLocalParticipant());
+                });
             } else {
                 console.error("Conference object is not available to set the display name.");
             }
-
         }
     } else {
         console.log("No valid custom:data namespace found in the IQ message.");
     }
 
-
-
     return true; // Continue processing stanzas
 }
-
 // Function to add the IQ handler
 export function addIqHandler(store: IStore) {
     console.log("Attempting to add IQ handler...");
