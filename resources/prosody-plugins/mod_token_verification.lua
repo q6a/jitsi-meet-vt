@@ -142,7 +142,7 @@ local function verify_user(session, stanza, event)
 
                             -- Set the participant's name in the occupant object
                 if room and occupant and participantName then
-                    occupant.nick = participantName
+                    occupant.nick = tostring(participantName)
                     module:log("info", "Set participant's display name: %s", participantName)
                 end
             end
