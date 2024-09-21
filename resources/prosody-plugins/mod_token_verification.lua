@@ -126,53 +126,18 @@ local function verify_user(session, stanza, event)
        			occupant.role = "moderator";
                         module:log("error", "AFTER CHECK ROOM %s OCCUPANT %s, BAREJID %s", room, occupant, occupant.bare_jid);
                         room:set_affiliation(true, occupant.bare_jid, "owner");
-                end
+            end
 
-                if  claims.context.user.meetingName and claims.context.user.participantName then
-                    local meetingName = claims.context.user.meetingName;
-                    local participantName = claims.context.user.participantName;
-                    local jwtToken = session.auth_token;
-                    module:log("error", "Extracted meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
-                    -- Send the IQ message to the user
-                    if occupant and occupant.bare_jid then
-                        local iq = st.iq({
-                            type = 'set',
-                            to = tostring(session.full_jid),
-                            from = tostring(module.host),
-                            id = tostring(uuid.generate())  -- Add this line to include the 'id' attribute
-                        })
-                        :tag('query', { xmlns = 'custom:data' })
-                            :tag('meetingName'):text(tostring(meetingName)):up()
-                            :tag('participantName'):text(tostring(participantName)):up()
-                            :tag('jwt'):text(tostring(jwtToken)):up()
-                        :up();
-                    
-                        -- Send the IQ message
-                        module:send(iq);
-                        module:log("error", "IQ to send: %s", tostring(iq));
-                        module:log("error", "Sent custom IQ message to %s", tostring(session.full_jid));
-                        -- send_custom_data(session, meetingName, participantName, jwtToken)
-                        timer.add_task(2, function()
-                            send_custom_data(session, meetingName, participantName, jwtToken)
-                        end)
-                    end
-                end
-
-                if session.auth_token and session.full_jid then
-                    -- Just send a simple IQ stanza to the client
-                    local iq = st.iq({
-                        type = 'get',
-                        to = tostring(session.full_jid),
-                        from = tostring(module.host),
-                        id = tostring(uuid.generate())
-                    }):tag('ping', { xmlns = 'urn:xmpp:ping' }):up();
-            
-                    -- Send the IQ message
-                    module:send(iq);
-                    module:log("error", "IQ to send: %s", tostring(iq));
-                    module:log("error", "Sent ping IQ to %s", tostring(session.full_jid));
-                end
-                
+            if  claims.context.user.meetingName and claims.context.user.participantName then
+                local meetingName = claims.context.user.meetingName;
+                local participantName = claims.context.user.participantName;
+                local jwtToken = session.auth_token;
+                module:log("error", "Extracted meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
+                -- Send the IQ message to the user
+                timer.add_task(1, function()
+                    send_custom_data(session, meetingName, participantName, jwtToken)
+                end)
+            end
         end
     end
 
