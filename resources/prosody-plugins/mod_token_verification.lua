@@ -132,7 +132,7 @@ local function verify_user(session, stanza, event)
 
             if occupant and event and session then
                 -- Extract the participant's nickname from your JWT or other logic
-                local participantName = claims.context.user.participantName or "Guest" -- Default to Guest if not provided
+                local participantName =  "Guest" -- Default to Guest if not provided
                 
                 -- Get the bare JID (user@domain part) without the resource
                 local bare_jid = jid_bare(session.full_jid)
