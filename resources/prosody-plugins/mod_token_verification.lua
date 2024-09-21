@@ -128,6 +128,7 @@ local function verify_user(session, stanza, event)
        			occupant.role = "moderator";
                         module:log("error", "AFTER CHECK ROOM %s OCCUPANT %s, BAREJID %s", room, occupant, occupant.bare_jid);
                         room:set_affiliation(true, occupant.bare_jid, "owner");
+                module:log("error", "OCCUPANT NICK %s", occupant.nick);
                 occupant.nick = "test";
             end
 
