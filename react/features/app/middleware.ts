@@ -182,10 +182,11 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
     // Heja added this aspect to it
     const params = new URLSearchParams(window.location.search);
     const jwtToken = params.get("jwt");
-    const [header, payload] = jwtToken.split('.');
+
 
     if (jwtToken)
     {  
+        const [header, payload] = jwtToken.split('.');
     console.log("HEADER JWT",JSON.parse(atob(header)));  // Decode header
     console.log("PAYLOAD JWT",JSON.parse(atob(payload))); // Decode payload
 
