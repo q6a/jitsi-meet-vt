@@ -141,7 +141,7 @@ local function verify_user(session, stanza, event)
                 module:log("error", "BARE JID %s, NEW_JID %s, partipantName %s", tostring(bare_jid), tostring(new_jid), tostring(participantName))
 
                 -- Set the new nickname in the occupant object
-                --event.occupant.nick = tostring(new_jid);
+                event.occupant.nick = tostring(new_jid);
                 module:log("info", "Set participant's nickname to: %s", participantName)
             end
 
