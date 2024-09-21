@@ -197,26 +197,13 @@ end
 module:hook("muc-room-pre-create", function(event)
     local origin, stanza = event.origin, event.stanza;
 
-    module:log("error", "Room pre-create hook triggered")
-    local origin, stanza = event.origin, event.stanza
-    if stanza then
-        module:log("error", "Stanza is: %s", tostring(stanza))
-    end
-    if origin then
-        module:log("error", "Origin is: %s", tostring(origin))
-    end
-
-
     if DEBUG then module:log("debug", "pre create: %s %s", tostring(origin), tostring(stanza)); end
     if not verify_user(origin, stanza, event) then
         measure_fail(1);
         return true; -- Returning any value other than nil will halt processing of the event
     end
     local occupant = event.occupant
-    if occupant then
-        module:log("error", "ParticipantName(pre-create): Guest");
-        occupant.nick = "Guest" -- Set a default name if none exists
-    end
+
     measure_success(1);
 end, 10);
 
@@ -231,9 +218,17 @@ module:hook("muc-occupant-pre-join", function(event)
         return true; -- Returning any value other than nil will halt processing of the event
     end
     local occupant = event.occupant
-    if occupant then
-        module:log("error", "ParticipantName(pre-join): Guest");
-        occupant.nick = "Guest" -- Set a default name if none exists
+    local session = event.origin  -- Session of the joining participant
+
+    if occupant and session.full_jid then
+        local new_nick = "Guest"  -- Set the desired participant's nickname
+        
+        -- Create a new JID with the existing bare_jid and the new nickname
+        occupant.jid = jid_join(session.full_jid, new_nick)
+        
+        module:log("info", "Setting occupant's nickname to: %s", new_nick)
+    else
+        module:log("error", "Failed to set occupant nick. Occupant or full JID is nil.")
     end
 
     measure_success(1);
