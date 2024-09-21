@@ -123,38 +123,10 @@ local function verify_user(session, stanza, event)
             module:log("error", "ROOM %s OCCUPANT %s participantName %s", room, occupant, claims.context.user.participantName);
             module:log("error", "SESSION FULL_JID %s", session.full_jid);
 
-
     		if room and occupant and claims.context.user.moderator then
        			occupant.role = "moderator";
                     module:log("error", "AFTER CHECK ROOM %s OCCUPANT %s, BAREJID %s", room, occupant, occupant.bare_jid);
                     room:set_affiliation(true, occupant.bare_jid, "owner");
-            end
-
-            if occupant and event and session then
-                -- Extract the participant's nickname from your JWT or other logic
-                local participantName = "Guest" -- Default to Guest if not provided
-            
-                -- Get the bare JID (user@domain part) without the resource
-                local bare_jid = jid_bare(session.full_jid)
-                local participantResource = participantName  -- Set the participant name as the resource
-            
-                module:log("error", "SESSION FULL JID: %s", tostring(session.full_jid))
-                module:log("error", "BARE JID: %s", tostring(bare_jid))
-                module:log("error", "Participant Name: %s", tostring(participantName))
-                if bare_jid and participantResource then
-                    -- Recreate the full JID with the participant name as the resource
-                    local new_jid = bare_jid .. "/" .. participantResource
-                    module:log("error", "New JID: %s", tostring(new_jid))
-            
-
-                    module:log("error", "before set nick %s", event.occupant.nick)
-
-                    -- Set the new nickname in the occupant object
-                    event.occupant.nick = tostring(new_jid)
-                    module:log("error", "Set nick: %s", event.occupant.nick)
-                else
-                    module:log("error", "Failed to set participant's nickname: missing data")
-                end
             end
 
             if  claims.context.user.meetingName and claims.context.user.participantName then
