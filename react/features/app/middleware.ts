@@ -186,6 +186,11 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
 
     console.log("HEADER JWT",JSON.parse(atob(header)));  // Decode header
     console.log("PAYLOAD JWT",JSON.parse(atob(payload))); // Decode payload
+
+    const decodeBase64 = (str) => Buffer.from(str, 'base64').toString('utf8');
+
+    console.log("HEADER JWT 2", JSON.parse(decodeBase64(header)));  // Decode header
+    console.log("PAYLOAD JWT 2", JSON.parse(decodeBase64(payload))); // Decode payload
     _navigate(store);
 
     return result;
