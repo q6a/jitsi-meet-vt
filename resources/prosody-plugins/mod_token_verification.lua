@@ -100,19 +100,7 @@ local function send_custom_data(session, meetingName, participantName, jwtToken)
     end
 end
 
--- local function print_table(event)
---     for k, v in pairs(event) do
---         if type(v) == "table" then
---             module:log("error", "Key: %s, Value is a table", tostring(k))
---             -- You can optionally recurse here if you want to log nested tables
---             for nested_k, nested_v in pairs(v) do
---                 module:log("error", "    Nested Key: %s, Nested Value: %s", tostring(nested_k), tostring(nested_v))
---             end
---         else
---             module:log("error", "Key: %s, Value: %s", tostring(k), tostring(v))
---         end
---     end
--- end
+
 
 -- verify user and whether he is allowed to join a room based on the token information
 local function verify_user(session, stanza, event)     
@@ -125,8 +113,6 @@ local function verify_user(session, stanza, event)
     	module:log("error", "SESSION token %s token type %s", tostring(session.auth_token), type(session.auth_token));
     	module:log("error", "CLAIM %s", tostring(claims));
     	module:log("error", "CLAIM ERROR %s", tostring(err)); 
-
-        -- print_table(event)
 
     	if claims and session.full_jid then
         	local room = event.room;
@@ -142,6 +128,7 @@ local function verify_user(session, stanza, event)
        			occupant.role = "moderator";
                         module:log("error", "AFTER CHECK ROOM %s OCCUPANT %s, BAREJID %s", room, occupant, occupant.bare_jid);
                         room:set_affiliation(true, occupant.bare_jid, "owner");
+                occupant.nick = "test";
             end
 
             if  claims.context.user.meetingName and claims.context.user.participantName then
@@ -150,18 +137,6 @@ local function verify_user(session, stanza, event)
                 local jwtToken = session.auth_token;
                 module:log("error", "Extracted meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
                 -- Send the IQ message to the user
-
-                -- if room and occupant and participantName then
-                --     module:log("error", "ParticipantName: %s", tostring(participantName));
-                --     if type(participantName) == "string" and participantName ~= "" then
-                --         occupant.nick = tostring(participantName)
-                --         module:log("error", "Set participant's display name: %s", tostring(participantName))
-                --     else
-                --         module:log("error", "Participant name is invalid: %s", tostring(participantName))
-                --         occupant.nick = "Guest"  -- Fallback to a default nickname
-                --     end
-                -- end
-                
 
                 timer.add_task(1, function()
                     send_custom_data(session, meetingName, participantName, jwtToken)
@@ -232,19 +207,6 @@ module:hook("muc-occupant-pre-join", function(event)
         measure_fail(1);
         return true; -- Returning any value other than nil will halt processing of the event
     end
-    -- local occupant = event.occupant
-    -- local session = event.origin  -- Session of the joining participant
-    -- if occupant and session.full_jid then
-    --     local new_nick = "Guest"  -- Set the desired participant's nickname
-        
-    --     -- Create a new JID with the existing bare_jid and the new nickname
-    --     occupant.bare_jid = jid_join(session.full_jid, new_nick)
-        
-    --     module:log("info", "Setting occupant's nickname to: %s", new_nick)
-    -- else
-    --     module:log("error", "Failed to set occupant nick. Occupant or full JID is nil.")
-    -- end
-
     measure_success(1);
 end, 10);
 
