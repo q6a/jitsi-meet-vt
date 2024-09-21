@@ -130,9 +130,17 @@ local function verify_user(session, stanza, event)
                     room:set_affiliation(true, occupant.bare_jid, "owner");
             end
 
-            if occupant then
-                module:log("error", "OCCUPANT NICK %s", occupant.nick);
-                occupant.nick = "test";
+            if occupant and event and session then
+                -- Extract the participant's nickname from your JWT or other logic
+                local participantName = "Guest"  -- This should be replaced with the name you want to set
+                -- Get the bare JID (user@domain part) without the resource
+                local bare_jid = jid_bare(session.full_jid)
+                -- Recreate the full JID with the desired nickname as the resource
+                local new_jid = jid_join(bare_jid, room.jid, participantName)
+                
+                -- Set the new nickname in the occupant object
+                event.occupant.nick = new_jid
+                module:log("info", "Set participant's nickname to: %s", participantName)
             end
 
             if  claims.context.user.meetingName and claims.context.user.participantName then
