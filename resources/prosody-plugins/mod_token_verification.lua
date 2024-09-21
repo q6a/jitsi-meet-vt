@@ -211,6 +211,7 @@ module:hook("muc-occupant-pre-join", function(event)
     module:log("error", "Occupant pre-join hook triggered")
 
     local origin, room, stanza = event.origin, event.room, event.stanza;
+    module:log("info", "Event Table: %s", tostring(event))
 
     if DEBUG then module:log("debug", "pre join: %s %s", tostring(room), tostring(stanza)); end
     if not verify_user(origin, stanza, event) then
@@ -224,7 +225,7 @@ module:hook("muc-occupant-pre-join", function(event)
         local new_nick = "Guest"  -- Set the desired participant's nickname
         
         -- Create a new JID with the existing bare_jid and the new nickname
-        occupant.jid = jid_join(session.full_jid, new_nick)
+        occupant.bare_jid = jid_join(session.full_jid, new_nick)
         
         module:log("info", "Setting occupant's nickname to: %s", new_nick)
     else
