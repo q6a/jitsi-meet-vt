@@ -100,19 +100,19 @@ local function send_custom_data(session, meetingName, participantName, jwtToken)
     end
 end
 
-local function print_table(event)
-    for k, v in pairs(event) do
-        if type(v) == "table" then
-            module:log("error", "Key: %s, Value is a table", tostring(k))
-            -- You can optionally recurse here if you want to log nested tables
-            for nested_k, nested_v in pairs(v) do
-                module:log("error", "    Nested Key: %s, Nested Value: %s", tostring(nested_k), tostring(nested_v))
-            end
-        else
-            module:log("error", "Key: %s, Value: %s", tostring(k), tostring(v))
-        end
-    end
-end
+-- local function print_table(event)
+--     for k, v in pairs(event) do
+--         if type(v) == "table" then
+--             module:log("error", "Key: %s, Value is a table", tostring(k))
+--             -- You can optionally recurse here if you want to log nested tables
+--             for nested_k, nested_v in pairs(v) do
+--                 module:log("error", "    Nested Key: %s, Nested Value: %s", tostring(nested_k), tostring(nested_v))
+--             end
+--         else
+--             module:log("error", "Key: %s, Value: %s", tostring(k), tostring(v))
+--         end
+--     end
+-- end
 
 -- verify user and whether he is allowed to join a room based on the token information
 local function verify_user(session, stanza, event)     
@@ -126,7 +126,7 @@ local function verify_user(session, stanza, event)
     	module:log("error", "CLAIM %s", tostring(claims));
     	module:log("error", "CLAIM ERROR %s", tostring(err)); 
 
-        print_table(event)
+        -- print_table(event)
 
     	if claims and session.full_jid then
         	local room = event.room;
