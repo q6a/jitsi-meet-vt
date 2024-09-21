@@ -184,13 +184,13 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
 
     if (jwtToken)
     {  
-        const [ payload ] = jwtToken.split('.');
-        console.log("JWT PAYLOAD", JSON.parse(atob(payload)));
-        const initialMeetingName: any = JSON.parse(atob(payload)).context.user.meetinName;
+        const [ header, payload ] = jwtToken.split('.');
+        const initialMeetingName: any = JSON.parse(atob(payload)).context.user.meetingName;
         const initialParticipantName: any = JSON.parse(atob(payload)).context.user.participantName;
 
         if(initialMeetingName && initialParticipantName)
         {
+
             store.dispatch(setRoomParams({
                 meetingName: initialMeetingName,
                 participantName: initialParticipantName,
