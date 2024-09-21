@@ -178,23 +178,33 @@ function _navigate({ dispatch, getState }: IStore) {
 function _setRoom(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
 
-    console.log("Next action dispatched:", action);
-    // Heja added this aspect to it
+    //videotranslatorai
     const params = new URLSearchParams(window.location.search);
     const jwtToken = params.get("jwt");
 
-
     if (jwtToken)
     {  
-        const [header, payload] = jwtToken.split('.');
-    console.log("HEADER JWT",JSON.parse(atob(header)));  // Decode header
-    console.log("PAYLOAD JWT",JSON.parse(atob(payload))); // Decode payload
+        const [ payload ] = jwtToken.split('.');
+        const initialMeetingName: any = JSON.parse(atob(payload)).context.user.meetinName;
+        const initialParticipantName: any =  JSON.parse(atob(payload)).context.user.participantName;
 
-    const decodeBase64 = (str: any) => Buffer.from(str, 'base64').toString('utf8');
-
-    console.log("HEADER JWT 2", JSON.parse(decodeBase64(header)));  // Decode header
-    console.log("PAYLOAD JWT 2", JSON.parse(decodeBase64(payload))); // Decode payload
+        if(initialMeetingName && initialParticipantName)
+        {
+            store.dispatch(setRoomParams({
+                meetingName: initialMeetingName,
+                participantName: initialParticipantName,
+                jwtToken
+            }));
+        
+            store.dispatch(fetchMeetingData({
+                meetingNameQuery: initialMeetingName,
+                token: jwtToken,
+                initialName: initialParticipantName
+            }));
+        }
     }
+    //videotranslatorai
+
     
     _navigate(store);
 
@@ -211,14 +221,13 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
  */
 function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
-    const conference = APP.conference;
-    if (conference) {
-        console.log("Conference is available. Adding IQ handler...");
-        addIqHandler(store); // Call the function to add the IQ handler
-    } else {
-        console.error("Conference not available yet.");
-    }
-
+    // const conference = APP.conference;
+    // if (conference) {
+    //     console.log("Conference is available. Adding IQ handler...");
+    //     addIqHandler(store); // Call the function to add the IQ handler
+    // } else {
+    //     console.error("Conference not available yet.");
+    // }
     store.dispatch(debugging());
     return result;
 }
