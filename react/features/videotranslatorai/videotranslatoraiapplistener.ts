@@ -40,12 +40,13 @@ export function onCustomIq(stanza: any, store: IStore) {
                     initialName: participantName,
                 })
             );
-        // Set the local participant's display name using the extracted participant name
-        const conference = APP.conference._room;
-                    
+            // Set the local participant's display name using the extracted participant name
+            const conference = APP.conference._room;
             if (conference) {
-                console.log("Setting local participant display name:", participantName);
-                conference.setDisplayName(participantName);
+                conference.addEventListener(CONFERENCE_JOINED, () => {
+                    console.log("Conference joined, setting local participant display name:", participantName);
+                    conference.setDisplayName(participantName);
+                });
             } else {
                 console.error("Conference object is not available to set the display name.");
             }
