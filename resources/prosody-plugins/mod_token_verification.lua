@@ -214,6 +214,7 @@ module:hook("muc-occupant-pre-join", function(event)
 
     local occupant = event.occupant
     if occupant and occupant.nick == nil then
+        module:log("error", "ParticipantName: Guest");
         occupant.nick = "Guest" -- Set a default name if none exists
     end
     measure_success(1);
