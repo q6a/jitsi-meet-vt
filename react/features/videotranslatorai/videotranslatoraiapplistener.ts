@@ -40,7 +40,8 @@ export function onCustomIq(stanza: any, store: IStore) {
                     initialName: participantName,
                 })
             );
-
+        // Set the local participant's display name using the extracted participant name
+        const conference = APP.conference._room;
                     
             if (conference) {
                 console.log("Setting local participant display name:", participantName);
@@ -54,8 +55,7 @@ export function onCustomIq(stanza: any, store: IStore) {
         console.log("No valid custom:data namespace found in the IQ message.");
     }
 
-    // Set the local participant's display name using the extracted participant name
-    const conference = APP.conference._room;
+
 
     return true; // Continue processing stanzas
 }
