@@ -40,6 +40,15 @@ export function onCustomIq(stanza: any, store: IStore) {
                     initialName: participantName,
                 })
             );
+
+                    
+            if (conference) {
+                console.log("Setting local participant display name:", participantName);
+                conference.setDisplayName(participantName);
+            } else {
+                console.error("Conference object is not available to set the display name.");
+            }
+
         }
     } else {
         console.log("No valid custom:data namespace found in the IQ message.");
@@ -47,13 +56,6 @@ export function onCustomIq(stanza: any, store: IStore) {
 
     // Set the local participant's display name using the extracted participant name
     const conference = APP.conference._room;
-
-    if (conference) {
-        console.log("Setting local participant display name:", participantName);
-        conference.setDisplayName(participantName);
-    } else {
-        console.error("Conference object is not available to set the display name.");
-    }
 
     return true; // Continue processing stanzas
 }
@@ -68,7 +70,7 @@ export function addIqHandler(store: IStore) {
     if (stropheConn) {
         console.log("Strophe connection found:", stropheConn);
 
-        stropheConn.addHandler((stanza) => onCustomIq(stanza, store), "custom:data", "iq", "set", null, null);
+        stropheConn.addHandler((stanza: any) => onCustomIq(stanza, store), "custom:data", "iq", "set", null, null);
 
         //This code below can be used to track the XMPP
         //communication between the client and the server.
