@@ -9,7 +9,7 @@ local um_is_admin = require "core.usermanager".is_admin;
 local jid_split = require 'util.jid'.split;
 local jid_bare = require 'util.jid'.bare;
 local uuid = require "util.uuid";
-
+local jid_join = require "util.jid".join
 -- qbl changes
 local jwt = module:require "luajwtjitsi";
 local secret = module:get_option_string("app_secret");
