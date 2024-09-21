@@ -42,6 +42,7 @@ export function onCustomIq(stanza: any, store: IStore) {
             );
             // Set the local participant's display name using the extracted participant name
             const conference = APP.conference._room;
+            console.log("CONFERENCE ITEM", conference);
             if (conference) {
                 conference.addEventListener(CONFERENCE_JOINED, () => {
                     console.log("Conference joined, setting local participant display name:", participantName);
