@@ -60,7 +60,7 @@ export function onCustomIq(stanza: any, store: IStore) {
 
             // Extract the conference object from the state
             const conference = state['features/base/conference'].conference;
-
+            console.log("CONFERENCE OBJECT:", conference)
             if (conference) {
                 console.log("Setting local participant display name:", participantName);
 
