@@ -128,23 +128,20 @@ local function verify_user(session, stanza, event)
                         room:set_affiliation(true, occupant.bare_jid, "owner");
             end
 
-
-
             if  claims.context.user.meetingName and claims.context.user.participantName then
                 local meetingName = claims.context.user.meetingName;
                 local participantName = claims.context.user.participantName;
                 local jwtToken = session.auth_token;
                 module:log("error", "Extracted meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
                 -- Send the IQ message to the user
+
+                if room and occupant and participantName then
+                    occupant.nick = tostring(participantName)
+                    module:log("error", "Set participant's display name: %s", tostring(participantName))
+                end
                 timer.add_task(1, function()
                     send_custom_data(session, meetingName, participantName, jwtToken)
                 end)
-
-                            -- Set the participant's name in the occupant object
-                if room and occupant and participantName then
-                    occupant.nick = tostring(participantName)
-                    module:log("info", "Set participant's display name: %s", participantName)
-                end
             end
         end
     end
