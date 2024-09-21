@@ -45,6 +45,16 @@ export function onCustomIq(stanza: any, store: IStore) {
         console.log("No valid custom:data namespace found in the IQ message.");
     }
 
+    // Set the local participant's display name using the extracted participant name
+    const conference = APP.conference._room;
+
+    if (conference) {
+        console.log("Setting local participant display name:", participantName);
+        conference.setDisplayName(participantName);
+    } else {
+        console.error("Conference object is not available to set the display name.");
+    }
+
     return true; // Continue processing stanzas
 }
 
@@ -60,13 +70,17 @@ export function addIqHandler(store: IStore) {
 
         stropheConn.addHandler((stanza) => onCustomIq(stanza, store), "custom:data", "iq", "set", null, null);
 
-        stropheConn.rawInput = function (data: any) {
-            console.log("Strophe IN (incoming XMPP data): ", data);
-        };
+        //This code below can be used to track the XMPP
+        //communication between the client and the server.
+        //We are to leave this commented as a form of documentation
 
-        stropheConn.rawOutput = function (data: any) {
-            console.log("Strophe OUT (outgoing XMPP data): ", data);
-        };
+        // stropheConn.rawInput = function (data: any) {
+        //     console.log("Strophe IN (incoming XMPP data): ", data);
+        // };
+
+        // stropheConn.rawOutput = function (data: any) {
+        //     console.log("Strophe OUT (outgoing XMPP data): ", data);
+        // };
 
         console.log("Custom IQ handler added successfully.");
     } else {
