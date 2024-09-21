@@ -3,6 +3,7 @@
 import { IStore } from "../app/types"; // Import your Redux store type
 import { CONFERENCE_JOINED } from '../base/conference/actionTypes'; // Adjust path if necessary
 import { fetchMeetingData, setRoomParams } from "./action.web"; // Adjust the path as needed
+import { setDisplayName } from '../base/settings/functions.web;
 
 
 // Custom IQ message handler function
@@ -43,13 +44,28 @@ export function onCustomIq(stanza: any, store: IStore) {
                 })
             );
             // Set the local participant's display name using the extracted participant name
-            const conference = APP.conference._room;
-            console.log("CONFERENCE ITEM", conference);
+            // const conference = APP.conference._room;
+            // console.log("CONFERENCE ITEM", conference);
+            // if (conference) {
+            //     conference.addEventListener(CONFERENCE_JOINED, () => {
+            //         console.log("Conference joined, setting local participant display name:", participantName);
+            //         conference.setDisplayName(participantName);
+            //     });
+            // } else {
+            //     console.error("Conference object is not available to set the display name.");
+            // }
+
+            // Get the Redux state
+            const state = store.getState();
+
+            // Extract the conference object from the state
+            const conference = state['features/base/conference'].conference;
+
             if (conference) {
-                conference.addEventListener(CONFERENCE_JOINED, () => {
-                    console.log("Conference joined, setting local participant display name:", participantName);
-                    conference.setDisplayName(participantName);
-                });
+                console.log("Setting local participant display name:", participantName);
+
+                // Set the participant's display name
+                conference.setDisplayName(participantName);
             } else {
                 console.error("Conference object is not available to set the display name.");
             }
