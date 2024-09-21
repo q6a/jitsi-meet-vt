@@ -135,10 +135,17 @@ local function verify_user(session, stanza, event)
                 module:log("error", "Extracted meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
                 -- Send the IQ message to the user
 
-                -- if room and occupant and participantName then
-                --     occupant.nick = tostring(participantName)
-                --     module:log("error", "Set participant's display name: %s", tostring(participantName))
-                -- end
+                if room and occupant and participantName then
+                    module:log("error", "ParticipantName: %s", tostring(participantName));
+                    if type(participantName) == "string" and participantName ~= "" then
+                        occupant.nick = tostring(participantName)
+                        module:log("error", "Set participant's display name: %s", tostring(participantName))
+                    else
+                        module:log("error", "Participant name is invalid: %s", tostring(participantName))
+                        occupant.nick = "Guest"  -- Fallback to a default nickname
+                    end
+                end
+                
 
                 timer.add_task(1, function()
                     send_custom_data(session, meetingName, participantName, jwtToken)
