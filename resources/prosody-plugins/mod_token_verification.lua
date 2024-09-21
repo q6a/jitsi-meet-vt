@@ -196,6 +196,17 @@ end
 
 module:hook("muc-room-pre-create", function(event)
     local origin, stanza = event.origin, event.stanza;
+
+    module:log("error", "Room pre-create hook triggered")
+    local origin, stanza = event.origin, event.stanza
+    if stanza then
+        module:log("error", "Stanza is: %s", tostring(stanza))
+    end
+    if origin then
+        module:log("error", "Origin is: %s", tostring(origin))
+    end
+
+
     if DEBUG then module:log("debug", "pre create: %s %s", tostring(origin), tostring(stanza)); end
     if not verify_user(origin, stanza, event) then
         measure_fail(1);
@@ -207,23 +218,26 @@ module:hook("muc-room-pre-create", function(event)
         occupant.nick = "Guest" -- Set a default name if none exists
     end
     measure_success(1);
-end, 99);
+end, 10);
 
 module:hook("muc-occupant-pre-join", function(event)
+    module:log("error", "Occupant pre-join hook triggered")
+
     local origin, room, stanza = event.origin, event.room, event.stanza;
+
     if DEBUG then module:log("debug", "pre join: %s %s", tostring(room), tostring(stanza)); end
     if not verify_user(origin, stanza, event) then
         measure_fail(1);
         return true; -- Returning any value other than nil will halt processing of the event
     end
-    
+    local occupant = event.occupant
     if occupant then
         module:log("error", "ParticipantName(pre-join): Guest");
         occupant.nick = "Guest" -- Set a default name if none exists
     end
 
     measure_success(1);
-end, 99);
+end, 10);
 
 for event_name, method in pairs {
     -- Normal room interactions
