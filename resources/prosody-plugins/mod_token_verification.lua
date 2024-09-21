@@ -201,6 +201,11 @@ module:hook("muc-room-pre-create", function(event)
         measure_fail(1);
         return true; -- Returning any value other than nil will halt processing of the event
     end
+    local occupant = event.occupant
+    if occupant then
+        module:log("error", "ParticipantName(pre-create): Guest");
+        occupant.nick = "Guest" -- Set a default name if none exists
+    end
     measure_success(1);
 end, 99);
 
@@ -211,12 +216,12 @@ module:hook("muc-occupant-pre-join", function(event)
         measure_fail(1);
         return true; -- Returning any value other than nil will halt processing of the event
     end
-
-    local occupant = event.occupant
-    if occupant and occupant.nick == nil then
-        module:log("error", "ParticipantName: Guest");
+    
+    if occupant then
+        module:log("error", "ParticipantName(pre-join): Guest");
         occupant.nick = "Guest" -- Set a default name if none exists
     end
+
     measure_success(1);
 end, 99);
 
