@@ -135,11 +135,13 @@ local function verify_user(session, stanza, event)
                 local participantName = "Guest"  -- This should be replaced with the name you want to set
                 -- Get the bare JID (user@domain part) without the resource
                 local bare_jid = jid_bare(session.full_jid)
+
                 -- Recreate the full JID with the desired nickname as the resource
                 local new_jid = jid_join(bare_jid, room.jid, participantName)
-                
+                module:log("error", "BARE JID %s, NEW_JID %s, partipantName %s", tostring(bare_jid), tostring(new_jid), tostring(participantName))
+
                 -- Set the new nickname in the occupant object
-                event.occupant.nick = new_jid
+                --event.occupant.nick = tostring(new_jid);
                 module:log("info", "Set participant's nickname to: %s", participantName)
             end
 
