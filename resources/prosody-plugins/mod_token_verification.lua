@@ -218,19 +218,18 @@ module:hook("muc-occupant-pre-join", function(event)
         measure_fail(1);
         return true; -- Returning any value other than nil will halt processing of the event
     end
-    local occupant = event.occupant
-    local session = event.origin  -- Session of the joining participant
-
-    if occupant and session.full_jid then
-        local new_nick = "Guest"  -- Set the desired participant's nickname
+    -- local occupant = event.occupant
+    -- local session = event.origin  -- Session of the joining participant
+    -- if occupant and session.full_jid then
+    --     local new_nick = "Guest"  -- Set the desired participant's nickname
         
-        -- Create a new JID with the existing bare_jid and the new nickname
-        occupant.bare_jid = jid_join(session.full_jid, new_nick)
+    --     -- Create a new JID with the existing bare_jid and the new nickname
+    --     occupant.bare_jid = jid_join(session.full_jid, new_nick)
         
-        module:log("info", "Setting occupant's nickname to: %s", new_nick)
-    else
-        module:log("error", "Failed to set occupant nick. Occupant or full JID is nil.")
-    end
+    --     module:log("info", "Setting occupant's nickname to: %s", new_nick)
+    -- else
+    --     module:log("error", "Failed to set occupant nick. Occupant or full JID is nil.")
+    -- end
 
     measure_success(1);
 end, 10);
