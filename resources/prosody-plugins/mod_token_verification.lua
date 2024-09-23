@@ -138,7 +138,7 @@ local function verify_user(session, stanza, event)
             end
 
             -- BELOW IS A SNIPPET OF EXTRACTING DATA FROM TOKEN AND SENDING IT TO THE PARTICIPANT
-            -- A TIMER WAS ADDED BECAUSE IT  COULD NOT BE SENT STRAIGHT AWAY
+            -- A TIMER WAS ADDED TO SEND IQ AFTER 1 SECOND BECAUSE IT COULD NOT BE SENT STRAIGHT AWAY
             -- IT HAS BEEN COMMENTED OUT BECAUSE WE HAVE NO USE OF IT AS OF NOW
             if  claims.context.user.meetingName and claims.context.user.participantName then
                 local meetingName = claims.context.user.meetingName;
