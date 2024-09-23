@@ -10,7 +10,7 @@ import {
 
 
 
-export const getMeetingInformationByMeetingName = async (meetingNameQuery: string, token: string, initialName: string) => {
+export const getMeetingInformation = async (meetingId: string, token: string, initialName: string) => {
     try {
 
         // Load the backend URL from environment variables
@@ -21,7 +21,7 @@ export const getMeetingInformationByMeetingName = async (meetingNameQuery: strin
         }
 
         const response = await axios.get(
-            `${backendUrl}${encodeURIComponent(meetingNameQuery)}`,
+            `${backendUrl}${encodeURIComponent(meetingId)}`,
             {
                 headers: {
                     authorization: `Bearer ${token}`,

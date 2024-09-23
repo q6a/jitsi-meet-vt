@@ -59,7 +59,7 @@ import {
 
 import { stopTranscriptionService, transcribeAndTranslateService, } from './services/transcriptionService';
 import { transcribeAndTranslateServiceOpenAi } from './services/transcriptionServiceOpenAi';
-import { getMeetingInformationByMeetingName } from './services/meetingService';
+import { getMeetingInformation } from './services/meetingService';
 import { createDisplayNameAndDialect } from './services/displayNameAndDialectService';
 
 
@@ -141,8 +141,8 @@ MiddlewareRegistry.register(store => next => action => {
         case FETCH_MEETING_DATA:
             (async () => {
                 try {
-                    const { meetingNameQuery, token, initialName } = action.payload;
-                    const data = await getMeetingInformationByMeetingName(meetingNameQuery, token, initialName);
+                    const { meetingNameQuery, token, initialName, meetingId } = action.payload;
+                    const data = await getMeetingInformation(meetingId, token, initialName);
                     if (data) {
                         // Dispatch actions with the fetched data
                         store.dispatch(setMeetingData(data.meetingData));

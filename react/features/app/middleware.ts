@@ -184,6 +184,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
         const [ header, payload ] = jwtToken.split('.');
         const initialMeetingName: any = JSON.parse(atob(payload)).context.user.meetingName;
         const initialParticipantName: any = JSON.parse(atob(payload)).context.user.participantName;
+        const meetingId: any = JSON.parse(atob(payload)).context.user.meetingId;
 
         if(initialMeetingName && initialParticipantName)
         {
@@ -191,13 +192,15 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
             store.dispatch(setRoomParams({
                 meetingName: initialMeetingName,
                 participantName: initialParticipantName,
-                jwtToken
+                jwtToken,
+                meetingId: meetingId
             }));
         
             store.dispatch(fetchMeetingData({
                 meetingNameQuery: initialMeetingName,
                 token: jwtToken,
-                initialName: initialParticipantName
+                initialName: initialParticipantName,
+                meetingId: meetingId
             }));
         }
     }

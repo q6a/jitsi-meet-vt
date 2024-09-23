@@ -24,9 +24,10 @@ export interface IRecognitionResultPayload {
 
 // Define interface for Room Parameters
 export interface IRoomParams {
+    jwtToken: string;
+    meetingId: string;
     meetingName: string;
     participantName: string;
-    jwtToken: string;
 }
 
 // Define interface for Room Parameters
@@ -133,6 +134,7 @@ export interface IVideoTranslatorAiState {
     meetingName: string;
     participantName: string;
     jwtToken: string;
+    meetingId: string;
     thisEntityData: IEntityData;
     participantData: Array<IParticipant>;
     moderatorData: Array<IModerator>;
