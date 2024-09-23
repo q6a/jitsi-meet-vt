@@ -31,8 +31,8 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
         );
 
         if (response.data) {
-            console.log("RESPONSE meetingservice", response.data );
-            const data = response.data;
+
+            const data = response.data.data;
 
             const participants = data.participant_meetings.map((pm: IParticipantMeeting) => ({
                 participant_id: pm.participant.participant_id,
@@ -41,18 +41,16 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
                 dialect_id: pm.participant.dialect.dialect_id,
                 dialectName: pm.participant.dialect.name,
                 dialectCode: pm.participant.dialect.dialect_code,
-                languageName: pm.participant.dialect.language.name,
                 type: "PARTICIPANT"
             }));
 
             const moderators = data.moderator_meetings.map((mm: IModeratorMeeting) => ({
-                moderator_id: mm.moderator.moderator_id,
+                moderator_id: mm.moderator.user_id,
                 name: mm.moderator.name,
-                email: mm.moderator.email,
+                email: mm.email,
                 dialect_id: mm.dialect.dialect_id,
                 dialectName: mm.dialect.name,
                 dialectCode: mm.dialect.dialect_code,
-                languageName: mm.dialect.language.name,
                 type: "MODERATOR"
             }));
 
@@ -69,12 +67,8 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
 
             return {
                 meetingData: {
-                    user_created_id: data.user_created.user_created_id,
-                    meeting_id: data.meeting_id,
                     name: data.name,
-                    userCreated: data.user_created,
                     client: data.client,
-                    userLinguist: data.user_linguist,
                     dictionaryName: data.dictionary_name,
                     dictionaryLanguages: data.dictionary_languages,
                     dictionaryWordKeyPairs: data.dictionary_word_key_pairs,

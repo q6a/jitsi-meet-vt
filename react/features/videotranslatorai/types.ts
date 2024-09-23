@@ -1,4 +1,5 @@
 
+import { string } from '@tensorflow/tfjs-core';
 import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
 
 export interface IMessage {
@@ -92,15 +93,12 @@ export interface IUserCreated {
 }
 
 export interface IClient {
-    client_id: number;
+    text_to_text: any[];
+    speech_to_text: any[];
+    text_to_speech: any[];
+    status: Boolean;
+    primary_language: string;
     client_name: string;
-    location: string;
-    currency: string | null;
-    products: string | null;
-    language_ids: string[]; // Assuming it's an array of strings, adjust if needed
-    billing_id: string | null;
-    created_at: string; // Could also be Date if you plan to convert it
-    updated_at: string; // Could also be Date if you plan to convert it
 }
 
 export interface IDictionaryWordKeyPairs {
@@ -108,10 +106,7 @@ export interface IDictionaryWordKeyPairs {
 }
 
 export interface IMeetingData {
-    user_created_id: number;
-    meeting_id: number;
     name: string;
-    userCreated: IUserCreated;
     client: IClient;
     dictionaryName: string;
     dictionaryLanguages: string[];
@@ -159,9 +154,9 @@ export interface IDialect {
     dialect_id: number;
     name: string;
     dialect_code: string;
-    language: {
-        name: string;
-    };
+    // language: {
+    //     name: string;
+    // };
 }
 
 export interface IParticipantMeeting {
