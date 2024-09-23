@@ -5,7 +5,7 @@ import { startRecordingOpenAi, stopRecordingOpenAi, translateOpenAi, setRecordin
 //import { ReactMic } from 'react-mic';
 import { transcribeAndTranslateServiceOpenAi } from '../services/transcriptionServiceOpenAi';
 
-const TranscriptionAndTranslationButton: FC = () => {
+const TranscriptionAndTranslationOpenAiButton: FC = () => {
     const dispatch = useDispatch();
     const store = useStore();
     const isRecording = useSelector((state: IReduxState) => state['features/videotranslatorai'].isRecording);
@@ -95,4 +95,4 @@ const TranscriptionAndTranslationButton: FC = () => {
     );
 };
 
-export default TranscriptionAndTranslationButton;
+export default TranscriptionAndTranslationOpenAiButton;

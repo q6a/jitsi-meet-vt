@@ -27,6 +27,10 @@ export const createDisplayNameAndDialect = (
     if (entityType !== 'UNKNOWN') {
         displayName = `${nameToDisplay}: ${entityType}`;
     }
+    else
+    {
+        displayName = nameToDisplay;
+    }
 
     let displayDialect = '';
 

@@ -9,7 +9,7 @@ import { getLocalParticipant, isLocalParticipantModerator } from '../../../base/
 import ContextMenu from '../../../base/ui/components/web/ContextMenu';
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from '../../../reactions/functions.web';
 import TranscriptionAndTranslationButton from '../../../videotranslatorai/components/transcriptionAndTranslationButton'; //videotranslatorai
-import TranscriptionAndTranslationOpenAi from '../../../videotranslatorai/components/transcriptionAndTranslationOpenAi'; //videotranslatorai
+import TranscriptionAndTranslationOpenAiButton from '../../../videotranslatorai/components/TranscriptionAndTranslationOpenAiButton'; //videotranslatorai
 
 import {
     setHangupMenuVisible,
@@ -258,7 +258,7 @@ export default function Toolbox({
                                 key = { key } />))}
                         {/* videotranslatorai */}
                         {conference && <TranscriptionAndTranslationButton /> } 
-                        {/* <TranscriptionAndTranslationOpenAi/> */} 
+                        {/* <TranscriptionAndTranslationOpenAiButton/> */} 
                         {/* videotranslatorai */}
                         {Boolean(overflowMenuButtons.length) && (
                             <OverflowMenuButton
