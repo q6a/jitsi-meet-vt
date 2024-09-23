@@ -25,6 +25,7 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
             {
                 headers: {
                     authorization: `Bearer ${token}`,
+                    'x-jitsi': 'true',
                 },
             }
         );

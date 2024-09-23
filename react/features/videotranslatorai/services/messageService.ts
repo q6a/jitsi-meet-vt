@@ -13,7 +13,9 @@ export const createMessageStorageSendTranslationToDatabase = async (messageToSen
         const response = await axios.post(url, messageToSendToDataBase, {
             headers: {
                 'Authorization': `Bearer ${tokenData}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'x-jitsi': 'true',
+
             }
         });
 
