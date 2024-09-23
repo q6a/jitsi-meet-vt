@@ -21,7 +21,7 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
         }
 
         const response = await axios.get(
-            `${backendUrl}${encodeURIComponent(meetingId)}`,
+            `${backendUrl}/${encodeURIComponent(meetingId)}`,
             {
                 headers: {
                     authorization: `Bearer ${token}`,
