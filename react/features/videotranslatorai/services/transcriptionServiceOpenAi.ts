@@ -1,10 +1,10 @@
-// import axios from "axios";
-// import { getAuthToken } from "./authService";
-// import { createMessageStorageSendTranslationToDatabase } from "./messageService";
-// import { toState } from "../../base/redux/functions";
-// import { IReduxState, IStore } from "../../app/types";
-// import { setIsTranscribing, setMicrosoftRecognizerSDK } from "../action.web";
-// import { addMessageVideoTranslatorAI } from "../action.web";
+import axios from "axios";
+import { getAuthToken } from "./authService";
+import { createMessageStorageSendTranslationToDatabase } from "./messageService";
+import { toState } from "../../base/redux/functions";
+import { IReduxState, IStore } from "../../app/types";
+import { setIsTranscribing, setMicrosoftRecognizerSDK } from "../action.web";
+import { addMessageVideoTranslatorAI } from "../action.web";
 
 // import {
 //     IMessage,
