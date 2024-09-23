@@ -169,10 +169,10 @@ export interface IParticipantMeeting {
 }
 
 export interface IModeratorMeeting {
-    user_id: number;
     email: string;
     moderator: {
         name: string;
+        user_id: number;
     };
     dialect: IDialect;
 }

@@ -33,7 +33,6 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
         if (response.data) {
 
             const data = response.data.data;
-
             const participants = data.participant_meetings.map((pm: IParticipantMeeting) => ({
                 participant_id: pm.participant.participant_id,
                 name: pm.participant.name,
