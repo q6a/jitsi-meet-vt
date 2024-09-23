@@ -49,7 +49,7 @@ export function onCustomIq(stanza: any, store: IStore) {
         const meetingName = meetingNameElement ? meetingNameElement.textContent : null;
         const participantName = participantNameElement ? participantNameElement.textContent : null;
         const jwtToken = jwtTokenElement ? jwtTokenElement.textContent : null;
-
+        const meetingId = '';
         console.log("Extracted Meeting Name:", meetingName);
         console.log("Extracted Participant Name:", participantName);
         console.log("Extracted JWT Token:", jwtToken);
@@ -63,6 +63,7 @@ export function onCustomIq(stanza: any, store: IStore) {
                     meetingName,
                     participantName,
                     jwtToken,
+                    meetingId
                 })
             );
 
@@ -71,6 +72,7 @@ export function onCustomIq(stanza: any, store: IStore) {
                     meetingNameQuery: meetingName,
                     token: jwtToken,
                     initialName: participantName,
+                    meetingId: meetingId
                 })
             );
 

@@ -34,7 +34,8 @@ export interface IRoomParams {
 export interface IFetchMeetingData {
     meetingNameQuery: string;
     token: string,
-    initialName: string
+    initialName: string,
+    meetingId: string
 }
 
 // Define interface for Private Messages
