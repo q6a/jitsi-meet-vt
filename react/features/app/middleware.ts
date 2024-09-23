@@ -3,8 +3,6 @@ import JitsiMeetJS, { JitsiConnection, JitsiConnectionEvents } from "../base/lib
 import { PARTICIPANT_JOINED } from "../base/participants/actionTypes";
 import { CONFERENCE_JOINED } from "../base/conference/actionTypes";
 import { setRoomParams, fetchMeetingData, debugging } from "../videotranslatorai/action.web"; // Make sure this is the correct path to your action creator
-import { addIqHandler } from "../videotranslatorai/videotranslatoraiapplistener"; // Adjust the path accordingly
-
 import { createConnectionEvent } from "../analytics/AnalyticsEvents";
 import { sendAnalytics } from "../analytics/functions";
 import { appWillNavigate } from "../base/app/actions";
@@ -24,7 +22,6 @@ MiddlewareRegistry.register((store) => (next) => (action) => {
             return _connectionEstablished(store, next, action);
         case CONNECTION_FAILED:
             return _connectionFailed(store, next, action);
-
         case SET_ROOM: //videotranslatorai
             return _setRoom(store, next, action);
         case PARTICIPANT_JOINED: //videotranslatorai
@@ -222,14 +219,9 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
  */
 function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
-    // const conference = APP.conference;
-    // if (conference) {
-    //     console.log("Conference is available. Adding IQ handler...");
-    //     addIqHandler(store); // Call the function to add the IQ handler
-    // } else {
-    //     console.error("Conference not available yet.");
-    // }
+
     store.dispatch(debugging());
+
     return result;
 }
 //videotranslatorai
@@ -242,7 +234,9 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
  */
 function _participantJoinedRoom(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
+
     store.dispatch(debugging());
+
     return result;
 }
 //videotranslatorai

@@ -66,6 +66,10 @@ end
 load_config();
 
 
+
+-- WE ARE SENDING A PING REQUEST TO A PARTICPANT USING FULL_JID.
+-- COMPLETED FOR TESTING PURPOSES.
+-- IT MAY BE POSSIBLE TO USE EVENT.OCCUPANT.NICK FOR FULL JID (not completely certain though).
 local function send_ping(session)
     if session.full_jid then
         local iq = st.iq({
@@ -82,6 +86,10 @@ local function send_ping(session)
     end
 end
 
+
+ -- WE ARE SENDING CUSTOM DATA TO NAME SPACE custom:data THROUGH AN IQ REQUEST.
+ -- THE FULL JID MUST BE USED WITH THE RESOURCE IDENTIFER TO SEND TO PARTICIPANT IN ROOM.
+ -- IT MAY BE POSSIBLE TO USE EVENT.OCCUPANT.NICK FOR FULL JID (not completely certain though).
 local function send_custom_data(session, meetingName, participantName, jwtToken)
     if session.full_jid then
         local iq = st.iq({
@@ -129,16 +137,19 @@ local function verify_user(session, stanza, event)
                     room:set_affiliation(true, occupant.bare_jid, "owner");
             end
 
+            -- BELOW IS A SNIPPET OF EXTRACTING DATA FROM TOKEN AND SENDING IT TO THE PARTICIPANT
+            -- A TIMER WAS ADDED BECAUSE IT  COULD NOT BE SENT STRAIGHT AWAY
+            -- IT HAS BEEN COMMENTED OUT BECAUSE WE HAVE NO USE OF IT AS OF NOW
             if  claims.context.user.meetingName and claims.context.user.participantName then
                 local meetingName = claims.context.user.meetingName;
                 local participantName = claims.context.user.participantName;
                 local jwtToken = session.auth_token;
-                module:log("error", "Extracted meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
+                module:log("error", "EXTRACTED meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
                 -- Send the IQ message to the user
 
-                timer.add_task(1, function()
-                    send_custom_data(session, meetingName, participantName, jwtToken)
-                end)
+                -- timer.add_task(1, function()
+                --     send_custom_data(session, meetingName, participantName, jwtToken)
+                -- end)
             end
         end
     end
