@@ -199,7 +199,9 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
                 languageName: languageName,
                 clientId: clientId
             }));
-        
+    
+
+
             store.dispatch(fetchMeetingData({
                 meetingNameQuery: initialMeetingName,
                 token: jwtToken,

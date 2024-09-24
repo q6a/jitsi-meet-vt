@@ -50,6 +50,8 @@ export function onCustomIq(stanza: any, store: IStore) {
         const participantName = participantNameElement ? participantNameElement.textContent : null;
         const jwtToken = jwtTokenElement ? jwtTokenElement.textContent : null;
         const meetingId = '';
+        const languageName  = '';
+        const clientId = '';
         console.log("Extracted Meeting Name:", meetingName);
         console.log("Extracted Participant Name:", participantName);
         console.log("Extracted JWT Token:", jwtToken);
@@ -57,24 +59,23 @@ export function onCustomIq(stanza: any, store: IStore) {
         if (meetingName && participantName) {
             console.log("Dispatching room parameters and meeting data to Redux...");
 
-            // Dispatch the values to the Redux store
-            store.dispatch(
-                setRoomParams({
-                    meetingName,
-                    participantName,
-                    jwtToken,
-                    meetingId
-                })
-            );
+            store.dispatch(setRoomParams({
+                meetingName: meetingName,
+                participantName: participantName,
+                jwtToken,
+                meetingId: meetingId,
+                languageName: languageName,
+                clientId: clientId
+            }));
+    
 
-            store.dispatch(
-                fetchMeetingData({
-                    meetingNameQuery: meetingName,
-                    token: jwtToken,
-                    initialName: participantName,
-                    meetingId: meetingId
-                })
-            );
+
+            store.dispatch(fetchMeetingData({
+                meetingNameQuery: meetingName,
+                token: jwtToken,
+                initialName: participantName,
+                meetingId: meetingId
+            }));
 
 
             // Wait for the conference to fully initialize before setting the name
