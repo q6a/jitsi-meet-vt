@@ -71,7 +71,7 @@ export const messageNotification = () => ({
 
 
 export const fetchMeetingData = (params: IFetchMeetingData) => {
-    return async (dispatch, getState) => {
+    return async (dispatch: any, getState: any) => {
         // Dispatch an action to store the parameters in the state
         try {
 
@@ -116,7 +116,7 @@ export const setPrivateMessages = (params: IMessage[]) => {
 
 
 export const startTranscription = () => {
-    return async (dispatch, getState) => {
+    return async (dispatch: any, getState: any) => {
         dispatch({ type: START_TRANSCRIPTION });
         try {
             await transcribeAndTranslateService(dispatch, getState);
@@ -129,7 +129,7 @@ export const startTranscription = () => {
 };
 
 export const stopTranscription = () => {
-    return async (dispatch, getState) => {
+    return async (dispatch: any, getState: any) => {
         dispatch({ type: STOP_TRANSCRIPTION });
         try {
             await stopTranscriptionService(dispatch, getState);

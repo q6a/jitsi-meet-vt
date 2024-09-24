@@ -12,7 +12,7 @@ import {
 import { addMessage } from '../../../features/chat/actions.web';
 import { addMessageVideoTranslatorAI } from '../action.web';
 
-export const transcribeAndTranslateService = async (dispatch, getState) => {
+export const transcribeAndTranslateService = async (dispatch: any, getState: any) => {
     const state: IReduxState = getState();
 
     //const state: IReduxState = store.getState(); // Directly accessing the Redux state from the store
@@ -330,29 +330,7 @@ export const transcribeAndTranslateService = async (dispatch, getState) => {
 };
 
 
-// export const stopTranscriptionService = (store: IStore) => {
-//     return new Promise<void>((resolve, reject) => {
-
-//         const state: IReduxState = store.getState(); // Directly accessing the Redux state from the store
-//         const recognizerSdk = toState(state)['features/videotranslatorai'].microsoftRecognizerSDK;
-//         if (!recognizerSdk) {
-//             console.error("SDK recognizer not set");
-//             reject(new Error("SDK recognizer not set"));
-//             return;
-//         }
-
-//         recognizerSdk.stopContinuousRecognitionAsync(() => {
-//             setIsTranscribing(false);
-//             resolve();  // No value needed, so just call resolve()
-//         }, (err: any) => {
-//             console.error('Error stopping transcription:', err);
-//             reject(err);  // Pass the error to reject()
-//         });
-//     });
-// };
-
-
-export const stopTranscriptionService = (dispatch, getState) => {
+export const stopTranscriptionService = (dispatch: any, getState: any) => {
     return new Promise<void>((resolve, reject) => {
         const state: IReduxState = getState();
         const recognizerSdk = state['features/videotranslatorai'].microsoftRecognizerSDK;
