@@ -3,6 +3,12 @@ import { IReduxState, IStore } from '../app/types';
 import { useSelector } from 'react-redux';
 import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
 
+import { transcribeAndTranslateService, stopTranscriptionService } from './services/transcriptionService';
+import { getMeetingInformation } from './services/meetingService';
+import { createDisplayNameAndDialect } from './services/displayNameAndDialectService';
+
+
+
 import {
     IMessage,
     IRoomParams,
@@ -42,9 +48,8 @@ import {
     STOP_RECORDING_OPENAI,
     TRANSLATE_OPENAI,
     SET_IS_RECORDING,
-    SET_RECORDING_BLOB_OPENAI
+    SET_RECORDING_BLOB_OPENAI, 
 } from './actionTypes';
-
 
 export const setRecordingBlobOpenAi = (blob: any) => ({
     type: SET_RECORDING_BLOB_OPENAI,
@@ -64,10 +69,34 @@ export const messageNotification = () => ({
     type: MESSAGE_NOTIFICATION,
 });
 
+
 export const fetchMeetingData = (params: IFetchMeetingData) => {
-    return {
-        type: FETCH_MEETING_DATA,
-        payload: params,
+    return async (dispatch, getState) => {
+        // Dispatch an action to store the parameters in the state
+        try {
+
+            const { meetingNameQuery, token, initialName, meetingId } = params;
+            const data = await getMeetingInformation(meetingId, token, initialName);
+            if (data) {
+                dispatch(setMeetingData(data.meetingData));
+                dispatch(setModeratorData(data.moderatorData));
+                dispatch(setLinguistData(data.linguistData));
+                dispatch(setParticipantData(data.participantData));
+                dispatch(setEntityData(data.thisEntityData));
+
+                const displayDialectAndName = createDisplayNameAndDialect(
+                    initialName,
+                    data.moderatorData,
+                    data.participantData,
+                    data.linguistData
+                );
+                dispatch(setDisplayName(displayDialectAndName.displayName));
+                dispatch(setDisplayDialect(displayDialectAndName.displayDialect));
+            }
+        } catch (error) {
+            console.error('Error while fetching meeting information:', error);
+            // Optionally, dispatch an error action
+        }
     };
 };
 
@@ -85,13 +114,31 @@ export const setPrivateMessages = (params: IMessage[]) => {
     };
 };
 
-export const startTranscription = () => ({
-    type: START_TRANSCRIPTION,
-});
 
-export const stopTranscription = () => ({
-    type: STOP_TRANSCRIPTION,
-});
+export const startTranscription = () => {
+    return async (dispatch, getState) => {
+        dispatch({ type: START_TRANSCRIPTION });
+        try {
+            await transcribeAndTranslateService(dispatch, getState);
+            // Handle success if needed
+        } catch (err) {
+            console.error('Error during transcription:', err);
+            dispatch(setIsTranscribing(false));
+        }
+    };
+};
+
+export const stopTranscription = () => {
+    return async (dispatch, getState) => {
+        dispatch({ type: STOP_TRANSCRIPTION });
+        try {
+            await stopTranscriptionService(dispatch, getState);
+            dispatch(setIsTranscribing(false));
+        } catch (err) {
+            console.error('Error stopping transcription:', err);
+        }
+    };
+};
 
 export const startRecordingOpenAi = () => ({
     type: START_RECORDING_OPENAI,

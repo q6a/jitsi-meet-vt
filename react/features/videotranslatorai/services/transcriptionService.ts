@@ -12,9 +12,10 @@ import {
 import { addMessage } from '../../../features/chat/actions.web';
 import { addMessageVideoTranslatorAI } from '../action.web';
 
-export const transcribeAndTranslateService = async (store: IStore) => {
+export const transcribeAndTranslateService = async (dispatch, getState) => {
+    const state: IReduxState = getState();
 
-    const state: IReduxState = store.getState(); // Directly accessing the Redux state from the store
+    //const state: IReduxState = store.getState(); // Directly accessing the Redux state from the store
     const tokenData = toState(state)['features/videotranslatorai'].jwtToken;
     const participantState = toState(state)['features/base/participants'];
     const participantData = toState(state)['features/videotranslatorai'].participantData;
@@ -72,7 +73,7 @@ export const transcribeAndTranslateService = async (store: IStore) => {
         const audioConfig = speechsdk.AudioConfig.fromDefaultMicrophoneInput();
         const transcriberRecognizer = new speechsdk.TranslationRecognizer(translationConfig, audioConfig);
 
-        store.dispatch(setMicrosoftRecognizerSDK(transcriberRecognizer));
+        dispatch(setMicrosoftRecognizerSDK(transcriberRecognizer));
 
         const phraseList = speechsdk.PhraseListGrammar.fromRecognizer(transcriberRecognizer);
 
@@ -86,7 +87,7 @@ export const transcribeAndTranslateService = async (store: IStore) => {
         }
 
         transcriberRecognizer.startContinuousRecognitionAsync();
-        store.dispatch(setIsTranscribing(true));
+        dispatch(setIsTranscribing(true));
 
         // Add recognizing, recognized, and canceled events as in your initial code...
         
@@ -329,23 +330,47 @@ export const transcribeAndTranslateService = async (store: IStore) => {
 };
 
 
-export const stopTranscriptionService = (store: IStore) => {
-    return new Promise<void>((resolve, reject) => {
+// export const stopTranscriptionService = (store: IStore) => {
+//     return new Promise<void>((resolve, reject) => {
 
-        const state: IReduxState = store.getState(); // Directly accessing the Redux state from the store
-        const recognizerSdk = toState(state)['features/videotranslatorai'].microsoftRecognizerSDK;
+//         const state: IReduxState = store.getState(); // Directly accessing the Redux state from the store
+//         const recognizerSdk = toState(state)['features/videotranslatorai'].microsoftRecognizerSDK;
+//         if (!recognizerSdk) {
+//             console.error("SDK recognizer not set");
+//             reject(new Error("SDK recognizer not set"));
+//             return;
+//         }
+
+//         recognizerSdk.stopContinuousRecognitionAsync(() => {
+//             setIsTranscribing(false);
+//             resolve();  // No value needed, so just call resolve()
+//         }, (err: any) => {
+//             console.error('Error stopping transcription:', err);
+//             reject(err);  // Pass the error to reject()
+//         });
+//     });
+// };
+
+
+export const stopTranscriptionService = (dispatch, getState) => {
+    return new Promise<void>((resolve, reject) => {
+        const state: IReduxState = getState();
+        const recognizerSdk = state['features/videotranslatorai'].microsoftRecognizerSDK;
         if (!recognizerSdk) {
-            console.error("SDK recognizer not set");
-            reject(new Error("SDK recognizer not set"));
+            console.error('SDK recognizer not set');
+            reject(new Error('SDK recognizer not set'));
             return;
         }
 
-        recognizerSdk.stopContinuousRecognitionAsync(() => {
-            setIsTranscribing(false);
-            resolve();  // No value needed, so just call resolve()
-        }, (err: any) => {
-            console.error('Error stopping transcription:', err);
-            reject(err);  // Pass the error to reject()
-        });
+        recognizerSdk.stopContinuousRecognitionAsync(
+            () => {
+                dispatch(setIsTranscribing(false));
+                resolve();
+            },
+            (err: any) => {
+                console.error('Error stopping transcription:', err);
+                reject(err);
+            }
+        );
     });
 };
