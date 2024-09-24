@@ -29,6 +29,8 @@ export interface IRoomParams {
     meetingId: string;
     meetingName: string;
     participantName: string;
+    languageName: string;
+    clientId: string;
 }
 
 // Define interface for Room Parameters

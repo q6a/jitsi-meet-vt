@@ -363,7 +363,7 @@ MiddlewareRegistry.register(store => next => async action => {
             const participantName = toState(state)['features/videotranslatorai'].participantName;
             const meetingData: any = toState(state)['features/videotranslatorai'].meetingData;
             const linguistData = toState(state)['features/videotranslatorai'].linguistData;
-            const thisEnityData = toState(state)['features/videotranslatorai'].thisEnityData;
+            const thisEntityData = toState(state)['features/videotranslatorai'].thisEntityData;
             const  messages = toState(state)['features/videotranslatorai'].messages;
             const privateMessages = toState(state)['features/videotranslatorai'].privateMessages;
             const moderatorData = toState(state)['features/videotranslatorai'].moderatorData;
@@ -372,7 +372,7 @@ MiddlewareRegistry.register(store => next => async action => {
             console.log("Participant Data", participantData);
             console.log("Meeting Data", meetingData);
             console.log("linguist Data", linguistData);
-            console.log("thisEntityData", thisEnityData);
+            console.log("thisEntityData", thisEntityData);
             console.log("messages", messages);
             console.log("privateMessages", privateMessages)
             console.log("moderatorData", moderatorData)
