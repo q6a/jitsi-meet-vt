@@ -131,6 +131,8 @@ export interface IVideoTranslatorAiState {
     participantName: string;
     jwtToken: string;
     meetingId: string;
+    languageName: string;
+    clientId: string;
     thisEntityData: IEntityData;
     participantData: Array<IParticipant>;
     moderatorData: Array<IModerator>;

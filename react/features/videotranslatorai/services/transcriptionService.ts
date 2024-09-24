@@ -23,7 +23,9 @@ export const transcribeAndTranslateService = async (store: IStore) => {
     const moderatorData = toState(state)['features/videotranslatorai'].moderatorData;
     const entityData: any = toState(state)['features/videotranslatorai'].thisEntityData;
     const conference = toState(state)['features/base/conference'].conference;
-
+    const participantLanguageName = toState(state)['features/videotranslatorai'].languageName;
+    const clientId = toState(state)['features/videotranslatorai'].clientId;
+    const meetingId = toState(state)['features/videotranslatorai'].meetingId;
 
     const participantAndModeratorData = [...moderatorData, ...participantData];
 
@@ -32,6 +34,7 @@ export const transcribeAndTranslateService = async (store: IStore) => {
         let authToken = "";
         let speechRegion = process.env.REACT_APP_SPEECH_REGION_MICROSOFT_SDK;
         const subscriptionKey = process.env.REACT_APP_SUBSCRIPTION_KEY_MICROSOFT_SDK;
+
 
         // Error checking for environment variables
         if (!speechRegion || !subscriptionKey) {
@@ -63,9 +66,7 @@ export const transcribeAndTranslateService = async (store: IStore) => {
         }
 
         if (translationConfig.targetLanguages.length === 0) {
-
             throw new Error('No target languages were added.');
-
         }
 
         const audioConfig = speechsdk.AudioConfig.fromDefaultMicrophoneInput();
@@ -74,23 +75,14 @@ export const transcribeAndTranslateService = async (store: IStore) => {
         store.dispatch(setMicrosoftRecognizerSDK(transcriberRecognizer));
 
         const phraseList = speechsdk.PhraseListGrammar.fromRecognizer(transcriberRecognizer);
-        let participantLanguage = '';
 
-        for (const participant of participantAndModeratorData) {
-            if (participant.name === participantName) {
-                participantLanguage = participant.languageName;
-                break;
-            }
-        }
-
-        if (meetingData.dictionaryWordKeyPairs && meetingData.dictionaryWordKeyPairs[participantLanguage]) {
+        if (meetingData.dictionaryWordKeyPairs && meetingData.dictionaryWordKeyPairs[participantLanguageName]) {
             
-            const phraselistitems = meetingData.dictionaryWordKeyPairs[participantLanguage];
+            const phraselistitems = meetingData.dictionaryWordKeyPairs[participantLanguageName];
             for (const item of phraselistitems) {
-                phraseList.addPhrase(item);
-            }
+                phraseList.addPhrase(item);            }
         } else {
-            console.warn(`No dictionary entries found for language: ${participantLanguage}`);
+            console.warn(`No dictionary entries found for language: ${participantLanguageName}`);
         }
 
         transcriberRecognizer.startContinuousRecognitionAsync();
@@ -102,6 +94,8 @@ export const transcribeAndTranslateService = async (store: IStore) => {
             if (e.result.reason === 7) {
                 const transcription = e.result.text;
                 const translationMap = e.result.translations;
+
+    
 
                 let languagesRecognizing: any[] = [];
 
@@ -117,14 +111,31 @@ export const transcribeAndTranslateService = async (store: IStore) => {
                 }
 
 
+
                 for (const shortLangCode of languagesRecognizing)  {
                     let translationRecognizing = '';
                     translationRecognizing = translationMap.get(shortLangCode);
 
                     const langPrefix = shortLangCode.includes('-') ? shortLangCode.split('-')[0] : shortLangCode;
+                    let participants = [];
 
+                    if(langPrefix === "yue")
+                    {
+                        const yueCNParticipants = participantAndModeratorData.filter(p => 
+                            p.dialectCode.startsWith("yue-CN")
+                        );
 
-                    const participants = participantAndModeratorData.filter(p => p.dialectCode.startsWith(langPrefix));
+                        const zhHKParticipants = participantAndModeratorData.filter(p => 
+                            p.dialectCode.startsWith("zh-HK")
+                        );
+                        
+                        participants = [...yueCNParticipants, ...zhHKParticipants];
+                           
+                    }
+                    else
+                    {
+                        participants = participantAndModeratorData.filter(p => p.dialectCode.startsWith(langPrefix));
+                    }
 
 
 
@@ -220,9 +231,28 @@ export const transcribeAndTranslateService = async (store: IStore) => {
                     let translationRecognized = '';
                     translationRecognized = translationMap.get(languagesRecognized[i]);
 
+                    const langPrefix = shortLangCode.includes('-') ? shortLangCode.split('-')[0] : shortLangCode;
 
-                    const participants = participantAndModeratorData.filter(p => p.dialectCode.startsWith(shortLangCode));
-                    
+                    let participants = [];
+
+                    if(langPrefix === "yue")
+                    {
+                        const yueCNParticipants = participantAndModeratorData.filter(p => 
+                            p.dialectCode.startsWith("yue-CN")
+                        );
+                        
+                        const zhHKParticipants = participantAndModeratorData.filter(p => 
+                            p.dialectCode.startsWith("zh-HK")
+                        );
+                        
+                        participants = [...yueCNParticipants, ...zhHKParticipants];  
+                    }
+                    else
+                    {
+                        participants = participantAndModeratorData.filter(p => p.dialectCode.startsWith(langPrefix));
+                    }
+
+
 
                     for (const participant of participants) {
 
@@ -243,8 +273,8 @@ export const transcribeAndTranslateService = async (store: IStore) => {
                                 await conference.sendPrivateTextMessage(participantId, translationSentRecognized);
 
                             const messageData: any = {
-                                user_created_id: meetingData.user_created_id,
-                                meeting_id: meetingData.meeting_id,
+                                meeting_project_id: meetingId,
+                                client_id: clientId,
                                 dialect_from: entityData.dialect_id,
                                 dialect_to: participant.dialect_id,
                                 original_text: transcription,
