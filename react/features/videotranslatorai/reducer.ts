@@ -223,8 +223,6 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     isTranscribing: false,
                 };
 
-
-
             case RECOGNITION_RESULT:
                 return {
                     ...state,

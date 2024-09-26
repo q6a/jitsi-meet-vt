@@ -1,40 +1,38 @@
 // customIqHandler.ts
 
 import { IStore } from "../app/types"; // Import your Redux store type
-import { CONFERENCE_JOINED } from '../base/conference/actionTypes'; // Adjust path if necessary
+import { CONFERENCE_JOINED } from "../base/conference/actionTypes"; // Adjust path if necessary
 import { fetchMeetingData, setRoomParams } from "./action.web"; // Adjust the path as needed
-
 
 /***
  * BELOW IS AN XMPP LISTENER SNIPPET WHICH DOES THREE THINGS
- * 
+ *
  * 1. SCANS ALL INCOMING XMPP PROTOCOL MESSAGES (IQ, MESSAGE, PRESENCE)
  * 2. SCANS ALL OUTGOING XMPP PROTOCOL MESSAGES (IQ, MESSAGE, PRESENCE)
  * 3. ADDS A HANDLER TO THE XMPP CONNECTION TO DEAL WITH A XMPP PROTOCOL MESSAGE WITHIN A NAMESPACE
  * THE XMPP HANDLER ALLOWS FOR SCANNING OF A PARTICULAR MESSAGE IF SENT BY THE SERVER
- * 
+ *
  * THIS WAS DONE BY RETRIEVING THE STROPHE OBJECT CONNECTION, WHICH PROVIDES SERVICES
  * TO CONNECT TO THE XMPP PROSODY SERVER. THE STROPHE OBJECT CONNECTION IS PART OF THE
  * "APP" GLOBAL OBJECT.
- * 
+ *
  * ORIGINALLY THIS CODE WAS INTENDED TO RETRIEVE INFORMATION FROM THE XMPP MESSAGE
- * SENT BY THE SERVER IN RELATION TO PARTICIPANT NAME AND MEETING NAME. 
- * 
+ * SENT BY THE SERVER IN RELATION TO PARTICIPANT NAME AND MEETING NAME.
+ *
  * TO MAKE USE OF THE THE CODE, YOU MUST CHECK IF APP.conference IS RETURNING THE OBJECT.
  * THE COMMENTED OUT CODE AT THE TOP OF THIS FUNCTION WAS PLACED IN THE MIDDLEWARE.ts FILE
  * FEATURES/APP/MIDDLEWARE.ts IN THE PARTICIPANT JOINED FUNCTION.
- * 
- * 
+ *
+ *
  */
 
-    // const conference = APP.conference;
-    // if (conference) {
-    //     console.log("Conference is available. Adding IQ handler...");
-    //     addIqHandler(store); // Call the function to add the IQ handler
-    // } else {
-    //     console.error("Conference not available yet.");
-    // }
-
+// const conference = APP.conference;
+// if (conference) {
+//     console.log("Conference is available. Adding IQ handler...");
+//     addIqHandler(store); // Call the function to add the IQ handler
+// } else {
+//     console.error("Conference not available yet.");
+// }
 
 // Custom IQ message handler function
 export function onCustomIq(stanza: any, store: IStore) {
@@ -49,9 +47,9 @@ export function onCustomIq(stanza: any, store: IStore) {
         const meetingName = meetingNameElement ? meetingNameElement.textContent : null;
         const participantName = participantNameElement ? participantNameElement.textContent : null;
         const jwtToken = jwtTokenElement ? jwtTokenElement.textContent : null;
-        const meetingId = '';
-        const languageName  = '';
-        const clientId = '';
+        const meetingId = "";
+        const languageName = "";
+        const clientId = "";
         console.log("Extracted Meeting Name:", meetingName);
         console.log("Extracted Participant Name:", participantName);
         console.log("Extracted JWT Token:", jwtToken);
@@ -59,24 +57,25 @@ export function onCustomIq(stanza: any, store: IStore) {
         if (meetingName && participantName) {
             console.log("Dispatching room parameters and meeting data to Redux...");
 
-            store.dispatch(setRoomParams({
-                meetingName: meetingName,
-                participantName: participantName,
-                jwtToken,
-                meetingId: meetingId,
-                languageName: languageName,
-                clientId: clientId
-            }));
-    
+            store.dispatch(
+                setRoomParams({
+                    meetingName: meetingName,
+                    participantName: participantName,
+                    jwtToken,
+                    meetingId: meetingId,
+                    languageName: languageName,
+                    clientId: clientId,
+                })
+            );
 
-
-            store.dispatch(fetchMeetingData({
-                meetingNameQuery: meetingName,
-                token: jwtToken,
-                initialName: participantName,
-                meetingId: meetingId
-            }));
-
+            store.dispatch(
+                fetchMeetingData({
+                    meetingNameQuery: meetingName,
+                    token: jwtToken,
+                    initialName: participantName,
+                    meetingId: meetingId,
+                })
+            );
 
             // Wait for the conference to fully initialize before setting the name
             const conference = APP.conference._room;
@@ -114,10 +113,8 @@ export function addIqHandler(store: IStore) {
     if (stropheConn) {
         console.log("Strophe connection found:", stropheConn);
 
-
         //add handler to scan the incoming XMPP messages, of the stanza type iq, and of type set, within a specific name space (custom:data)
         stropheConn.addHandler((stanza: any) => onCustomIq(stanza, store), "custom:data", "iq", "set", null, null);
-
 
         //log all xmpp communication stanzas coming from the XMPP prosody server
         stropheConn.rawInput = function (data: any) {
