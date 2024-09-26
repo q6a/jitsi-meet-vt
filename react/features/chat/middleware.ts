@@ -33,6 +33,7 @@ import {
     CLOSE_CHAT,
     OPEN_CHAT,
     SEND_MESSAGE,
+    SEND_REACTION,
     SET_IS_POLL_TAB_FOCUSED
 } from './actionTypes';
 import { addMessage, addMessageReaction, clearMessages, closeChat } from './actions.any';
