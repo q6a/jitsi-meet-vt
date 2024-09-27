@@ -63,51 +63,6 @@ export const messageNotification = () => {
     };
 };
 
-// Existing action creators
-export const setRoomParams = (params: IRoomParams) => {
-    return {
-        type: SET_ROOM_PARAMS,
-        payload: params,
-    };
-};
-
-// Existing action creators
-export const messageNotification = () => {
-    return {
-        type: MESSAGE_NOTIFICATION,
-    };
-};
-
-export const fetchMeetingData = (params: IFetchMeetingData) => async (dispatch: any, getState: any) => {
-    // Dispatch an action to store the parameters in the state
-    try {
-        const { meetingNameQuery, token, initialName, meetingId } = params;
-        const data = await getMeetingInformation(meetingId, token, initialName);
-
-        if (data) {
-            dispatch(setMeetingData(data.meetingData));
-            dispatch(setModeratorData(data.moderatorData));
-            dispatch(setLinguistData(data.linguistData));
-            dispatch(setParticipantData(data.participantData));
-            dispatch(setEntityData(data.thisEntityData));
-
-            const displayDialectAndName = createDisplayNameAndDialect(
-                initialName,
-                data.moderatorData,
-                data.participantData,
-                data.linguistData
-            );
-
-            dispatch(setDisplayName(displayDialectAndName.displayName));
-            dispatch(setDisplayDialect(displayDialectAndName.displayDialect));
-        }
-    } catch (error) {
-        console.error("Error while fetching meeting information:", error);
-
-        // Optionally, dispatch an error action
-    }
-};
-
 export const setMicrosoftRecognizerSDK = (params: speechsdk.TranslationRecognizer) => {
     return {
         type: SET_MICROSOFT_RECOGNIZERSDK,
