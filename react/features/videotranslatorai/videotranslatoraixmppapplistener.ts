@@ -2,15 +2,16 @@
 
 import { IStore } from "../app/types"; // Import your Redux store type
 import { CONFERENCE_JOINED } from "../base/conference/actionTypes"; // Adjust path if necessary
+
 import { fetchMeetingData, setRoomParams } from "./action.web"; // Adjust the path as needed
 
-/***
- * BELOW IS AN XMPP LISTENER SNIPPET WHICH DOES THREE THINGS
+/** *
+ * BELOW IS AN XMPP LISTENER SNIPPET WHICH DOES THREE THINGS.
  *
  * 1. SCANS ALL INCOMING XMPP PROTOCOL MESSAGES (IQ, MESSAGE, PRESENCE)
  * 2. SCANS ALL OUTGOING XMPP PROTOCOL MESSAGES (IQ, MESSAGE, PRESENCE)
  * 3. ADDS A HANDLER TO THE XMPP CONNECTION TO DEAL WITH A XMPP PROTOCOL MESSAGE WITHIN A NAMESPACE
- * THE XMPP HANDLER ALLOWS FOR SCANNING OF A PARTICULAR MESSAGE IF SENT BY THE SERVER
+ * THE XMPP HANDLER ALLOWS FOR SCANNING OF A PARTICULAR MESSAGE IF SENT BY THE SERVER.
  *
  * THIS WAS DONE BY RETRIEVING THE STROPHE OBJECT CONNECTION, WHICH PROVIDES SERVICES
  * TO CONNECT TO THE XMPP PROSODY SERVER. THE STROPHE OBJECT CONNECTION IS PART OF THE
@@ -39,6 +40,7 @@ export function onCustomIq(stanza: any, store: IStore) {
     console.log("IQ message received:", stanza);
 
     const query = stanza.getElementsByTagName("query")[0];
+
     if (query && query.getAttribute("xmlns") === "custom:data") {
         const meetingNameElement = query.getElementsByTagName("meetingName")[0];
         const participantNameElement = query.getElementsByTagName("participantName")[0];
@@ -50,6 +52,7 @@ export function onCustomIq(stanza: any, store: IStore) {
         const meetingId = "";
         const languageName = "";
         const clientId = "";
+
         console.log("Extracted Meeting Name:", meetingName);
         console.log("Extracted Participant Name:", participantName);
         console.log("Extracted JWT Token:", jwtToken);
@@ -59,12 +62,11 @@ export function onCustomIq(stanza: any, store: IStore) {
 
             store.dispatch(
                 setRoomParams({
-                    meetingName: meetingName,
-                    participantName: participantName,
+                    meetingName,
+                    participantName,
                     jwtToken,
-                    meetingId: meetingId,
-                    languageName: languageName,
-                    clientId: clientId,
+                    meetingId,
+                    clientId,
                 })
             );
 
@@ -73,12 +75,13 @@ export function onCustomIq(stanza: any, store: IStore) {
                     meetingNameQuery: meetingName,
                     token: jwtToken,
                     initialName: participantName,
-                    meetingId: meetingId,
+                    meetingId,
                 })
             );
 
             // Wait for the conference to fully initialize before setting the name
             const conference = APP.conference._room;
+
             console.log("CONFERENCE", conference);
             if (conference) {
                 // Listen for the CONFERENCE_JOINED event
@@ -101,27 +104,29 @@ export function onCustomIq(stanza: any, store: IStore) {
 
     return true; // Continue processing stanzas
 }
+
 // Function to add the IQ handler
 export function addIqHandler(store: IStore) {
     console.log("Attempting to add IQ handler...");
 
-    //get the xmpp information
+    // get the xmpp information
     const xmpp = APP.conference._room?.xmpp;
-    //the stropheConnection is within the object
+
+    // the stropheConnection is within the object
     const stropheConn = xmpp?.connection?._stropheConn;
 
     if (stropheConn) {
         console.log("Strophe connection found:", stropheConn);
 
-        //add handler to scan the incoming XMPP messages, of the stanza type iq, and of type set, within a specific name space (custom:data)
+        // add handler to scan the incoming XMPP messages, of the stanza type iq, and of type set, within a specific name space (custom:data)
         stropheConn.addHandler((stanza: any) => onCustomIq(stanza, store), "custom:data", "iq", "set", null, null);
 
-        //log all xmpp communication stanzas coming from the XMPP prosody server
+        // log all xmpp communication stanzas coming from the XMPP prosody server
         stropheConn.rawInput = function (data: any) {
             console.log("Strophe IN (incoming XMPP data): ", data);
         };
 
-        //log all xmpp communication stanzas going to the XMPP prosody server
+        // log all xmpp communication stanzas going to the XMPP prosody server
         stropheConn.rawOutput = function (data: any) {
             console.log("Strophe OUT (outgoing XMPP data): ", data);
         };

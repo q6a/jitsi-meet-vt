@@ -1,9 +1,11 @@
 import React, { FC, useEffect, useState } from "react";
-import { ReactMic } from "react-mic";
+
+// import { ReactMic } from "react-mic";
 import { useDispatch, useSelector, useStore } from "react-redux";
 
 import { IReduxState } from "../../app/types";
 import { startRecordingOpenAi, stopRecordingOpenAi, translateOpenAi } from "../action.web";
+declare module "react-mic";
 
 // import { ReactMic } from 'react-mic';
 
