@@ -1,48 +1,40 @@
-import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
-import { getAuthToken } from './authService';  
-import { createMessageStorageSendTranslationToDatabase } from './messageService';
-import { useSelector } from 'react-redux';
-import { toState } from '../../base/redux/functions';
-import { IReduxState, IStore } from '../../app/types';
-import { 
-    setIsTranscribing, 
-    setMicrosoftRecognizerSDK
-} from '../action.web';
-
-import { addMessage } from '../../../features/chat/actions.web';
-import { addMessageVideoTranslatorAI } from '../action.web';
+import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
+import { getAuthToken } from "./authService";
+import { createMessageStorageSendTranslationToDatabase } from "./messageService";
+import { useSelector } from "react-redux";
+import { toState } from "../../base/redux/functions";
+import { IReduxState, IStore } from "../../app/types";
+import { setIsTranscribing, setMicrosoftRecognizerSDK } from "../action.web";
 
 export const transcribeAndTranslateService = async (dispatch: any, getState: any) => {
     const state: IReduxState = getState();
 
     //const state: IReduxState = store.getState(); // Directly accessing the Redux state from the store
-    const tokenData = toState(state)['features/videotranslatorai'].jwtToken;
-    const participantState = toState(state)['features/base/participants'];
-    const participantData = toState(state)['features/videotranslatorai'].participantData;
-    const participantName = toState(state)['features/videotranslatorai'].participantName;
-    const meetingData: any = toState(state)['features/videotranslatorai'].meetingData;
-    const moderatorData = toState(state)['features/videotranslatorai'].moderatorData;
-    const entityData: any = toState(state)['features/videotranslatorai'].thisEntityData;
-    const conference = toState(state)['features/base/conference'].conference;
-    const participantLanguageName = toState(state)['features/videotranslatorai'].languageName;
-    const clientId = toState(state)['features/videotranslatorai'].clientId;
-    const meetingId = toState(state)['features/videotranslatorai'].meetingId;
+    const tokenData = toState(state)["features/videotranslatorai"].jwtToken;
+    const participantState = toState(state)["features/base/participants"];
+    const participantData = toState(state)["features/videotranslatorai"].participantData;
+    const participantName = toState(state)["features/videotranslatorai"].participantName;
+    const meetingData: any = toState(state)["features/videotranslatorai"].meetingData;
+    const moderatorData = toState(state)["features/videotranslatorai"].moderatorData;
+    const entityData: any = toState(state)["features/videotranslatorai"].thisEntityData;
+    const conference = toState(state)["features/base/conference"].conference;
+    const participantLanguageName = toState(state)["features/videotranslatorai"].languageName;
+    const clientId = toState(state)["features/videotranslatorai"].clientId;
+    const meetingId = toState(state)["features/videotranslatorai"].meetingId;
 
     const participantAndModeratorData = [...moderatorData, ...participantData];
 
     try {
-
         let authToken = "";
         let speechRegion = process.env.REACT_APP_SPEECH_REGION_MICROSOFT_SDK;
         const subscriptionKey = process.env.REACT_APP_SUBSCRIPTION_KEY_MICROSOFT_SDK;
 
-
         // Error checking for environment variables
         if (!speechRegion || !subscriptionKey) {
-            throw new Error('Required environment variables are missing.');
+            throw new Error("Required environment variables are missing.");
         }
 
-        let langFrom = 'en-AU';
+        let langFrom = "en-AU";
 
         // Find the local participant's language name
         for (const participant of participantAndModeratorData) {
@@ -56,7 +48,7 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
         const translationConfig = speechsdk.SpeechTranslationConfig.fromAuthorizationToken(authToken, speechRegion);
 
-        translationConfig.speechRecognitionLanguage = langFrom || 'en-US';
+        translationConfig.speechRecognitionLanguage = langFrom || "en-US";
 
         for (const participant of participantAndModeratorData) {
             if (participant.dialectCode) {
@@ -67,7 +59,7 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
         }
 
         if (translationConfig.targetLanguages.length === 0) {
-            throw new Error('No target languages were added.');
+            throw new Error("No target languages were added.");
         }
 
         const audioConfig = speechsdk.AudioConfig.fromDefaultMicrophoneInput();
@@ -78,10 +70,10 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
         const phraseList = speechsdk.PhraseListGrammar.fromRecognizer(transcriberRecognizer);
 
         if (meetingData.dictionaryWordKeyPairs && meetingData.dictionaryWordKeyPairs[participantLanguageName]) {
-            
             const phraselistitems = meetingData.dictionaryWordKeyPairs[participantLanguageName];
             for (const item of phraselistitems) {
-                phraseList.addPhrase(item);            }
+                phraseList.addPhrase(item);
+            }
         } else {
             console.warn(`No dictionary entries found for language: ${participantLanguageName}`);
         }
@@ -90,18 +82,16 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
         dispatch(setIsTranscribing(true));
 
         // Add recognizing, recognized, and canceled events as in your initial code...
-        
-        transcriberRecognizer.recognizing =  async (s, e) => {
+
+        transcriberRecognizer.recognizing = async (s, e) => {
             if (e.result.reason === 7) {
                 const transcription = e.result.text;
                 const translationMap = e.result.translations;
 
-    
-
                 let languagesRecognizing: any[] = [];
 
                 if (translationMap) {
-                    languagesRecognizing = translationMap.languages
+                    languagesRecognizing = translationMap.languages;
                 }
 
                 // Create a Map of participant IDs to names
@@ -111,38 +101,28 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                     participantMapRecognizing = participantState.remote;
                 }
 
-
-
-                for (const shortLangCode of languagesRecognizing)  {
-                    let translationRecognizing = '';
+                for (const shortLangCode of languagesRecognizing) {
+                    let translationRecognizing = "";
                     translationRecognizing = translationMap.get(shortLangCode);
 
-                    const langPrefix = shortLangCode.includes('-') ? shortLangCode.split('-')[0] : shortLangCode;
+                    const langPrefix = shortLangCode.includes("-") ? shortLangCode.split("-")[0] : shortLangCode;
                     let participants = [];
 
-                    if(langPrefix === "yue")
-                    {
-                        const yueCNParticipants = participantAndModeratorData.filter(p => 
+                    if (langPrefix === "yue") {
+                        const yueCNParticipants = participantAndModeratorData.filter((p) =>
                             p.dialectCode.startsWith("yue-CN")
                         );
 
-                        const zhHKParticipants = participantAndModeratorData.filter(p => 
+                        const zhHKParticipants = participantAndModeratorData.filter((p) =>
                             p.dialectCode.startsWith("zh-HK")
                         );
-                        
+
                         participants = [...yueCNParticipants, ...zhHKParticipants];
-                           
+                    } else {
+                        participants = participantAndModeratorData.filter((p) => p.dialectCode.startsWith(langPrefix));
                     }
-                    else
-                    {
-                        participants = participantAndModeratorData.filter(p => p.dialectCode.startsWith(langPrefix));
-                    }
-
-
 
                     for (const participant of participants) {
-
-
                         // Get participant ID from participantMap
                         let participantId = null;
                         for (const [key, value] of participantMapRecognizing.entries()) {
@@ -152,13 +132,12 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                             }
                         }
 
-
                         if (participantId) {
-                     
-                            const translationSentRecognizing = participantName + ": " + translationRecognizing + "(videotranslatoraiservice)";
-                             if(conference)
-                                 await conference.sendPrivateTextMessage(participantId, translationSentRecognizing);
-                             let messagesToDate = toState(state)['features/videotranslatorai'].messages;
+                            const translationSentRecognizing =
+                                participantName + ": " + translationRecognizing + "(videotranslatoraiservice)";
+                            if (conference)
+                                await conference.sendPrivateTextMessage(participantId, translationSentRecognizing);
+                            let messagesToDate = toState(state)["features/videotranslatorai"].messages;
 
                             // store.dispatch(addMessageVideoTranslatorAI({
                             //     displayName: participantName,
@@ -175,7 +154,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                             //     lobbyChat: null,
                             // }));
 
-                            
                             // store.dispatch(addMessage({
                             //     displayName: participantName,
                             //     hasRead: true,
@@ -188,8 +166,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                             //     recipient: participant.name,
                             // }));
 
-
-                            
                             // store.dispatch(addMessage({
                             //     displayName: participantName,
                             //     hasRead: true,
@@ -206,7 +182,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                 }
             }
         };
- 
 
         transcriberRecognizer.recognized = async (s, e) => {
             if (e.result.reason === speechsdk.ResultReason.TranslatedSpeech) {
@@ -216,7 +191,7 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                 let languagesRecognized: any[] = [];
 
                 if (translationMap) {
-                    languagesRecognized = translationMap.languages
+                    languagesRecognized = translationMap.languages;
                 }
 
                 // Create a Map of participant IDs to names
@@ -226,37 +201,30 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                     participantMapRecognized = participantState.remote;
                 }
 
-
                 for (let i = 0; i < languagesRecognized.length; i++) {
                     const shortLangCode = languagesRecognized[i];
-                    let translationRecognized = '';
+                    let translationRecognized = "";
                     translationRecognized = translationMap.get(languagesRecognized[i]);
 
-                    const langPrefix = shortLangCode.includes('-') ? shortLangCode.split('-')[0] : shortLangCode;
+                    const langPrefix = shortLangCode.includes("-") ? shortLangCode.split("-")[0] : shortLangCode;
 
                     let participants = [];
 
-                    if(langPrefix === "yue")
-                    {
-                        const yueCNParticipants = participantAndModeratorData.filter(p => 
+                    if (langPrefix === "yue") {
+                        const yueCNParticipants = participantAndModeratorData.filter((p) =>
                             p.dialectCode.startsWith("yue-CN")
                         );
-                        
-                        const zhHKParticipants = participantAndModeratorData.filter(p => 
+
+                        const zhHKParticipants = participantAndModeratorData.filter((p) =>
                             p.dialectCode.startsWith("zh-HK")
                         );
-                        
-                        participants = [...yueCNParticipants, ...zhHKParticipants];  
-                    }
-                    else
-                    {
-                        participants = participantAndModeratorData.filter(p => p.dialectCode.startsWith(langPrefix));
-                    }
 
-
+                        participants = [...yueCNParticipants, ...zhHKParticipants];
+                    } else {
+                        participants = participantAndModeratorData.filter((p) => p.dialectCode.startsWith(langPrefix));
+                    }
 
                     for (const participant of participants) {
-
                         // Get participant ID from participantMap
                         let participantId = null;
                         for (const [key, value] of participantMapRecognized.entries()) {
@@ -267,10 +235,10 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                         }
 
                         if (participantId) {
-                            
-                            const translationSentRecognized = participantName + ": " + translationRecognized  + "(videotranslatoraiservice)";
+                            const translationSentRecognized =
+                                participantName + ": " + translationRecognized + "(videotranslatoraiservice)";
 
-                            if(conference)
+                            if (conference)
                                 await conference.sendPrivateTextMessage(participantId, translationSentRecognized);
 
                             const messageData: any = {
@@ -281,16 +249,15 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                                 original_text: transcription,
                                 translated_text: translationRecognized,
                             };
-                            
-                            if(entityData.type === "MODERATOR" ){
-                                messageData.moderator_id = entityData.moderator_id; 
+
+                            if (entityData.type === "MODERATOR") {
+                                messageData.moderator_id = entityData.moderator_id;
                             }
 
-                            if(entityData.type === "PARTICIPANT"){
-                                messageData.participant_id = entityData.participant_id
+                            if (entityData.type === "PARTICIPANT") {
+                                messageData.participant_id = entityData.participant_id;
                             }
 
-                            
                             createMessageStorageSendTranslationToDatabase(messageData, tokenData);
 
                             // dispatch(addMessage({
@@ -307,7 +274,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                         }
                     }
                 }
-
             }
         };
 
@@ -325,18 +291,17 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
             setIsTranscribing(false);
         };
     } catch (err) {
-        console.error('Error during transcription:', err);
+        console.error("Error during transcription:", err);
     }
 };
-
 
 export const stopTranscriptionService = (dispatch: any, getState: any) => {
     return new Promise<void>((resolve, reject) => {
         const state: IReduxState = getState();
-        const recognizerSdk = state['features/videotranslatorai'].microsoftRecognizerSDK;
+        const recognizerSdk = state["features/videotranslatorai"].microsoftRecognizerSDK;
         if (!recognizerSdk) {
-            console.error('SDK recognizer not set');
-            reject(new Error('SDK recognizer not set'));
+            console.error("SDK recognizer not set");
+            reject(new Error("SDK recognizer not set"));
             return;
         }
 
@@ -346,7 +311,7 @@ export const stopTranscriptionService = (dispatch: any, getState: any) => {
                 resolve();
             },
             (err: any) => {
-                console.error('Error stopping transcription:', err);
+                console.error("Error stopping transcription:", err);
                 reject(err);
             }
         );
