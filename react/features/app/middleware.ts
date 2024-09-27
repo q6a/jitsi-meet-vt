@@ -1,16 +1,15 @@
 import { AnyAction } from "redux";
-import JitsiMeetJS, { JitsiConnection, JitsiConnectionEvents } from "../base/lib-jitsi-meet";
-import { PARTICIPANT_JOINED } from "../base/participants/actionTypes";
-import { CONFERENCE_JOINED } from "../base/conference/actionTypes";
-import { setRoomParams, fetchMeetingData, debugging } from "../videotranslatorai/action.web"; // Make sure this is the correct path to your action creator
+
 import { createConnectionEvent } from "../analytics/AnalyticsEvents";
 import { sendAnalytics } from "../analytics/functions";
 import { appWillNavigate } from "../base/app/actions";
-import { SET_ROOM } from "../base/conference/actionTypes";
+import { CONFERENCE_JOINED, SET_ROOM } from "../base/conference/actionTypes";
 import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from "../base/connection/actionTypes";
 import { getURLWithoutParams } from "../base/connection/utils";
+import { PARTICIPANT_JOINED } from "../base/participants/actionTypes";
 import MiddlewareRegistry from "../base/redux/MiddlewareRegistry";
 import { inIframe } from "../base/util/iframeUtils";
+import { debugging, fetchMeetingData, setRoomParams } from "../videotranslatorai/action.web"; // Make sure this is the correct path to your action creator
 
 import { reloadNow } from "./actions";
 import { _getRouteToRender } from "./getRouteToRender";
@@ -22,11 +21,11 @@ MiddlewareRegistry.register((store) => (next) => (action) => {
             return _connectionEstablished(store, next, action);
         case CONNECTION_FAILED:
             return _connectionFailed(store, next, action);
-        case SET_ROOM: //videotranslatorai
+        case SET_ROOM: // videotranslatorai
             return _setRoom(store, next, action);
-        case PARTICIPANT_JOINED: //videotranslatorai
+        case PARTICIPANT_JOINED: // videotranslatorai
             return _participantJoinedRoom(store, next, action);
-        case CONFERENCE_JOINED: //videotranslatorai
+        case CONFERENCE_JOINED: // videotranslatorai
             return _participantJoinedConference(store, next, action);
     }
 
@@ -175,50 +174,49 @@ function _navigate({ dispatch, getState }: IStore) {
 function _setRoom(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
 
-    //videotranslatorai
+    // videotranslatorai
     const params = new URLSearchParams(window.location.search);
     const jwtToken = params.get("jwt");
 
-    if (jwtToken)
-    {  
-        const [ header, payload ] = jwtToken.split('.');
+    if (jwtToken) {
+        const [header, payload] = jwtToken.split(".");
         const initialMeetingName: any = JSON.parse(atob(payload)).context.user.meetingName;
         const initialParticipantName: any = JSON.parse(atob(payload)).context.user.participantName;
         const meetingId: any = JSON.parse(atob(payload)).context.user.meetingId;
-        const languageName: any = JSON.parse(atob(payload)).context.user.dialect.language.name;
         const clientId: any = JSON.parse(atob(payload)).context.user.clientId;
 
-        if(initialMeetingName && initialParticipantName)
-        {
+        console.log("PARTICIPANT NAME", initialParticipantName);
 
-            store.dispatch(setRoomParams({
-                meetingName: initialMeetingName,
-                participantName: initialParticipantName,
-                jwtToken,
-                meetingId: meetingId,
-                languageName: languageName,
-                clientId: clientId
-            }));
-    
+        if (initialMeetingName && initialParticipantName) {
+            store.dispatch(
+                setRoomParams({
+                    meetingName: initialMeetingName,
+                    participantName: initialParticipantName,
+                    jwtToken,
+                    meetingId,
+                    clientId,
+                })
+            );
 
-
-            store.dispatch(fetchMeetingData({
-                meetingNameQuery: initialMeetingName,
-                token: jwtToken,
-                initialName: initialParticipantName,
-                meetingId: meetingId
-            }));
+            store.dispatch(
+                fetchMeetingData({
+                    meetingNameQuery: initialMeetingName,
+                    token: jwtToken,
+                    initialName: initialParticipantName,
+                    meetingId,
+                })
+            );
         }
     }
-    //videotranslatorai
 
-    
+    // videotranslatorai
+
     _navigate(store);
 
     return result;
 }
 
-//videotranslatorai
+// videotranslatorai
 /**
  * Middleware to grant moderator rights after the conference is joined.
  *
@@ -233,7 +231,8 @@ function _participantJoinedConference(store: IStore, next: Function, action: Any
 
     return result;
 }
-//videotranslatorai
+
+// videotranslatorai
 /**
  * Middleware to grant moderator rights based on a parameter.
  *
@@ -248,4 +247,5 @@ function _participantJoinedRoom(store: IStore, next: Function, action: AnyAction
 
     return result;
 }
-//videotranslatorai
+
+// videotranslatorai

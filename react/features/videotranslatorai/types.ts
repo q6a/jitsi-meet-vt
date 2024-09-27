@@ -1,6 +1,4 @@
-
-import { string } from '@tensorflow/tfjs-core';
-import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
+import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 
 export interface IMessage {
     displayName: string;
@@ -17,28 +15,29 @@ export interface IMessage {
 }
 
 export interface IRecognitionResultPayload {
-    transcription: string; // or another appropriate type
-    translationMap: Record<string, string>; // Assuming translationMap is an object with key-value pairs
-    participantId: number; // or string, depending on your actual data
-}
+    // Assuming translationMap is an object with key-value pairs
+    participantId: number;
+    transcription: string;
 
+    // or another appropriate type
+    translationMap: Record<string, string>; // or string, depending on your actual data
+}
 
 // Define interface for Room Parameters
 export interface IRoomParams {
+    clientId: string;
     jwtToken: string;
     meetingId: string;
     meetingName: string;
     participantName: string;
-    languageName: string;
-    clientId: string;
 }
 
 // Define interface for Room Parameters
 export interface IFetchMeetingData {
+    initialName: string;
+    meetingId: string;
     meetingNameQuery: string;
-    token: string,
-    initialName: string,
-    meetingId: string
+    token: string;
 }
 
 // Define interface for Private Messages
@@ -57,50 +56,45 @@ export interface IMessage {
 }
 
 export interface IParticipant {
-    participant_id: number;
-    name: string;
     email: string;
-    dialect_id: number;
-    dialectName: string;
-    dialectCode: string;
     languageName: string;
-    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could have other values as well
+    name: string;
+    participant_id: number;
+    transcriptionDialect: IDialect;
+    translationDialect: IDialect;
+    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
 }
-
 
 export interface IModerator {
+    email: string;
+    languageName: string;
     moderator_id: number;
     name: string;
-    email: string;
-    dialect_id: number;
-    dialectName: string;
-    dialectCode: string;
-    languageName: string;
-    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could have other values as well
+    transcriptionDialect: IDialect;
+    translationDialect: IDialect;
+    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
 }
-
 
 export interface ILinguist {
+    email: string;
     linguist_id: number;
     name: string;
-    email: string;
-    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could have other values as well
+    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
 }
 
-
 export interface IUserCreated {
-    user_created_id: number;
-    name: string;
     email: string;
+    name: string;
+    user_created_id: number;
 }
 
 export interface IClient {
-    text_to_text: any[];
-    speech_to_text: any[];
-    text_to_speech: any[];
-    status: Boolean;
-    primary_language: string;
     client_name: string;
+    primary_language: string;
+    speech_to_text: any[];
+    status: Boolean;
+    text_to_speech: any[];
+    text_to_text: any[];
 }
 
 export interface IDictionaryWordKeyPairs {
@@ -108,67 +102,77 @@ export interface IDictionaryWordKeyPairs {
 }
 
 export interface IMeetingData {
-    name: string;
     client: IClient;
-    dictionaryName: string;
     dictionaryLanguages: string[];
+    dictionaryName: string;
     dictionaryWordKeyPairs: IDictionaryWordKeyPairs;
+    name: string;
 }
 
 export interface IEntityData {
-    participant_id: number;
-    name: string;
     email: string;
-    dialect_id: number;
-    dialectName: string;
-    dialectCode: string;
     languageName: string;
-    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could be other values as well
+    name: string;
+    participant_id: number;
+    transcriptionDialect: IDialect;
+    translationDialect: IDialect;
+    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could be other values as well
 }
-
 
 export interface IVideoTranslatorAiState {
-    toEmail: string;
-    meetingName: string;
-    participantName: string;
-    jwtToken: string;
-    meetingId: string;
-    languageName: string;
     clientId: string;
-    thisEntityData: IEntityData;
-    participantData: Array<IParticipant>;
-    moderatorData: Array<IModerator>;
-    linguistData: Array<ILinguist>;
-    isTranscribing: boolean;
-    transcriptionResults: Array<IRecognitionResultPayload>;
-    meetingData: IMessage;
-    displayName: string;
     displayDialect: string;
-    microsoftRecognizerSDK: speechsdk.TranslationRecognizer;
-    latestPrivateMessage: string; 
-    privateMessages: IMessage[];
+    displayName: string;
+    isRecording: boolean;
+    isTranscribing: boolean;
+    jwtToken: string;
+    latestPrivateMessage: string;
+    linguistData: Array<ILinguist>;
+    meetingData: IMessage;
+    meetingId: string;
+    meetingName: string;
     messageNotification: boolean;
     messages: Array<IMessage>;
-    isRecording: boolean;
+    microsoftRecognizerSDK: speechsdk.TranslationRecognizer;
+    moderatorData: Array<IModerator>;
     openAiRecordingBlob: any;
+    participantData: Array<IParticipant>;
+    participantName: string;
+    privateMessages: IMessage[];
+    thisEntityData: IEntityData;
+    toEmail: string;
+    transcriptionResults: Array<IRecognitionResultPayload>;
 }
 
-
 export interface IDialect {
-    dialect_id: number;
+    dialectCode: string;
+    dialectId: number;
+    language: {
+        languageId: string;
+        name: string;
+    };
+
     name: string;
+}
+
+export interface IDialectMeeting {
     dialect_code: string;
-    // language: {
-    //     name: string;
-    // };
+    dialect_id: number;
+    language: {
+        language_id: string;
+        name: string;
+    };
+
+    name: string;
 }
 
 export interface IParticipantMeeting {
     participant: {
-        participant_id: number;
-        name: string;
         email: string;
-        dialect: IDialect;
+        name: string;
+        participant_id: number;
+        transcription_dialect: IDialectMeeting;
+        translation_dialect: IDialectMeeting;
     };
 }
 
@@ -178,14 +182,16 @@ export interface IModeratorMeeting {
         name: string;
         user_id: number;
     };
-    dialect: IDialect;
+
+    transcription_dialect: IDialectMeeting;
+    translation_dialect: IDialectMeeting;
 }
 
 export interface ILinguistMeeting {
     linguist: {
+        email: string;
         linguist_id: number;
         name: string;
-        email: string;
     };
 }
 
