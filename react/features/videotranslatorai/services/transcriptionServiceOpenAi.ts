@@ -3,8 +3,6 @@ import axios from "axios";
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
 
-import { createMessageStorageSendTranslationToDatabase } from "./messageService";
-
 const getParticipantId = (participantMap: Map<string, any>, participantName: string): string | null => {
     for (const [key, value] of participantMap.entries()) {
         if (value.name === participantName) {
@@ -78,34 +76,42 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
             throw new Error("Transcription failed: No text returned.");
         }
 
-        console.log("TRANSCRIPTION TEXT", transcriptionText);
+        await Promise.all(
+            participantAndModeratorData.map(async (participant) => {
+                if (
+                    participant.translationDialect.dialectCode &&
+                    participant.transcriptionDialect.dialectCode !== langFrom &&
+                    conference
+                ) {
+                    try {
+                        // Translate the transcribed text
+                        const translationResponse = await axios.post(
+                            translationEndpoint,
+                            [{ Text: transcriptionText }],
+                            {
+                                headers: {
+                                    "Ocp-Apim-Subscription-Key": translateApiKey,
+                                    "Ocp-Apim-Subscription-Region": "australiaeast",
+                                    "Content-Type": "application/json",
+                                },
+                                params: {
+                                    from: langFrom,
+                                    to: participant.translationDialect.dialectCode,
+                                },
+                            }
+                        );
 
-        // Use .map() to create an array of promises
-        const translationPromises = participantAndModeratorData.map(async (participant) => {
-            if (
-                participant.translationDialect.dialectCode &&
-                participant.transcriptionDialect.dialectCode !== langFrom
-            ) {
-                try {
-                    // Translate the transcribed text
-                    const translationResponse = await axios.post(translationEndpoint, [{ Text: transcriptionText }], {
-                        headers: {
-                            "Ocp-Apim-Subscription-Key": translateApiKey,
-                            "Ocp-Apim-Subscription-Region": "australiaeast",
-                            "Content-Type": "application/json",
-                        },
-                        params: {
-                            from: langFrom,
-                            to: participant.translationDialect.dialectCode,
-                        },
-                    });
+                        const translationText = translationResponse.data[0].translations[0].text;
+                        const translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;
 
-                    const translationText = translationResponse.data[0].translations[0].text;
-                    const translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;
+                        let participantId = "";
 
-                    const participantId = getParticipantId(participantState.remote, participant.name);
+                        for (const [key, value] of participantState.remote.entries()) {
+                            if (value.name === participant.name) {
+                                participantId = key;
+                            }
+                        }
 
-                    if (participantId && conference) {
                         console.log("PARTICIPANT NAME", participant.name);
                         console.log("TRANSLATION SENT", translationSent);
                         console.log("LANG FROM", langFrom);
@@ -113,8 +119,8 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                         console.log("LANG TO ID", participant.translationDialect.dialectId);
                         console.log("PARTICIPANT ID", participantId);
 
+                        // arrayPromises.push(await conference.sendPrivateTextMessage(participantId, translationSent));
                         await conference.sendPrivateTextMessage(participantId, translationSent);
-
                         const messageData: any = {
                             meeting_project_id: meetingId,
                             client_id: clientId,
@@ -130,7 +136,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                             messageData.participant_id = entityData.participantId;
                         }
 
-                        await createMessageStorageSendTranslationToDatabase(messageData, tokenData);
+                        // await createMessageStorageSendTranslationToDatabase(messageData, tokenData);
 
                         // dispatch(
                         //     addMessageVideoTranslatorAI({
@@ -148,15 +154,50 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                         //         lobbyChat: null,
                         //     })
                         // );
+                    } catch (error) {
+                        console.error(`Error during translation for participant ${participant.name}:`, error);
                     }
-                } catch (error) {
-                    console.error(`Error during translation for participant ${participant.name}:`, error);
                 }
-            }
-        });
+            })
+        );
+
+        // TODO: this is not the viable solution to send two at the same time, it's a temporary fix
+        // TODO: try to work out another way of solving this problem
+        // TODO: the issue is that when a single message is being sent, it only sends on pressing the button a second time
+
+        await Promise.all(
+            participantAndModeratorData.map(async (participant) => {
+                if (
+                    participant.translationDialect.dialectCode &&
+                    participant.transcriptionDialect.dialectCode !== langFrom
+                ) {
+                    try {
+                        const translationSent = " (videotranslatoraiservice)";
+                        let participantId = "";
+
+                        for (const [key, value] of participantState.remote.entries()) {
+                            if (value.name === participant.name) {
+                                participantId = key;
+                            }
+                        }
+
+                        if (participantId && conference) {
+                            console.log("PARTICIPANT NAME", participant.name);
+                            console.log("TRANSLATION SENT", translationSent);
+                            console.log("LANG FROM", langFrom);
+                            console.log("LANG TO", participant.translationDialect.dialectCode);
+                            console.log("LANG TO ID", participant.translationDialect.dialectId);
+                            console.log("PARTICIPANT ID", participantId);
+                            await conference.sendPrivateTextMessage(participantId, translationSent);
+                        }
+                    } catch (error) {
+                        console.error(`Error during translation for participant ${participant.name}:`, error);
+                    }
+                }
+            })
+        );
 
         // Await all translation promises
-        await Promise.all(translationPromises);
     } catch (err) {
         console.error("Error during transcription and translation:", err);
     }

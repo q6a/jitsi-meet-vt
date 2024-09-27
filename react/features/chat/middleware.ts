@@ -170,6 +170,8 @@ MiddlewareRegistry.register((store) => (next) => (action) => {
         }
 
         case SEND_MESSAGE: {
+            debugger;
+
             const state = store.getState();
             const conference = getCurrentConference(state);
 
