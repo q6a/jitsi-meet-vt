@@ -54,7 +54,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
         const formData = new FormData();
 
         // Use the actual Blob data and ensure it's in the correct format
-        const correctedBlob = new Blob([recordedBlobParam.blob], { type: "audio/wav", lastModified: Date.now() });
+        const correctedBlob = new Blob([recordedBlobParam.blob], { type: "audio/wav" } as any); // Fallback to any
 
         formData.append("file", correctedBlob); // Append the corrected Blob object
         formData.append("model", "whisper-1"); // Use the Whisper model for transcription
