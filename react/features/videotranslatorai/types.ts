@@ -1,4 +1,4 @@
-import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
+import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 
 export interface IMessage {
     displayName: string;
@@ -15,7 +15,6 @@ export interface IMessage {
 }
 
 export interface IRecognitionResultPayload {
-
     // Assuming translationMap is an object with key-value pairs
     participantId: number;
     transcription: string;
@@ -28,7 +27,6 @@ export interface IRecognitionResultPayload {
 export interface IRoomParams {
     clientId: string;
     jwtToken: string;
-    languageName: string;
     meetingId: string;
     meetingName: string;
     participantName: string;
@@ -59,29 +57,27 @@ export interface IMessage {
 
 export interface IParticipant {
     email: string;
-    languageName: string;
     name: string;
     participant_id: number;
     transcriptionDialect: IDialect;
     translationDialect: IDialect;
-    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could have other values as well
+    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
 }
 
 export interface IModerator {
     email: string;
-    languageName: string;
     moderator_id: number;
     name: string;
     transcriptionDialect: IDialect;
     translationDialect: IDialect;
-    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could have other values as well
+    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
 }
 
 export interface ILinguist {
     email: string;
     linguist_id: number;
     name: string;
-    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could have other values as well
+    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
 }
 
 export interface IUserCreated {
@@ -113,12 +109,11 @@ export interface IMeetingData {
 
 export interface IEntityData {
     email: string;
-    languageName: string;
     name: string;
     participant_id: number;
     transcriptionDialect: IDialect;
     translationDialect: IDialect;
-    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could be other values as well
+    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could be other values as well
 }
 
 export interface IVideoTranslatorAiState {

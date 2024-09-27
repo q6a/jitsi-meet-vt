@@ -55,7 +55,7 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
                 return {
                     moderatorId: mm.moderator.user_id,
                     name: mm.moderator.name,
-                    email: mm.email,
+                    email: mm.moderator.email,
                     transcriptionDialect: {
                         name: mm.transcription_dialect.name,
                         dialectCode: mm.transcription_dialect.dialect_code,
