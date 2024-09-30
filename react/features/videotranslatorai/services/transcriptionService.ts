@@ -1,3 +1,12 @@
+import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
+
+import { IReduxState } from "../../app/types";
+import { toState } from "../../base/redux/functions";
+import { setIsTranscribing, setMicrosoftRecognizerSDK } from "../action.web";
+
+import { getAuthToken } from "./authService";
+import { createMessageStorageSendTranslationToDatabase } from "./messageService";
+
 export const transcribeAndTranslateService = async (dispatch: any, getState: any) => {
     const state: IReduxState = getState();
 
@@ -10,10 +19,22 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
     const moderatorData = toState(state)["features/videotranslatorai"].moderatorData;
     const entityData: any = toState(state)["features/videotranslatorai"].thisEntityData;
     const conference = toState(state)["features/base/conference"].conference;
-    const participantLanguageName = toState(state)["features/videotranslatorai"].languageName;
+    let participantLanguageName = "";
     const clientId = toState(state)["features/videotranslatorai"].clientId;
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const participantAndModeratorData = [...moderatorData, ...participantData];
+
+    console.log("Token Data:", tokenData);
+    console.log("Participant State:", participantState);
+    console.log("Participant Data:", participantData);
+    console.log("Participant Name:", participantName);
+    console.log("Meeting Data:", meetingData);
+    console.log("Moderator Data:", moderatorData);
+    console.log("Entity Data:", entityData);
+    console.log("Conference:", conference);
+    console.log("Client ID:", clientId);
+    console.log("Meeting ID:", meetingId);
+    console.log("Participant and Moderator Data:", participantAndModeratorData);
 
     try {
         let authToken = "";
@@ -33,11 +54,14 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                 break;
             }
         }
+
+        console.log("LANG FROM", langFrom);
         authToken = await getAuthToken();
         const translationConfig = speechsdk.SpeechTranslationConfig.fromAuthorizationToken(authToken, speechRegion);
 
         translationConfig.speechRecognitionLanguage = langFrom || "en-US";
         for (const participant of participantAndModeratorData) {
+            console.log("PARTICIPANT DIALECTCODE", participant.transcriptionDialect.dialectCode);
             if (participant.transcriptionDialect.dialectCode) {
                 translationConfig.addTargetLanguage(participant.transcriptionDialect.dialectCode);
             } else {
@@ -53,6 +77,15 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
         dispatch(setMicrosoftRecognizerSDK(transcriberRecognizer));
         const phraseList = speechsdk.PhraseListGrammar.fromRecognizer(transcriberRecognizer);
 
+        for (const participant of participantAndModeratorData) {
+            if (participant.name === participantName) {
+                participantLanguageName = participant.transcriptionDialect.language.name;
+                break;
+            }
+        }
+
+        console.log("PARTICIPANT LANGUAGE NAME", participantLanguageName);
+
         if (meetingData.dictionaryWordKeyPairs && meetingData.dictionaryWordKeyPairs[participantLanguageName]) {
             const phraselistitems = meetingData.dictionaryWordKeyPairs[participantLanguageName];
 
@@ -62,12 +95,17 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
         } else {
             console.warn(`No dictionary entries found for language: ${participantLanguageName}`);
         }
+
+        console.log("TRANSCRIBER RECOGNIZER", transcriberRecognizer);
+
         transcriberRecognizer.startContinuousRecognitionAsync();
         dispatch(setIsTranscribing(true));
 
         // Add recognizing, recognized, and canceled events as in your initial code...
         transcriberRecognizer.recognizing = async (s, e) => {
+            console.log("Recognizing event triggered. Result:", e.result); // Log the result for debugging
             if (e.result.reason === 7) {
+                console.log("TRANSCRIBER RECOGNIZING");
                 const transcription = e.result.text;
                 const translationMap = e.result.translations;
                 let languagesRecognizing: any[] = [];
@@ -85,22 +123,15 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                 for (const shortLangCode of languagesRecognizing) {
                     let translationRecognizing = "";
 
+                    console.log("shortLangCode", shortLangCode);
                     translationRecognizing = translationMap.get(shortLangCode);
                     const langPrefix = shortLangCode.includes("-") ? shortLangCode.split("-")[0] : shortLangCode;
-                    let participants = [];
+                    const participants: any = participantAndModeratorData.filter((p) =>
+                        p.translationDialect?.dialectCode?.startsWith(langPrefix)
+                    );
 
-                    if (langPrefix === "yue") {
-                        const yueCNParticipants = participantAndModeratorData.filter((p) =>
-                            p.dialectCode.startsWith("yue-CN")
-                        );
-                        const zhHKParticipants = participantAndModeratorData.filter((p) =>
-                            p.dialectCode.startsWith("zh-HK")
-                        );
+                    console.log("participants", participants);
 
-                        participants = [...yueCNParticipants, ...zhHKParticipants];
-                    } else {
-                        participants = participantAndModeratorData.filter((p) => p.dialectCode.startsWith(langPrefix));
-                    }
                     for (const participant of participants) {
                         // Get participant ID from participantMap
                         let participantId = null;
@@ -111,6 +142,9 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                                 break;
                             }
                         }
+
+                        console.log("PARTICIPANT ID", participantId);
+
                         if (participantId) {
                             const translationSentRecognizing = `${participantName}: ${translationRecognizing}(videotranslatoraiservice)`;
 
@@ -182,20 +216,10 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
                     translationRecognized = translationMap.get(languagesRecognized[i]);
                     const langPrefix = shortLangCode.includes("-") ? shortLangCode.split("-")[0] : shortLangCode;
-                    let participants = [];
+                    const participants: any = participantAndModeratorData.filter((p) =>
+                        p.translationDialect?.dialectCode?.startsWith(langPrefix)
+                    );
 
-                    if (langPrefix === "yue") {
-                        const yueCNParticipants = participantAndModeratorData.filter((p) =>
-                            p.dialectCode.startsWith("yue-CN")
-                        );
-                        const zhHKParticipants = participantAndModeratorData.filter((p) =>
-                            p.dialectCode.startsWith("zh-HK")
-                        );
-
-                        participants = [...yueCNParticipants, ...zhHKParticipants];
-                    } else {
-                        participants = participantAndModeratorData.filter((p) => p.dialectCode.startsWith(langPrefix));
-                    }
                     for (const participant of participants) {
                         // Get participant ID from participantMap
                         let participantId = null;
@@ -215,17 +239,16 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                             const messageData: any = {
                                 meeting_project_id: meetingId,
                                 client_id: clientId,
-                                dialect_from: entityData.dialect_id,
-                                dialect_to: participant.dialect_id,
+                                dialect_from: entityData.transcriptionDialect.dialectId,
+                                dialect_to: participant.translationDialect.dialectId,
                                 original_text: transcription,
                                 translated_text: translationRecognized,
                             };
 
                             if (entityData.type === "MODERATOR") {
-                                messageData.moderator_id = entityData.moderator_id;
-                            }
-                            if (entityData.type === "PARTICIPANT") {
-                                messageData.participant_id = entityData.participant_id;
+                                messageData.moderator_id = entityData.moderatorId;
+                            } else if (entityData.type === "PARTICIPANT") {
+                                messageData.participant_id = entityData.participantId;
                             }
                             createMessageStorageSendTranslationToDatabase(messageData, tokenData);
 
@@ -264,21 +287,23 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
 export const stopTranscriptionService = (dispatch: any, getState: any) =>
     new Promise<void>((resolve, reject) => {
-        // const state: IReduxState = getState();
-        // const recognizerSdk = state["features/videotranslatorai"].microsoftRecognizerSDK;
-        // if (!recognizerSdk) {
-        //     console.error("SDK recognizer not set");
-        //     reject(new Error("SDK recognizer not set"));
-        //     return;
-        // }
-        // recognizerSdk.stopContinuousRecognitionAsync(
-        //     () => {
-        //         dispatch(setIsTranscribing(false));
-        //         resolve();
-        //     },
-        //     (err: any) => {
-        //         console.error("Error stopping transcription:", err);
-        //         reject(err);
-        //     }
-        // );
+        const state: IReduxState = getState();
+        const recognizerSdk = state["features/videotranslatorai"].microsoftRecognizerSDK;
+
+        if (!recognizerSdk) {
+            console.error("SDK recognizer not set");
+            reject(new Error("SDK recognizer not set"));
+
+            return;
+        }
+        recognizerSdk.stopContinuousRecognitionAsync(
+            () => {
+                dispatch(setIsTranscribing(false));
+                resolve();
+            },
+            (err: any) => {
+                console.error("Error stopping transcription:", err);
+                reject(err);
+            }
+        );
     });

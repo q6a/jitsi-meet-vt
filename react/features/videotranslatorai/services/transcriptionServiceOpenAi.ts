@@ -3,6 +3,8 @@ import axios from "axios";
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
 
+import { createMessageStorageSendTranslationToDatabase } from "./messageService";
+
 const getParticipantId = (participantMap: Map<string, any>, participantName: string): string | null => {
     for (const [key, value] of participantMap.entries()) {
         if (value.name === participantName) {
@@ -51,30 +53,72 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
 
         // Begin recording (this would be triggered elsewhere in your app)
 
+        // const formData = new FormData();
+
+        // // Use the actual Blob data and ensure it's in the correct format
+        // const correctedBlob = new Blob([recordedBlobParam.blob], { type: "audio/wav" } as any); // Fallback to any
+
+        // formData.append("file", correctedBlob); // Append the corrected Blob object
+        // formData.append("model", "whisper-1"); // Use the Whisper model for transcription
+        // formData.append("language", langFrom); // Specify the language (optional)
+
+        // // Set the OpenAI API key and endpoint
+
+        // // Make the request to OpenAI
+        // const transcriptionResponse = await axios.post(openAiEndpoint, formData, {
+        //     headers: {
+        //         Authorization: `Bearer ${openAiApiKey}`, // Use OpenAI's Bearer token for authentication
+        //         "Content-Type": "multipart/form-data",
+        //     },
+        // });
+
+        // const transcriptionText = transcriptionResponse.data.text;
+
+        // if (!transcriptionText) {
+        //     throw new Error("Transcription failed: No text returned.");
+        // }
+
+        // Begin recording (this would be triggered elsewhere in your app)
+
         const formData = new FormData();
 
+        // You can get the current timestamp or provide a custom lastModified date
+        const lastModifiedDate = new Date(); // Set it to the current date and time, or any desired date
+        const lastModified = lastModifiedDate.getTime(); // Get the timestamp in milliseconds
+
+        // Create a complete File object with custom lastModified date and type
+        const correctedBlob = new File([recordedBlobParam.blob], "audio.wav", {
+            type: "audio/wav",
+            lastModified, // Assign the custom lastModified timestamp
+        });
+
         // Use the actual Blob data and ensure it's in the correct format
-        const correctedBlob = new Blob([recordedBlobParam.blob], { type: "audio/wav" } as any); // Fallback to any
+        // const correctedBlob = new Blob([recordedBlobParam.blob], { type: "audio/wav" }); // Fallback to any
 
-        formData.append("file", correctedBlob); // Append the corrected Blob object
-        formData.append("model", "whisper-1"); // Use the Whisper model for transcription
-        formData.append("language", langFrom); // Specify the language (optional)
+        formData.append("file", correctedBlob); // Append the corrected Blob object, ensure filename
+        // formData.append("file", correctedBlob); // Append the corrected Blob object
+        formData.append("langFrom", langFrom); // Specify the language (optional)
 
-        // Set the OpenAI API key and endpoint
+        // Set the new API endpoint for transcription
+        const apiEndpoint = "https://api.stg.qbl-media.com/v1/users/transcribe"; // New API endpoint
 
-        // Make the request to OpenAI
-        const transcriptionResponse = await axios.post(openAiEndpoint, formData, {
+        // Make the request to the new API
+        const transcriptionResponse = await axios.post(apiEndpoint, formData, {
             headers: {
-                Authorization: `Bearer ${openAiApiKey}`, // Use OpenAI's Bearer token for authentication
-                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${tokenData}`, // Bearer token for authentication
+                "Content-Type": "multipart/form-data", // Ensure the correct content type for form data
             },
         });
 
-        const transcriptionText = transcriptionResponse.data.text;
+        // Extract the transcription text from the response
+        const transcriptionText = transcriptionResponse.data.data.transcription;
 
+        console.log("TRANSCRIPTION RESPONSE", transcriptionResponse);
         if (!transcriptionText) {
             throw new Error("Transcription failed: No text returned.");
         }
+
+        console.log("Transcription text:", transcriptionText);
 
         await Promise.all(
             participantAndModeratorData.map(async (participant) => {
@@ -136,7 +180,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                             messageData.participant_id = entityData.participantId;
                         }
 
-                        // await createMessageStorageSendTranslationToDatabase(messageData, tokenData);
+                        await createMessageStorageSendTranslationToDatabase(messageData, tokenData);
 
                         // dispatch(
                         //     addMessageVideoTranslatorAI({

@@ -8,7 +8,7 @@ import { isMobileBrowser } from "../../../base/environment/utils";
 import { getLocalParticipant, isLocalParticipantModerator } from "../../../base/participants/functions";
 import ContextMenu from "../../../base/ui/components/web/ContextMenu";
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from "../../../reactions/functions.web";
-import TranscriptionAndTranslationOpenAiButton from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAiButton"; // videotranslatorai
+import TranscriptionAndTranslationOpenAiButton from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAiButton";
 import { setHangupMenuVisible, setOverflowMenuVisible, setToolbarHovered, showToolbox } from "../../actions.web";
 import { getJwtDisabledButtons, getVisibleButtons, isButtonEnabled, isToolboxVisible } from "../../functions.web";
 import { useKeyboardShortcuts, useToolboxButtons } from "../../hooks.web";
@@ -255,7 +255,7 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                                 Content !== Separator && <Content {...rest} buttonKey={key} key={key} />
                         )}
                         {/* videotranslatorai */}
-                        {/* {conference && <TranscriptionAndTranslationButton /> }  */}
+                        {/* {conference && <TranscriptionAndTranslationButton />} */}
                         {conference && <TranscriptionAndTranslationOpenAiButton />}
                         {/* videotranslatorai */}
                         {Boolean(overflowMenuButtons.length) && (
