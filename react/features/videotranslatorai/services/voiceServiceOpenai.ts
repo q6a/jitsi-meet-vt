@@ -53,7 +53,7 @@ export async function playVoiceFromMessage(message: any, state: IReduxState) {
         console.log("RESPONSE", response);
 
         // Create a Blob and play the audio
-        const audioBlob = new Blob([response.data], { type: "audio/mpeg" });
+        const audioBlob = new Blob([response.data], { type: "audio/mpeg" } as any);
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
 
