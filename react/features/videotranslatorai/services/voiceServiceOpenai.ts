@@ -6,11 +6,15 @@ import { toState } from "../../base/redux/functions";
 // Voice Service to handle TTS and play the audio
 export async function playVoiceFromMessage(message: any, state: IReduxState) {
     try {
-        const moderatorData = toState(state)["features/videotranslatorai"].moderatorData;
-        const participantData = toState(state)["features/videotranslatorai"].participantData;
-        const participantAndModeratorData = [...moderatorData, ...participantData];
-        const participantName = toState(state)["features/videotranslatorai"].participantName;
+        const moderatorData: any = toState(state)["features/videotranslatorai"].moderatorData;
+        const participantData: any = toState(state)["features/videotranslatorai"].participantData;
+        const participantAndModeratorData: any = [...moderatorData, ...participantData];
+        const participantName: any = toState(state)["features/videotranslatorai"].participantName;
         let langFrom = "en";
+
+        if (!moderatorData || !participantData || !participantAndModeratorData || participantName) {
+            throw new Error("One or more environment variables are not set.");
+        }
 
         // Find the local participant's language name
         for (const participant of participantAndModeratorData) {
@@ -48,7 +52,7 @@ export async function playVoiceFromMessage(message: any, state: IReduxState) {
         const audio = new Audio(audioUrl);
 
         audio.play();
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error generating speech:", error.response?.data || error.message);
     }
 }
