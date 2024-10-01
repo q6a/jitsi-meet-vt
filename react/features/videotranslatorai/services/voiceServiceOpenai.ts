@@ -18,9 +18,9 @@ export async function playVoiceFromMessage(message: any, state: IReduxState) {
             !moderatorData ||
             !participantData ||
             !participantAndModeratorData ||
-            participantName ||
-            apiKey ||
-            openaiApiUrl
+            !participantName ||
+            !apiKey ||
+            !openaiApiUrl
         ) {
             throw new Error("One or more environment variables are not set.");
         }

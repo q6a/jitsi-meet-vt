@@ -27,7 +27,9 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
 
     useEffect(() => {
         // // Detect a change in messages
-        return;
+        if (!isSoundOn) {
+            return;
+        }
         if (messages !== previousMessages) {
             const lastMessage = messages[messages.length - 1]; // Get the last message
 
@@ -87,7 +89,7 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
             {/* Button to toggle sound on/off */}
 
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                {/* <div
+                <div
                     className="toolbox-icon"
                     onClick={toggleSound}
                     style={{
@@ -95,11 +97,19 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
                         cursor: "pointer",
                         transition: "transform 0.3s ease",
                         transform: isSoundOn ? "scale(1.1)" : "scale(1)",
+                        border: "2px solid white", // Add white contours (border)
+                        borderRadius: "50%", // Keep it circular if required
+                        width: "40px", // Set the dimensions to match Jitsi style
+                        height: "40px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
                     }}
                 >
                     <div className="jitsi-icon jitsi-icon-default">
                         <div>
-                            {isRecording ? (
+                            {isSoundOn ? (
+                                // Sound On Icon
                                 <svg
                                     fill="#ffffff"
                                     height={20}
@@ -109,11 +119,13 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
                                     xmlns="http://www.w3.org/2000/svg"
                                 >
                                     <g>
-                                        <circle cx="16" cy="16" fill="#ffffff" r="4" />
-                                        <path d="M16,2C8.3,2,2,8.3,2,16s6.3,14,14,14s14-6.3,14-14S23.7,2,16,2z M16,22c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6S19.3,22,16,22z" />
+                                        <path d="M8 12v8h6l6 5v-18l-6 5h-6z" /> {/* Speaker body */}
+                                        <path d="M20 10c2 1 4 3 4 6s-2 5-4 6" /> {/* Sound waves */}
+                                        <path d="M22 8c3 2 6 5 6 8s-3 6-6 8" /> {/* Sound waves */}
                                     </g>
                                 </svg>
                             ) : (
+                                // Sound Off Icon
                                 <svg
                                     fill="#ffffff"
                                     height={20}
@@ -123,14 +135,17 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
                                     xmlns="http://www.w3.org/2000/svg"
                                 >
                                     <g>
-                                        <circle cx="16" cy="16" r="4" />
-                                        <path d="M16,2C8.3,2,2,8.3,2,16s6.3,14,14,14s14-6.3,14-14S23.7,2,16,2z M16,22c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6S19.3,22,16,22z" />
+                                        <path d="M8 12v8h6l6 5v-18l-6 5h-6z" /> {/* Speaker body */}
+                                        <line stroke="white" strokeWidth="2" x1="24" x2="30" y1="8" y2="14" />{" "}
+                                        {/* Line for sound off */}
+                                        <line stroke="white" strokeWidth="2" x1="30" x2="24" y1="8" y2="14" />{" "}
+                                        {/* Line for sound off */}
                                     </g>
                                 </svg>
                             )}
                         </div>
                     </div>
-                </div> */}
+                </div>
 
                 <div
                     className="toolbox-icon"
