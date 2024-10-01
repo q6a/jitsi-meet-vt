@@ -47,7 +47,7 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
     };
 
     const handleOnData = (recordedBlob: any) => {
-        console.log("Chunk of real-time data:", recordedBlob);
+        // console.log("Chunk of real-time data:", recordedBlob);
     };
 
     return (
