@@ -41,11 +41,13 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
 
     try {
         let langFrom = "en";
+        let langFromTranslation = "en-AU";
 
         // Find the local participant's language name
         for (const participant of participantAndModeratorData) {
             if (participant.name === participantName) {
                 langFrom = participant.transcriptionDialect.dialectCode;
+                langFromTranslation = participant.translationDialect.dialectCode;
                 break;
             }
         }
@@ -133,7 +135,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                                     "Content-Type": "application/json",
                                 },
                                 params: {
-                                    from: participant.translationDialect.dialectCode,
+                                    // from: langFromTranslation,
                                     to: participant.translationDialect.dialectCode,
                                 },
                             }
@@ -152,7 +154,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
 
                         console.log("PARTICIPANT NAME", participant.name);
                         console.log("TRANSLATION SENT", translationSent);
-                        console.log("LANG FROM", langFrom);
+                        console.log("LANG FROM", langFromTranslation);
                         console.log("LANG TO", participant.translationDialect.dialectCode);
                         console.log("LANG TO ID", participant.translationDialect.dialectId);
                         console.log("PARTICIPANT ID", participantId);
