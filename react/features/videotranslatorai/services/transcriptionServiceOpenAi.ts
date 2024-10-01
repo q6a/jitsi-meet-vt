@@ -30,13 +30,12 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const participantAndModeratorData = [...moderatorData, ...participantData];
 
-    const openAiApiKey = process.env.REACT_APP_OPEN_AI_API_KEY;
     const translateApiKey = process.env.REACT_APP_MICROSOFT_TRANSLATE_API_KEY;
     const transcriptionEndpoint = process.env.REACT_APP_OPENAI_TRANSCRIPTION_ENDPOINT;
     const translationEndpoint = process.env.REACT_APP_MICROSOFT_TRANSLATION_ENDPOINT;
-    const openAiEndpoint = process.env.REACT_APP_OPENAI_TRANSCRIBE_ENDPOINT;
+    const apiEndpoint = process.env.REACT_APP_OPENAI_TRANSCRIBE_ENDPOINT_VIDEOTRANSLATORAI; // New API endpoint
 
-    if (!openAiApiKey || !translateApiKey || !transcriptionEndpoint || !translationEndpoint || !openAiEndpoint) {
+    if (!translateApiKey || !transcriptionEndpoint || !translationEndpoint || !apiEndpoint) {
         throw new Error("One or more environment variables are not set.");
     }
 
@@ -92,15 +91,11 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
             lastModified, // Assign the custom lastModified timestamp
         });
 
-        // Use the actual Blob data and ensure it's in the correct format
-        // const correctedBlob = new Blob([recordedBlobParam.blob], { type: "audio/wav" }); // Fallback to any
-
         formData.append("file", correctedBlob); // Append the corrected Blob object, ensure filename
         // formData.append("file", correctedBlob); // Append the corrected Blob object
         formData.append("langFrom", langFrom); // Specify the language (optional)
 
         // Set the new API endpoint for transcription
-        const apiEndpoint = "https://api.stg.qbl-media.com/v1/users/transcribe"; // New API endpoint
 
         // Make the request to the new API
         const transcriptionResponse = await axios.post(apiEndpoint, formData, {
@@ -113,7 +108,6 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
         // Extract the transcription text from the response
         const transcriptionText = transcriptionResponse.data.data.transcription;
 
-        console.log("TRANSCRIPTION RESPONSE", transcriptionResponse);
         if (!transcriptionText) {
             throw new Error("Transcription failed: No text returned.");
         }
@@ -226,12 +220,6 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                         }
 
                         if (participantId && conference) {
-                            console.log("PARTICIPANT NAME", participant.name);
-                            console.log("TRANSLATION SENT", translationSent);
-                            console.log("LANG FROM", langFrom);
-                            console.log("LANG TO", participant.translationDialect.dialectCode);
-                            console.log("LANG TO ID", participant.translationDialect.dialectId);
-                            console.log("PARTICIPANT ID", participantId);
                             await conference.sendPrivateTextMessage(participantId, translationSent);
                         }
                     } catch (error) {

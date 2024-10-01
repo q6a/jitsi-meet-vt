@@ -24,18 +24,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const participantAndModeratorData = [...moderatorData, ...participantData];
 
-    console.log("Token Data:", tokenData);
-    console.log("Participant State:", participantState);
-    console.log("Participant Data:", participantData);
-    console.log("Participant Name:", participantName);
-    console.log("Meeting Data:", meetingData);
-    console.log("Moderator Data:", moderatorData);
-    console.log("Entity Data:", entityData);
-    console.log("Conference:", conference);
-    console.log("Client ID:", clientId);
-    console.log("Meeting ID:", meetingId);
-    console.log("Participant and Moderator Data:", participantAndModeratorData);
-
     try {
         let authToken = "";
         const speechRegion = process.env.REACT_APP_SPEECH_REGION_MICROSOFT_SDK;
@@ -55,13 +43,11 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
             }
         }
 
-        console.log("LANG FROM", langFrom);
         authToken = await getAuthToken();
         const translationConfig = speechsdk.SpeechTranslationConfig.fromAuthorizationToken(authToken, speechRegion);
 
         translationConfig.speechRecognitionLanguage = langFrom || "en-US";
         for (const participant of participantAndModeratorData) {
-            console.log("PARTICIPANT DIALECTCODE", participant.transcriptionDialect.dialectCode);
             if (participant.transcriptionDialect.dialectCode) {
                 translationConfig.addTargetLanguage(participant.transcriptionDialect.dialectCode);
             } else {
@@ -84,8 +70,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
             }
         }
 
-        console.log("PARTICIPANT LANGUAGE NAME", participantLanguageName);
-
         if (meetingData.dictionaryWordKeyPairs && meetingData.dictionaryWordKeyPairs[participantLanguageName]) {
             const phraselistitems = meetingData.dictionaryWordKeyPairs[participantLanguageName];
 
@@ -96,16 +80,12 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
             console.warn(`No dictionary entries found for language: ${participantLanguageName}`);
         }
 
-        console.log("TRANSCRIBER RECOGNIZER", transcriberRecognizer);
-
         transcriberRecognizer.startContinuousRecognitionAsync();
         dispatch(setIsTranscribing(true));
 
         // Add recognizing, recognized, and canceled events as in your initial code...
         transcriberRecognizer.recognizing = async (s, e) => {
-            console.log("Recognizing event triggered. Result:", e.result); // Log the result for debugging
             if (e.result.reason === 7) {
-                console.log("TRANSCRIBER RECOGNIZING");
                 const transcription = e.result.text;
                 const translationMap = e.result.translations;
                 let languagesRecognizing: any[] = [];
@@ -123,14 +103,11 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                 for (const shortLangCode of languagesRecognizing) {
                     let translationRecognizing = "";
 
-                    console.log("shortLangCode", shortLangCode);
                     translationRecognizing = translationMap.get(shortLangCode);
                     const langPrefix = shortLangCode.includes("-") ? shortLangCode.split("-")[0] : shortLangCode;
                     const participants: any = participantAndModeratorData.filter((p) =>
                         p.translationDialect?.dialectCode?.startsWith(langPrefix)
                     );
-
-                    console.log("participants", participants);
 
                     for (const participant of participants) {
                         // Get participant ID from participantMap
@@ -142,8 +119,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                                 break;
                             }
                         }
-
-                        console.log("PARTICIPANT ID", participantId);
 
                         if (participantId) {
                             const translationSentRecognizing = `${participantName}: ${translationRecognizing}(videotranslatoraiservice)`;
