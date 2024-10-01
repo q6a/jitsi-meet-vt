@@ -27,7 +27,7 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
 
     useEffect(() => {
         // // Detect a change in messages
-
+        return;
         if (messages !== previousMessages) {
             const lastMessage = messages[messages.length - 1]; // Get the last message
 
@@ -87,10 +87,11 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
             {/* Button to toggle sound on/off */}
 
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                <div
+                {/* <div
                     className="toolbox-icon"
                     onClick={toggleSound}
                     style={{
+                        backgroundColor: isSoundOn ? "green" : "transparent", // Change based on sound state
                         cursor: "pointer",
                         transition: "transform 0.3s ease",
                         transform: isSoundOn ? "scale(1.1)" : "scale(1)",
@@ -129,7 +130,7 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
                             )}
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 <div
                     className="toolbox-icon"

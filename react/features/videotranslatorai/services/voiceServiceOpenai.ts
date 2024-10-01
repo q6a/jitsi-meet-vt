@@ -11,8 +11,17 @@ export async function playVoiceFromMessage(message: any, state: IReduxState) {
         const participantAndModeratorData: any = [...moderatorData, ...participantData];
         const participantName: any = toState(state)["features/videotranslatorai"].participantName;
         let langFrom = "en";
+        const apiKey = process.env.REACT_APP_OPEN_AI_API_KEY; // Replace with your OpenAI API key
+        const openaiApiUrl = process.env.REACT_APP_OPENAI_SPEECH_ENDPOINT;
 
-        if (!moderatorData || !participantData || !participantAndModeratorData || participantName) {
+        if (
+            !moderatorData ||
+            !participantData ||
+            !participantAndModeratorData ||
+            participantName ||
+            apiKey ||
+            openaiApiUrl
+        ) {
             throw new Error("One or more environment variables are not set.");
         }
 
@@ -23,9 +32,6 @@ export async function playVoiceFromMessage(message: any, state: IReduxState) {
                 break;
             }
         }
-
-        const apiKey = process.env.REACT_APP_OPEN_AI_API_KEY; // Replace with your OpenAI API key
-        const openaiApiUrl = process.env.REACT_APP_OPENAI_SPEECH_ENDPOINT;
 
         const data = {
             model: "tts-1", // Replace with your model
