@@ -5,10 +5,8 @@ export const createDisplayNameAndDialect = (
     moderators: any[],
     participants: any[],
     linguists: any[]
-): { displayName: string; displayDialect: string } => {
-
-
-    const allDataParticipantEntities : any = [...moderators, ...participants, ...linguists];
+): { displayDialect: string; displayName: string } => {
+    const allDataParticipantEntities: any = [...moderators, ...participants, ...linguists];
     let participantEntity: any | null = null;
 
     if (allDataParticipantEntities.length > 0) {
@@ -20,26 +18,25 @@ export const createDisplayNameAndDialect = (
         }
     }
 
-    const entityType = participantEntity ? participantEntity.type : 'UNKNOWN';
-    const dialectType = participantEntity ? participantEntity.dialectName : 'UNKNOWN';
+    const entityType = participantEntity ? participantEntity.type : "UNKNOWN";
+    const dialectType = participantEntity ? participantEntity.transcriptionDialect.name : "UNKNOWN";
 
-    let displayName = '';
-    if (entityType !== 'UNKNOWN') {
+    let displayName = "";
+
+    if (entityType !== "UNKNOWN") {
         displayName = `${nameToDisplay}: ${entityType}`;
-    }
-    else
-    {
+    } else {
         displayName = nameToDisplay;
     }
 
-    let displayDialect = '';
+    let displayDialect = "";
 
-    if (entityType !== 'LINGUIST' && entityType !== 'UNKNOWN') {
-        displayDialect = dialectType || '';
+    if (entityType !== "LINGUIST" && entityType !== "UNKNOWN") {
+        displayDialect = dialectType || "";
     }
 
     return {
         displayName,
-        displayDialect
+        displayDialect,
     };
 };
