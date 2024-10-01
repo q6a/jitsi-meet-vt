@@ -257,7 +257,6 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                         {/* videotranslatorai */}
                         {/* {conference && <TranscriptionAndTranslationButton />} */}
                         {conference && <TranscriptionAndTranslationOpenAiButton />}
-                        {/* videotranslatorai */}
                         {Boolean(overflowMenuButtons.length) && (
                             <OverflowMenuButton
                                 ariaControls="overflow-menu"
@@ -293,7 +292,6 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                                 showReactionsMenu={showReactionsInOverflowMenu}
                             />
                         )}
-
                         {isButtonEnabled("hangup", toolbarButtonsToUse) &&
                             (endConferenceSupported ? (
                                 <HangupMenuButton

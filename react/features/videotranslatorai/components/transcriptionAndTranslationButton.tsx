@@ -6,6 +6,7 @@ import { startTranscription, stopTranscription } from "../action.web";
 
 const TranscriptionAndTranslationButton: FC = () => {
     const dispatch = useDispatch();
+
     const isTranscribing = useSelector((state: IReduxState) => state["features/videotranslatorai"].isTranscribing);
     const isAudioMuted = useSelector((state: IReduxState) => state["features/base/media"].audio.muted);
 

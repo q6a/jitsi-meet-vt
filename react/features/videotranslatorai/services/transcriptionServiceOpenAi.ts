@@ -133,7 +133,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                                     "Content-Type": "application/json",
                                 },
                                 params: {
-                                    from: langFrom,
+                                    from: participant.translationDialect.dialectCode,
                                     to: participant.translationDialect.dialectCode,
                                 },
                             }
