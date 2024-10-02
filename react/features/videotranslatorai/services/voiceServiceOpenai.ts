@@ -14,10 +14,12 @@ export async function playVoiceFromMessage(text: any, state: IReduxState) {
     }
     isPlaying = true;
 
-    const subscriptionKey = process.env.REACT_APP_MICROSOFT_TTS_API_KEY; // Replace with your actual key
-    const region = "southeastasia"; // Your Azure region
+    const subscriptionKey = process.env.REACT_APP_MICROSOFT_TTS_API_KEY_AUSTRALIAEAST; // Replace with your actual key
+    const region = "australiaeast"; // Your Azure region
 
-    const textToSpeechCode = toState(state)["features/videotranslatorai"].textToSpeechCode;
+    let textToSpeechCode = toState(state)["features/videotranslatorai"].textToSpeechCode;
+
+    textToSpeechCode = textToSpeechCode.split(" ")[0];
 
     if (!subscriptionKey || !region) {
         throw new Error("One or more required variables are not set.");
