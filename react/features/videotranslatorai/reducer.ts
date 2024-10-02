@@ -11,6 +11,7 @@ import {
     SET_DISPLAY_DIALECT,
     SET_DISPLAY_NAME,
     SET_ENTITY_DATA,
+    SET_IS_PLAYING_TTS,
     SET_IS_RECORDING,
     SET_IS_TRANSCRIBING,
     SET_LATEST_PRIVATE_MESSAGE,
@@ -24,6 +25,7 @@ import {
     SET_ROOM_PARAMS,
     SET_TRANSCRIPTION_RESULT,
     START_RECORDING_OPENAI,
+    START_TEXT_TO_SPEECH,
     START_TRANSCRIPTION,
     STOP_RECORDING_OPENAI,
     STOP_TRANSCRIPTION,
@@ -44,6 +46,7 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     linguistData: [],
     isTranscribing: false,
     isRecording: false,
+    isPlayingTTS: false,
     transcriptionResults: [],
     meetingData: {
         displayName: "",
@@ -179,6 +182,12 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     isTranscribing: action.payload,
                 };
 
+            case SET_IS_PLAYING_TTS:
+                return {
+                    ...state,
+                    isPlayingTTS: action.payload,
+                };
+
             case SET_IS_RECORDING:
                 return {
                     ...state,
@@ -215,6 +224,11 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                 };
 
             case FETCH_MEETING_DATA:
+                return {
+                    ...state,
+                };
+
+            case START_TEXT_TO_SPEECH:
                 return {
                     ...state,
                 };

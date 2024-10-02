@@ -121,6 +121,7 @@ export interface IVideoTranslatorAiState {
     clientId: string;
     displayDialect: string;
     displayName: string;
+    isPlayingTTS: boolean;
     isRecording: boolean;
     isTranscribing: boolean;
     jwtToken: string;

@@ -1,5 +1,7 @@
 import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 
+import { IReduxState } from "../app/types";
+
 import {
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
@@ -7,6 +9,7 @@ import {
     SET_DISPLAY_DIALECT,
     SET_DISPLAY_NAME,
     SET_ENTITY_DATA,
+    SET_IS_PLAYING_TTS,
     SET_IS_RECORDING,
     SET_IS_TRANSCRIBING,
     SET_LATEST_PRIVATE_MESSAGE,
@@ -21,6 +24,7 @@ import {
     SET_ROOM_PARAMS,
     SET_TRANSCRIPTION_RESULT,
     START_RECORDING_OPENAI,
+    START_TEXT_TO_SPEECH,
     START_TRANSCRIPTION,
     STOP_RECORDING_OPENAI,
     STOP_TRANSCRIPTION,
@@ -29,6 +33,7 @@ import { createDisplayNameAndDialect } from "./services/displayNameAndDialectSer
 import { getMeetingInformation } from "./services/meetingService";
 import { stopTranscriptionService, transcribeAndTranslateService } from "./services/transcriptionService";
 import { transcribeAndTranslateServiceOpenAi } from "./services/transcriptionServiceOpenAi";
+import { playVoiceFromMessage } from "./services/voiceServiceOpenai";
 import {
     IEntityData,
     IFetchMeetingData,
@@ -144,6 +149,13 @@ export const setIsTranscribing = (isTranscribing: boolean) => {
     };
 };
 
+export const setIsPlayingTTS = (isPlayingTTS: boolean) => {
+    return {
+        type: SET_IS_PLAYING_TTS,
+        payload: isPlayingTTS,
+    };
+};
+
 export const setIsRecording = (isRecording: boolean) => {
     return {
         type: SET_IS_RECORDING,
@@ -256,5 +268,27 @@ export const stopTranscription = () => async (dispatch: any, getState: any) => {
         dispatch(setIsTranscribing(false));
     } catch (err) {
         console.error("Error stopping transcription:", err);
+    }
+};
+
+export const startTextToSpeech = (text: string) => async (dispatch: any, getState: any) => {
+    dispatch({ type: START_TEXT_TO_SPEECH });
+
+    try {
+        // Ensure only one playback at a time
+        dispatch(setIsPlayingTTS(true));
+
+        const state: IReduxState = getState();
+
+        // Call the playVoiceFromMessage function with the text and state
+        await playVoiceFromMessage(text, state);
+
+        // Handle success if needed
+    } catch (err) {
+        console.error("Error during text-to-speech:", err);
+
+        dispatch(setIsPlayingTTS(false));
+    } finally {
+        dispatch(setIsPlayingTTS(false)); // Ensure isPlaying is reset after completion
     }
 };

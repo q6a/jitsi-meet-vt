@@ -3,8 +3,7 @@ import { ReactMic } from "react-mic";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../app/types";
-import { startRecordingOpenAi, stopRecordingOpenAi, translateOpenAi } from "../action.web";
-import { playVoiceFromMessage } from "../services/voiceServiceOpenai";
+import { startRecordingOpenAi, startTextToSpeech, stopRecordingOpenAi, translateOpenAi } from "../action.web";
 
 import SoundToggleButton from "./buttons/SoundToggleButton";
 import TranscriptionButton from "./buttons/TranscriptionButton";
@@ -32,7 +31,8 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
             const lastMessage = messages[messages.length - 1];
 
             if (lastMessage) {
-                playVoiceFromMessage(lastMessage.message, state);
+                // playVoiceFromMessage(lastMessage.message, state);
+                dispatch(startTextToSpeech(lastMessage.message));
             }
             setPreviousMessages(messages);
         }
