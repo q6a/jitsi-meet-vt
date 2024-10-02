@@ -1,102 +1,61 @@
-import axios from "axios";
-
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
 
-// Voice Service to handle TTS using the API and play the audio
-export async function playVoiceFromMessage(message: any, state: IReduxState) {
+// Import Azure Speech SDK
+const sdk = require("microsoft-cognitiveservices-speech-sdk");
+
+let isPlaying = false;
+
+export async function playVoiceFromMessage(text: any, state: IReduxState) {
+    if (isPlaying) {
+        console.log("Audio is already playing. Skipping...");
+
+        return;
+    }
+    isPlaying = true;
+
+    const subscriptionKey = process.env.REACT_APP_MICROSOFT_TTS_API_KEY; // Replace with your actual key
+    const region = "southeastasia"; // Your Azure region
+
+    const textToSpeechCode = toState(state)["features/videotranslatorai"].textToSpeechCode;
+
+    if (!subscriptionKey || !region) {
+        throw new Error("One or more required variables are not set.");
+    }
+
     try {
-        const tokenData: any = toState(state)["features/videotranslatorai"].jwtToken;
-        const participantName: any = toState(state)["features/videotranslatorai"].participantName;
-        const apiUrl = process.env.REACT_APP_OPENAI_SPEECH_ENDPOINT_VIDEOTRANSLATORAI;
+        // Step 1: Set up Speech SDK configuration for Azure
+        const speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, region);
 
-        if (!tokenData || !participantName || !apiUrl) {
-            throw new Error("One or more required variables are not set.");
-        }
+        // Set the voice and language you want to use (e.g., Indonesian male voice)
+        speechConfig.speechSynthesisVoiceName = textToSpeechCode;
 
-        // Prepare the data to send to your API
-        const data = {
-            text: message, // The text to be converted to speech
-        };
+        // Step 2: Configure Audio Output
+        const audioConfig = sdk.AudioConfig.fromDefaultSpeakerOutput();
 
-        const headers = {
-            Authorization: `Bearer ${tokenData}`, // Add authorization if needed
-            "Content-Type": "application/json",
-        };
+        // Step 3: Create the speech synthesizer
+        const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
 
-        // Fetch the audio data from your API
-        const response = await axios.post(apiUrl, data, {
-            headers,
-            responseType: "arraybuffer", // Expecting audio/mpeg in response
-        });
-
-        // Create a Blob and play the audio
-        const audioBlob = new Blob([response.data], { type: "audio/mpeg" } as any);
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-
-        audio.play(); // Play the generated audio
-    } catch (error: any) {
-        console.error("Error generating speech:", error.response?.data || error.message);
+        // Step 4: Synthesize the speech
+        synthesizer.speakTextAsync(
+            text,
+            (result) => {
+                if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
+                    console.log("Synthesis completed successfully.");
+                } else {
+                    console.error(`Speech synthesis failed: ${result.errorDetails}`);
+                }
+                synthesizer.close();
+                isPlaying = false; // Reset after synthesis completes
+            },
+            (error) => {
+                console.error("Error during speech synthesis:", error);
+                synthesizer.close();
+                isPlaying = false; // Reset in case of an error
+            }
+        );
+    } catch (error) {
+        console.error("Error generating speech:", error.message);
+        isPlaying = false; // Reset isPlaying on error
     }
 }
-
-// // Voice Service to handle TTS and play the audio
-// export async function playVoiceFromMessage(message: any, state: IReduxState) {
-//     try {
-//         const moderatorData: any = toState(state)["features/videotranslatorai"].moderatorData;
-//         const participantData: any = toState(state)["features/videotranslatorai"].participantData;
-//         const participantAndModeratorData: any = [...moderatorData, ...participantData];
-//         const participantName: any = toState(state)["features/videotranslatorai"].participantName;
-//         let langFrom = "en";
-//         const apiKey = process.env.REACT_APP_OPEN_AI_API_KEY; // Replace with your OpenAI API key
-//         const openaiApiUrl = process.env.REACT_APP_OPENAI_SPEECH_ENDPOINT;
-
-//         if (
-//             !moderatorData ||
-//             !participantData ||
-//             !participantAndModeratorData ||
-//             !participantName ||
-//             !apiKey ||
-//             !openaiApiUrl
-//         ) {
-//             throw new Error("One or more environment variables are not set.");
-//         }
-
-//         // Find the local participant's language name
-//         for (const participant of participantAndModeratorData) {
-//             if (participant.name === participantName) {
-//                 langFrom = participant.transcriptionDialect.dialectCode;
-//                 break;
-//             }
-//         }
-
-//         const data = {
-//             model: "tts-1", // Replace with your model
-//             voice: "alloy", // Use the appropriate voice for the language
-//             input: message,
-//         };
-
-//         const headers = {
-//             Authorization: `Bearer ${apiKey}`,
-//             "Content-Type": "application/json",
-//         };
-
-//         // Fetch the audio data from OpenAI
-//         const response = await axios.post(openaiApiUrl, data, {
-//             headers,
-//             responseType: "arraybuffer",
-//         });
-
-//         console.log("RESPONSE", response);
-
-//         // Create a Blob and play the audio
-//         const audioBlob = new Blob([response.data], { type: "audio/mpeg" } as any);
-//         const audioUrl = URL.createObjectURL(audioBlob);
-//         const audio = new Audio(audioUrl);
-
-//         audio.play();
-//     } catch (error: any) {
-//         console.error("Error generating speech:", error.response?.data || error.message);
-//     }
-// }

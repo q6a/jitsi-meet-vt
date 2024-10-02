@@ -2,9 +2,9 @@ import React, { FC, useEffect, useState } from "react";
 import { ReactMic } from "react-mic";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IReduxState } from "../../app/types";
-import { startRecordingOpenAi, stopRecordingOpenAi, translateOpenAi } from "../action.web";
-import { playVoiceFromMessage } from "../services/voiceServiceOpenai";
+import { IReduxState } from "../../../app/types";
+import { startRecordingOpenAi, stopRecordingOpenAi, translateOpenAi } from "../../action.web";
+import { playVoiceFromMessage } from "../../services/voiceServiceOpenai";
 
 // declare module "react-mic";
 

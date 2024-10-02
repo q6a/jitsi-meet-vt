@@ -30,6 +30,7 @@ export interface IRoomParams {
     meetingId: string;
     meetingName: string;
     participantName: string;
+    textToSpeechCode: string;
 }
 
 // Define interface for Room Parameters
@@ -136,6 +137,7 @@ export interface IVideoTranslatorAiState {
     participantData: Array<IParticipant>;
     participantName: string;
     privateMessages: IMessage[];
+    textToSpeechCode: string;
     thisEntityData: IEntityData;
     toEmail: string;
     transcriptionResults: Array<IRecognitionResultPayload>;

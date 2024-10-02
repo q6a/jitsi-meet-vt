@@ -38,6 +38,7 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     jwtToken: "",
     meetingId: "",
     clientId: "",
+    textToSpeechCode: "",
     participantData: [],
     moderatorData: [],
     linguistData: [],
@@ -104,6 +105,7 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     jwtToken: action.payload.jwtToken || state.jwtToken,
                     meetingId: action.payload.meetingId || state.meetingId,
                     clientId: action.payload.clientId || state.clientId,
+                    textToSpeechCode: action.payload.textToSpeechCode || state.textToSpeechCode,
                 };
 
             case SET_LATEST_PRIVATE_MESSAGE:

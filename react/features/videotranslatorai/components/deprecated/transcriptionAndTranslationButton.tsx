@@ -1,8 +1,8 @@
 import React, { FC, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IReduxState } from "../../app/types";
-import { startTranscription, stopTranscription } from "../action.web";
+import { IReduxState } from "../../../app/types";
+import { startTranscription, stopTranscription } from "../../action.web";
 
 const TranscriptionAndTranslationButton: FC = () => {
     const dispatch = useDispatch();
