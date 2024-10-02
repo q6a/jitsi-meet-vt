@@ -52,6 +52,7 @@ export function onCustomIq(stanza: any, store: IStore) {
         const meetingId = "";
         const languageName = "";
         const clientId = "";
+        const textToSpeechCode = "";
 
         console.log("Extracted Meeting Name:", meetingName);
         console.log("Extracted Participant Name:", participantName);
@@ -67,6 +68,7 @@ export function onCustomIq(stanza: any, store: IStore) {
                     jwtToken,
                     meetingId,
                     clientId,
+                    textToSpeechCode,
                 })
             );
 
