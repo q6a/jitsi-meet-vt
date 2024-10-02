@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { IReduxState } from "../../app/types";
 import { startRecordingOpenAi, startTextToSpeech, stopRecordingOpenAi, translateOpenAi } from "../action.web";
 
-import SoundToggleButton from "./buttons/SoundToggleButton";
-import TranscriptionButton from "./buttons/TranscriptionButton";
+import SoundToggleButton from "./buttons/soundToggleButton";
+import TranscriptionButton from "./buttons/transcriptionButton";
 
 const TranscriptionAndTranslationOpenAiButton: FC = () => {
     const dispatch = useDispatch();

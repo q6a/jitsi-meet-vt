@@ -41,7 +41,7 @@ export async function playVoiceFromMessage(text: any, state: IReduxState) {
         // Step 4: Synthesize the speech
         synthesizer.speakTextAsync(
             text,
-            (result) => {
+            (result: any) => {
                 if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
                     console.log("Synthesis completed successfully.");
                 } else {
@@ -50,13 +50,13 @@ export async function playVoiceFromMessage(text: any, state: IReduxState) {
                 synthesizer.close();
                 isPlaying = false; // Reset after synthesis completes
             },
-            (error) => {
+            (error: any) => {
                 console.error("Error during speech synthesis:", error);
                 synthesizer.close();
                 isPlaying = false; // Reset in case of an error
             }
         );
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error generating speech:", error.message);
         isPlaying = false; // Reset isPlaying on error
     }

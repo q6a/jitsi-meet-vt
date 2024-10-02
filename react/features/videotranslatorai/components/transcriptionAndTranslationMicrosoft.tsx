@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IReduxState } from "../../app/types";
 import { startTranscription, stopTranscription } from "../action.web";
 
-import TranscriptionButton from "./buttons/TranscriptionButton"; // Import the TranscriptionButton
+import TranscriptionButton from "./buttons/transcriptionButton"; // Import the TranscriptionButton
 
 const TranscriptionAndTranslationButton: FC = () => {
     const dispatch = useDispatch();
