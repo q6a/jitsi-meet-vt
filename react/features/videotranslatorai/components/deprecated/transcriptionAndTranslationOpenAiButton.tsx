@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../../app/types";
 import { startRecordingOpenAi, stopRecordingOpenAi, translateOpenAi } from "../../action.web";
-import { playVoiceFromMessage } from "../../services/voiceServiceOpenai";
+import { playVoiceFromMessage } from "../../services/voiceServiceMicrosoft";
 
 // declare module "react-mic";
 
