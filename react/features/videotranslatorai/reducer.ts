@@ -1,89 +1,102 @@
+import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 
-
-import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
-import ReducerRegistry from '../base/redux/ReducerRegistry';
-import { 
-    SET_ROOM_PARAMS,
-    START_TRANSCRIPTION, 
-    STOP_TRANSCRIPTION,
-    RECOGNITION_RESULT,
-    SET_PARTICIPANT_DATA,
-    SET_MODERATOR_DATA,
-    SET_LINGUIST_DATA,
-    SET_IS_TRANSCRIBING,
-    SET_TRANSCRIPTION_RESULT,
-    SET_MEETING_DATA,
-    FETCH_MEETING_DATA,
-    DEBUGGING,
-    SET_ENTITY_DATA,
-    SET_DISPLAY_DIALECT,
-    SET_DISPLAY_NAME,
-    SET_MICROSOFT_RECOGNIZERSDK,
-    SET_LATEST_PRIVATE_MESSAGE,
-    SET_PRIVATE_MESSAGES,
-    MESSAGE_NOTIFICATION,
-    ADD_MESSAGE_VIDEOTRANSLATORAI,
-    SET_IS_RECORDING,
-    START_RECORDING_OPENAI,
-    STOP_RECORDING_OPENAI,
-    SET_RECORDING_BLOB_OPENAI,
-    TRANSLATE_OPENAI
-} from './actionTypes';
+import ReducerRegistry from "../base/redux/ReducerRegistry";
 
 import {
-    IVideoTranslatorAiState,
-} from './types';
+    ADD_MESSAGE_VIDEOTRANSLATORAI,
+    DEBUGGING,
+    FETCH_MEETING_DATA,
+    MESSAGE_NOTIFICATION,
+    RECOGNITION_RESULT,
+    SET_DISPLAY_DIALECT,
+    SET_DISPLAY_NAME,
+    SET_ENTITY_DATA,
+    SET_IS_PLAYING_TTS,
+    SET_IS_RECORDING,
+    SET_IS_TRANSCRIBING,
+    SET_LATEST_PRIVATE_MESSAGE,
+    SET_LINGUIST_DATA,
+    SET_MEETING_DATA,
+    SET_MICROSOFT_RECOGNIZERSDK,
+    SET_MODERATOR_DATA,
+    SET_PARTICIPANT_DATA,
+    SET_PRIVATE_MESSAGES,
+    SET_RECORDING_BLOB_OPENAI,
+    SET_ROOM_PARAMS,
+    SET_TRANSCRIPTION_RESULT,
+    START_RECORDING_OPENAI,
+    START_TEXT_TO_SPEECH,
+    START_TRANSCRIPTION,
+    STOP_RECORDING_OPENAI,
+    STOP_TRANSCRIPTION,
+    TRANSLATE_OPENAI,
+} from "./actionTypes";
+import { IVideoTranslatorAiState } from "./types";
 
 const INITIAL_STATE: IVideoTranslatorAiState = {
-    toEmail: '',
-    meetingName: '',
-    participantName: '',
-    jwtToken: '',
-    meetingId: '',
-    languageName: '',
-    clientId: '',
+    toEmail: "",
+    meetingName: "",
+    participantName: "",
+    jwtToken: "",
+    meetingId: "",
+    clientId: "",
+    textToSpeechCode: "",
     participantData: [],
     moderatorData: [],
     linguistData: [],
     isTranscribing: false,
     isRecording: false,
+    isPlayingTTS: false,
     transcriptionResults: [],
     meetingData: {
-        displayName: '',
+        displayName: "",
         error: {},
         isReaction: false,
         lobbyChat: false,
-        message: '',
-        messageId: '',
-        messageType: '',
-        participantId: '',
+        message: "",
+        messageId: "",
+        messageType: "",
+        participantId: "",
         privateMessage: false,
-        recipient: '',
+        recipient: "",
         timestamp: 0,
-    }, 
+    },
     thisEntityData: {
         participant_id: 0,
-        name: '',
-        email: '',
-        dialect_id: 0,
-        dialectName: '',
-        dialectCode: '',
-        languageName: '',
-        type: 'PARTICIPANT',
-    }, 
-    displayName: '',
-    displayDialect: '',
-    microsoftRecognizerSDK: null as unknown as speechsdk.TranslationRecognizer, 
-    latestPrivateMessage: '',
+        name: "",
+        email: "",
+        transcriptionDialect: {
+            dialectCode: "",
+            dialectId: 0,
+            name: "",
+            language: {
+                name: "",
+                languageId: "",
+            },
+        },
+        translationDialect: {
+            dialectCode: "",
+            dialectId: 0,
+            name: "",
+            language: {
+                name: "",
+                languageId: "",
+            },
+        },
+        type: "PARTICIPANT",
+    },
+    displayName: "",
+    displayDialect: "",
+    microsoftRecognizerSDK: null as unknown as speechsdk.TranslationRecognizer,
+    latestPrivateMessage: "",
     privateMessages: [],
     messageNotification: false,
     messages: [],
-    openAiRecordingBlob: null
+    openAiRecordingBlob: null,
 };
 
-
 ReducerRegistry.register<IVideoTranslatorAiState>(
-    'features/videotranslatorai',
+    "features/videotranslatorai",
     (state = INITIAL_STATE, action): IVideoTranslatorAiState => {
         switch (action.type) {
             // Room slice reducers
@@ -94,8 +107,8 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     participantName: action.payload.participantName || state.participantName,
                     jwtToken: action.payload.jwtToken || state.jwtToken,
                     meetingId: action.payload.meetingId || state.meetingId,
-                    languageName: action.payload.languageName || state.languageName,
                     clientId: action.payload.clientId || state.clientId,
+                    textToSpeechCode: action.payload.textToSpeechCode || state.textToSpeechCode,
                 };
 
             case SET_LATEST_PRIVATE_MESSAGE:
@@ -103,7 +116,7 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     ...state,
                     latestPrivateMessage: action.payload,
                 };
-        
+
             case MESSAGE_NOTIFICATION:
                 return {
                     ...state,
@@ -114,7 +127,7 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     ...state,
                     privateMessages: action.payload,
                 };
-    
+
             case SET_PARTICIPANT_DATA:
                 return {
                     ...state,
@@ -138,20 +151,18 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     ...state,
                     displayDialect: action.payload,
                 };
-    
+
             case SET_MEETING_DATA:
                 return {
                     ...state,
                     meetingData: action.payload,
                 };
 
-                
             case SET_MICROSOFT_RECOGNIZERSDK:
                 return {
                     ...state,
                     microsoftRecognizerSDK: action.payload,
                 };
-    
 
             case SET_ENTITY_DATA:
                 return {
@@ -169,6 +180,12 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                 return {
                     ...state,
                     isTranscribing: action.payload,
+                };
+
+            case SET_IS_PLAYING_TTS:
+                return {
+                    ...state,
+                    isPlayingTTS: action.payload,
                 };
 
             case SET_IS_RECORDING:
@@ -194,19 +211,24 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     ...state,
                     openAiRecordingBlob: action.payload,
                 };
-    
+
             case TRANSLATE_OPENAI:
                 return {
                     ...state,
                 };
-    
+
             case SET_TRANSCRIPTION_RESULT:
                 return {
                     ...state,
                     transcriptionResults: [...state.transcriptionResults, action.payload],
                 };
-            
+
             case FETCH_MEETING_DATA:
+                return {
+                    ...state,
+                };
+
+            case START_TEXT_TO_SPEECH:
                 return {
                     ...state,
                 };
@@ -223,16 +245,17 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     isTranscribing: false,
                 };
 
-
-
             case RECOGNITION_RESULT:
                 return {
                     ...state,
-                    transcriptionResults: [...state.transcriptionResults, {
-                        transcription: action.payload.transcription,
-                        translationMap: action.payload.translationMap,
-                        participantId: action.payload.participantId,
-                    }],
+                    transcriptionResults: [
+                        ...state.transcriptionResults,
+                        {
+                            transcription: action.payload.transcription,
+                            translationMap: action.payload.translationMap,
+                            participantId: action.payload.participantId,
+                        },
+                    ],
                 };
 
             case ADD_MESSAGE_VIDEOTRANSLATORAI: {
@@ -247,18 +270,15 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     privateMessage: action.privateMessage,
                     lobbyChat: action.lobbyChat,
                     recipient: action.recipient,
-                    timestamp: action.timestamp
+                    timestamp: action.timestamp,
                 };
-        
+
                 // React native, unlike web, needs a reverse sorted message list.
-                const messages = [
-                        ...state.messages,
-                        newMessage,
-                    ];
-        
+                const messages = [...state.messages, newMessage];
+
                 return {
                     ...state,
-                    messages
+                    messages,
                 };
             }
 
