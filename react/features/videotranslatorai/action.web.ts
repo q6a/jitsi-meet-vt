@@ -33,7 +33,7 @@ import { createDisplayNameAndDialect } from "./services/displayNameAndDialectSer
 import { getMeetingInformation } from "./services/meetingService";
 import { stopTranscriptionService, transcribeAndTranslateService } from "./services/transcriptionService";
 import { transcribeAndTranslateServiceOpenAi } from "./services/transcriptionServiceOpenAi";
-import { playVoiceFromMessage } from "./services/voiceServiceOpenai";
+import { playVoiceFromMessage } from "./services/voiceServiceMicrosoft";
 import {
     IEntityData,
     IFetchMeetingData,
