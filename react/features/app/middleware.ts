@@ -186,9 +186,6 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
         const clientId: any = JSON.parse(atob(payload)).context.user.clientId;
         const textToSpeechCode: any = JSON.parse(atob(payload)).context.user.textToSpeechCode;
 
-        console.log("text speech code", textToSpeechCode);
-        console.log("PARTICIPANT NAME", initialParticipantName);
-
         if (initialMeetingName && initialParticipantName) {
             store.dispatch(
                 setRoomParams({
