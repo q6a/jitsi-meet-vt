@@ -62,7 +62,6 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
     }, [isAudioMuted]);
 
     const handleOnStop = async (recordedBlob: any) => {
-        console.log("Recorded Blob:", recordedBlob);
         dispatch(translateOpenAi(recordedBlob));
     };
 
