@@ -30,7 +30,5 @@ export const getAuthToken = async () => {
     } catch (error: any) {
         console.error("Error fetching the authentication token:", error);
         throw new Error("Could not fetch the authentication token.");
-
-        const value = "xx";
     }
 };
