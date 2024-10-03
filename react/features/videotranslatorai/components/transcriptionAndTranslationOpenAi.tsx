@@ -31,7 +31,6 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
             const lastMessage = messages[messages.length - 1];
 
             if (lastMessage) {
-                // playVoiceFromMessage(lastMessage.message, state);
                 dispatch(startTextToSpeech(lastMessage.message));
             }
             setPreviousMessages(messages);
