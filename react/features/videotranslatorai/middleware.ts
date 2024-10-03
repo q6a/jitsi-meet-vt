@@ -67,13 +67,13 @@ MiddlewareRegistry.register((store) => (next) => (action) => {
             const privateMessages = toState(state)["features/videotranslatorai"].privateMessages;
             const moderatorData = toState(state)["features/videotranslatorai"].moderatorData;
 
-            console.log("Participant Data", participantData);
-            console.log("Meeting Data", meetingData);
-            console.log("Linguist Data", linguistData);
-            console.log("This Entity Data", thisEntityData);
-            console.log("Messages", messages);
-            console.log("Private Messages", privateMessages);
-            console.log("Moderator Data", moderatorData);
+            // console.log("Participant Data", participantData);
+            // console.log("Meeting Data", meetingData);
+            // console.log("Linguist Data", linguistData);
+            // console.log("This Entity Data", thisEntityData);
+            // console.log("Messages", messages);
+            // console.log("Private Messages", privateMessages);
+            // console.log("Moderator Data", moderatorData);
             break;
         }
 
