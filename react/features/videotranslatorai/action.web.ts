@@ -229,8 +229,6 @@ export const fetchMeetingData = (params: IFetchMeetingData) => async (dispatch: 
 
 export const translateOpenAi = (recordedBlobParam: any) => async (dispatch: any, getState: any) => {
     try {
-        console.log("TRANSLATE OPENAI");
-
         // Dispatch action to stop the recording
         dispatch(setIsRecording(false));
 
@@ -250,8 +248,6 @@ export const translateOpenAi = (recordedBlobParam: any) => async (dispatch: any,
 export const startTranscription = () => async (dispatch: any, getState: any) => {
     dispatch({ type: START_TRANSCRIPTION });
     try {
-        console.log("TRANSLATE MICROSOFT");
-
         await transcribeAndTranslateService(dispatch, getState);
 
         // Handle success if needed
