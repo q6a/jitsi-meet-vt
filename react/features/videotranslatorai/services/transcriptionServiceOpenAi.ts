@@ -5,16 +5,6 @@ import { toState } from "../../base/redux/functions";
 
 import { createMessageStorageSendTranslationToDatabase } from "./messageService";
 
-const getParticipantId = (participantMap: Map<string, any>, participantName: string): string | null => {
-    for (const [key, value] of participantMap.entries()) {
-        if (value.name === participantName) {
-            return key;
-        }
-    }
-
-    return null;
-};
-
 export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getState: any, recordedBlobParam: any) => {
     const state: IReduxState = getState();
 
@@ -52,35 +42,6 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
             }
         }
 
-        // Begin recording (this would be triggered elsewhere in your app)
-
-        // const formData = new FormData();
-
-        // // Use the actual Blob data and ensure it's in the correct format
-        // const correctedBlob = new Blob([recordedBlobParam.blob], { type: "audio/wav" } as any); // Fallback to any
-
-        // formData.append("file", correctedBlob); // Append the corrected Blob object
-        // formData.append("model", "whisper-1"); // Use the Whisper model for transcription
-        // formData.append("language", langFrom); // Specify the language (optional)
-
-        // // Set the OpenAI API key and endpoint
-
-        // // Make the request to OpenAI
-        // const transcriptionResponse = await axios.post(openAiEndpoint, formData, {
-        //     headers: {
-        //         Authorization: `Bearer ${openAiApiKey}`, // Use OpenAI's Bearer token for authentication
-        //         "Content-Type": "multipart/form-data",
-        //     },
-        // });
-
-        // const transcriptionText = transcriptionResponse.data.text;
-
-        // if (!transcriptionText) {
-        //     throw new Error("Transcription failed: No text returned.");
-        // }
-
-        // Begin recording (this would be triggered elsewhere in your app)
-
         const formData = new FormData();
 
         // You can get the current timestamp or provide a custom lastModified date
@@ -113,8 +74,6 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
         if (!transcriptionText) {
             throw new Error("Transcription failed: No text returned.");
         }
-
-        console.log("Transcription text:", transcriptionText);
 
         await Promise.all(
             participantAndModeratorData.map(async (participant) => {
@@ -151,13 +110,6 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                                 participantId = key;
                             }
                         }
-
-                        console.log("PARTICIPANT NAME", participant.name);
-                        console.log("TRANSLATION SENT", translationSent);
-                        console.log("LANG FROM", langFromTranslation);
-                        console.log("LANG TO", participant.translationDialect.dialectCode);
-                        console.log("LANG TO ID", participant.translationDialect.dialectId);
-                        console.log("PARTICIPANT ID", participantId);
 
                         // arrayPromises.push(await conference.sendPrivateTextMessage(participantId, translationSent));
                         await conference.sendPrivateTextMessage(participantId, translationSent);

@@ -21,8 +21,6 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
         if (response.data) {
             const data = response.data.data;
 
-            console.log("data in meeting service", data);
-
             const participants = data.participant_meetings.map((pm: IParticipantMeeting) => {
                 return {
                     participantId: pm.participant.participant_id,

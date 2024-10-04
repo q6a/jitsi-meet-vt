@@ -13,7 +13,7 @@ export const getAuthToken = async () => {
 
     // Check if the environment variables are defined
     if (!authTokenUrl || !subscriptionKey) {
-        throw new Error('Environment variables must be set for getAuthToken().');
+        throw new Error("Environment variables must be set for getAuthToken().");
     }
 
     const headers = {
