@@ -140,6 +140,7 @@ let messageToDisplay = "";
  */
 class LargeVideo extends Component<IProps> {
     _tappedTimeout: number | undefined;
+    private messageTimeout: ReturnType<typeof setTimeout> | null = null;
 
     _containerRef: React.RefObject<HTMLDivElement>;
 
@@ -200,8 +201,13 @@ class LargeVideo extends Component<IProps> {
             dispatch(setMessages());
             messageToDisplay = toState(_state)["features/videotranslatorai"].latestPrivateMessage;
 
+            // Clear any existing timeout before setting a new one
+            if (this.messageTimeout) {
+                clearTimeout(this.messageTimeout);
+            }
+
             // Set a timeout to clear the message after 8 seconds
-            setTimeout(() => {
+            this.messageTimeout = setTimeout(() => {
                 messageToDisplay = "";
             }, 8000);
         }
