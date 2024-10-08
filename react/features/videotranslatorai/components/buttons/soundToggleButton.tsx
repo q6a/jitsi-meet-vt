@@ -10,7 +10,6 @@ interface SoundToggleButtonProps {
 
 const SoundToggleButton: FC<SoundToggleButtonProps> = ({ isSoundOn, toggleSound }) => (
     <Tooltip
-        allowClick={true}
         containerClassName="voiceover-tooltip"
         content="Text To Speech (voiceover)"
         delay={300}

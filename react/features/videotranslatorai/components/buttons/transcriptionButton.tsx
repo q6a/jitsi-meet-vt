@@ -14,7 +14,6 @@ interface TranscriptionButtonProps {
 
 const TranscriptionButton: FC<TranscriptionButtonProps> = ({ isRecording, handleStart, handleStop }) => (
     <Tooltip
-        allowClick={true}
         containerClassName="transcription-tooltip"
         content="Transcription/Translation"
         delay={300}
