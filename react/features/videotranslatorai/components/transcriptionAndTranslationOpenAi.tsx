@@ -81,7 +81,7 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
             </div>
 
             {/* Buttons */}
-            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                 <SoundToggleButton isSoundOn={isSoundOn} toggleSound={toggleSound} />
                 <TranscriptionButton
                     handleStart={handleStartTranscription}

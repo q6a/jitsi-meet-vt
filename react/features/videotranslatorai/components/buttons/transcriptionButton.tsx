@@ -1,5 +1,11 @@
 import React, { FC } from "react";
 
+import Tooltip from "../../../base/tooltip/components/Tooltip";
+
+import "./transcriptionButton.css"; // Make sure to import your CSS file
+
+// import Tooltip from "../../../tooltip/components/Tooltip";
+
 interface TranscriptionButtonProps {
     handleStart: () => void;
     handleStop: () => void;
@@ -7,45 +13,50 @@ interface TranscriptionButtonProps {
 }
 
 const TranscriptionButton: FC<TranscriptionButtonProps> = ({ isRecording, handleStart, handleStop }) => (
-    <div
-        className="toolbox-icon"
-        onClick={isRecording ? handleStop : handleStart}
-        style={{ backgroundColor: isRecording ? "green" : "transparent" }}
+    <Tooltip
+        allowClick={true}
+        containerClassName="transcription-tooltip"
+        content="Transcription/Translation"
+        delay={300}
+        position="top"
+        zIndex={1000}
     >
-        <div className="jitsi-icon jitsi-icon-default">
-            <div>
-                {isRecording ? (
-                    <svg
-                        fill="#ffffff"
-                        height={20}
-                        version="1.1"
-                        viewBox="0 0 32 32"
-                        width={20}
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <g>
-                            <circle cx="16" cy="16" fill="#ffffff" r="4" />
-                            <path d="M16,2C8.3,2,2,8.3,2,16s6.3,14,14,14s14-6.3,14-14S23.7,2,16,2z M16,22c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6S19.3,22,16,22z" />
-                        </g>
-                    </svg>
-                ) : (
-                    <svg
-                        fill="#ffffff"
-                        height={20}
-                        version="1.1"
-                        viewBox="0 0 32 32"
-                        width={20}
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <g>
-                            <circle cx="16" cy="16" r="4" />
-                            <path d="M16,2C8.3,2,2,8.3,2,16s6.3,14,14,14s14-6.3,14-14S23.7,2,16,2z M16,22c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6S19.3,22,16,22z" />
-                        </g>
-                    </svg>
-                )}
+        <div className={`toolbox-icon ${isRecording ? "on" : ""}`} onClick={isRecording ? handleStop : handleStart}>
+            <div className="jitsi-icon jitsi-icon-default">
+                <div>
+                    {isRecording ? (
+                        <svg
+                            fill="#ffffff"
+                            height={20}
+                            version="1.1"
+                            viewBox="0 0 32 32"
+                            width={20}
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <g>
+                                <circle cx="16" cy="16" fill="#ffffff" r="4" />
+                                <path d="M16,2C8.3,2,2,8.3,2,16s6.3,14,14,14s14-6.3,14-14S23.7,2,16,2z M16,22c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6S19.3,22,16,22z" />
+                            </g>
+                        </svg>
+                    ) : (
+                        <svg
+                            fill="#ffffff"
+                            height={20}
+                            version="1.1"
+                            viewBox="0 0 32 32"
+                            width={20}
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <g>
+                                <circle cx="16" cy="16" r="4" />
+                                <path d="M16,2C8.3,2,2,8.3,2,16s6.3,14,14,14s14-6.3,14-14S23.7,2,16,2z M16,22c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6S19.3,22,16,22z" />
+                            </g>
+                        </svg>
+                    )}
+                </div>
             </div>
         </div>
-    </div>
+    </Tooltip>
 );
 
 export default TranscriptionButton;

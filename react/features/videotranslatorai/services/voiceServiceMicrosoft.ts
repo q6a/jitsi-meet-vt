@@ -25,6 +25,8 @@ export async function playVoiceFromMessage(text: any, state: IReduxState) {
         throw new Error("One or more required variables are not set.");
     }
 
+    const messageContent = text.includes(":") ? text.split(":")[1].trim() : text;
+
     try {
         // Step 1: Set up Speech SDK configuration for Azure
         const speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, region);
@@ -40,7 +42,7 @@ export async function playVoiceFromMessage(text: any, state: IReduxState) {
 
         // Step 4: Synthesize the speech
         synthesizer.speakTextAsync(
-            text,
+            messageContent,
             (result: any) => {
                 if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
                     console.log("Synthesis completed successfully.");
