@@ -13,13 +13,7 @@ interface TranscriptionButtonProps {
 }
 
 const TranscriptionButton: FC<TranscriptionButtonProps> = ({ isRecording, handleStart, handleStop }) => (
-    <Tooltip
-        containerClassName="transcription-tooltip"
-        content="Transcription/Translation"
-        delay={300}
-        position="top"
-        zIndex={1000}
-    >
+    <Tooltip containerClassName="transcription-tooltip" content="Transcription/Translation" position="top">
         <div className={`toolbox-icon ${isRecording ? "on" : ""}`} onClick={isRecording ? handleStop : handleStart}>
             <div className="jitsi-icon jitsi-icon-default">
                 <div>

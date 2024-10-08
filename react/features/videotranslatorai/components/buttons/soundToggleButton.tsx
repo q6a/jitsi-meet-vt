@@ -9,13 +9,7 @@ interface SoundToggleButtonProps {
 }
 
 const SoundToggleButton: FC<SoundToggleButtonProps> = ({ isSoundOn, toggleSound }) => (
-    <Tooltip
-        containerClassName="voiceover-tooltip"
-        content="Text To Speech (voiceover)"
-        delay={300}
-        position="top"
-        zIndex={1000}
-    >
+    <Tooltip containerClassName="voiceover-tooltip" content="Text To Speech (voiceover)" position="top">
         <div className="toolbox-icon">
             <div
                 className="circle-region"
