@@ -52,6 +52,8 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
         if (isRecording) {
             dispatch(stopRecordingOpenAi());
         }
+
+        setIsSoundOn(false);
     }, []);
 
     useEffect(() => {
