@@ -71,6 +71,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
         // Extract the transcription text from the response
         const transcriptionText = transcriptionResponse.data.data.transcription;
 
+        console.log("TRANSCRIPTION TEXT", transcriptionText);
         if (!transcriptionText) {
             throw new Error("Transcription failed: No text returned.");
         }
