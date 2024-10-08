@@ -1,34 +1,33 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React, { Component } from "react";
+import { connect } from "react-redux";
 
 // @ts-expect-error
-import VideoLayout from '../../../../modules/UI/videolayout/VideoLayout';
-import { IReduxState, IStore } from '../../app/types';
-import { VIDEO_TYPE } from '../../base/media/constants';
-import { getLocalParticipant } from '../../base/participants/functions';
-import Watermarks from '../../base/react/components/web/Watermarks';
-import { getHideSelfView } from '../../base/settings/functions.any';
-import { getVideoTrackByParticipant } from '../../base/tracks/functions.web';
-import { setColorAlpha } from '../../base/util/helpers';
-import StageParticipantNameLabel from '../../display-name/components/web/StageParticipantNameLabel';
-import { FILMSTRIP_BREAKPOINT } from '../../filmstrip/constants';
-import { getVerticalViewMaxWidth, isFilmstripResizable } from '../../filmstrip/functions.web';
-import SharedVideo from '../../shared-video/components/web/SharedVideo';
-import Captions from '../../subtitles/components/web/Captions';
-import { setTileView } from '../../video-layout/actions.web';
-import Whiteboard from '../../whiteboard/components/web/Whiteboard';
-import { isWhiteboardEnabled } from '../../whiteboard/functions';
-import { setSeeWhatIsBeingShared } from '../actions.web';
-import { getLargeVideoParticipant } from '../functions';
+import VideoLayout from "../../../../modules/UI/videolayout/VideoLayout";
+import { IReduxState, IStore } from "../../app/types";
+import { VIDEO_TYPE } from "../../base/media/constants";
+import { getLocalParticipant } from "../../base/participants/functions";
+import Watermarks from "../../base/react/components/web/Watermarks";
+import { toState } from "../../base/redux/functions"; // videotranslatorai
+import { getHideSelfView } from "../../base/settings/functions.any";
+import { getVideoTrackByParticipant } from "../../base/tracks/functions.web";
+import { setColorAlpha } from "../../base/util/helpers";
+import StageParticipantNameLabel from "../../display-name/components/web/StageParticipantNameLabel";
+import { FILMSTRIP_BREAKPOINT } from "../../filmstrip/constants";
+import { getVerticalViewMaxWidth, isFilmstripResizable } from "../../filmstrip/functions.web";
+import SharedVideo from "../../shared-video/components/web/SharedVideo";
+import Captions from "../../subtitles/components/web/Captions";
+import { setTileView } from "../../video-layout/actions.web";
+import Whiteboard from "../../whiteboard/components/web/Whiteboard";
+import { isWhiteboardEnabled } from "../../whiteboard/functions";
+import { setSeeWhatIsBeingShared } from "../actions.web";
+import { getLargeVideoParticipant } from "../functions";
 
-import ScreenSharePlaceholder from './ScreenSharePlaceholder.web';
-import { toState } from '../../base/redux/functions'; //videotranslatorai
+import ScreenSharePlaceholder from "./ScreenSharePlaceholder.web";
 
 // Hack to detect Spot.
-const SPOT_DISPLAY_NAME = 'Meeting Room';
+const SPOT_DISPLAY_NAME = "Meeting Room";
 
 interface IProps {
-
     /**
      * The alpha(opacity) of the background.
      */
@@ -74,6 +73,8 @@ interface IProps {
      */
     _localParticipantId: string;
 
+    _messages: Array<Object>;
+
     /**
      * Used to determine the value of the autoplay attribute of the underlying
      * video element.
@@ -95,6 +96,9 @@ interface IProps {
      */
     _showDominantSpeakerBadge: boolean;
 
+    // videotranslatorai
+    _state: IReduxState;
+
     /**
      * The width of the vertical filmstrip (user resized).
      */
@@ -113,26 +117,21 @@ interface IProps {
     /**
      * Whether or not the whiteboard is ready to be used.
      */
-    _whiteboardEnabled: boolean;
-
-    _messages: Array<Object>; //videotranslatorai
- 
-    _state: IReduxState; //videotranslatorai
+    _whiteboardEnabled: boolean; // videotranslatorai
 
     /**
      * The Redux dispatch function.
      */
-    dispatch: IStore['dispatch'];
+    dispatch: IStore["dispatch"];
 }
 
-//videotranslatorai
-import PrivateMessageDisplay from '../../videotranslatorai/components/displayTranslationOnScreen';
-import { 
-    setMessages
-} from '../../videotranslatorai/action.web';
+// videotranslatorai
+import { setMessages } from "../../videotranslatorai/action.web";
+import PrivateMessageDisplay from "../../videotranslatorai/components/displayTranslationOnScreen";
 
-let messageToDisplay = '';
-//videotranslatorai
+let messageToDisplay = "";
+
+// videotranslatorai
 /** .
  * Implements a React {@link Component} which represents the large video (a.k.a.
  * The conference participant who is on the local stage) on Web/React.
@@ -169,15 +168,16 @@ class LargeVideo extends Component<IProps> {
      */
     componentDidUpdate(prevProps: IProps) {
         const {
-            _messages, //videotranslatorai
-            _state, //videotranslatorai
-            dispatch, //videotranslatorai
+            _messages, // videotranslatorai
+            _state, // videotranslatorai
+            dispatch, // videotranslatorai
             _visibleFilmstrip,
             _isScreenSharing,
             _seeWhatIsBeingShared,
             _largeVideoParticipantId,
             _hideSelfView,
-            _localParticipantId } = this.props;
+            _localParticipantId,
+        } = this.props;
 
         if (prevProps._visibleFilmstrip !== _visibleFilmstrip) {
             this._updateLayout();
@@ -191,18 +191,22 @@ class LargeVideo extends Component<IProps> {
             VideoLayout.updateLargeVideo(_largeVideoParticipantId, true, true);
         }
 
-        if (_largeVideoParticipantId === _localParticipantId
-            && prevProps._hideSelfView !== _hideSelfView) {
+        if (_largeVideoParticipantId === _localParticipantId && prevProps._hideSelfView !== _hideSelfView) {
             VideoLayout.updateLargeVideo(_largeVideoParticipantId, true, false);
         }
 
-        //videotranslatorai
+        // videotranslatorai
         if (prevProps._messages !== _messages) {
-            dispatch(setMessages())
-            messageToDisplay = toState(_state)['features/videotranslatorai'].latestPrivateMessage;
-        }
-        //videotranslatorai
+            dispatch(setMessages());
+            messageToDisplay = toState(_state)["features/videotranslatorai"].latestPrivateMessage;
 
+            // Set a timeout to clear the message after 8 seconds
+            setTimeout(() => {
+                messageToDisplay = "";
+            }, 8000);
+        }
+
+        // videotranslatorai
     }
 
     /**
@@ -217,58 +221,43 @@ class LargeVideo extends Component<IProps> {
             _isChatOpen,
             _noAutoPlayVideo,
             _showDominantSpeakerBadge,
-            _whiteboardEnabled
+            _whiteboardEnabled,
         } = this.props;
         const style = this._getCustomStyles();
-        const className = `videocontainer${_isChatOpen ? ' shift-right' : ''}`;
+        const className = `videocontainer${_isChatOpen ? " shift-right" : ""}`;
 
         return (
-            <div
-                className = { className }
-                id = 'largeVideoContainer'
-                ref = { this._containerRef }
-                style = { style }>
+            <div className={className} id="largeVideoContainer" ref={this._containerRef} style={style}>
                 {/* videotranslatorai */}
-                <PrivateMessageDisplay message ={messageToDisplay}/> 
+                <PrivateMessageDisplay message={messageToDisplay} />
                 <SharedVideo />
                 {_whiteboardEnabled && <Whiteboard />}
-                <div id = 'etherpad' />
+                <div id="etherpad" />
 
                 <Watermarks />
 
-                <div
-                    id = 'dominantSpeaker'
-                    onTouchEnd = { this._onDoubleTap }>
-                    <div className = 'dynamic-shadow' />
-                    <div id = 'dominantSpeakerAvatarContainer' />
+                <div id="dominantSpeaker" onTouchEnd={this._onDoubleTap}>
+                    <div className="dynamic-shadow" />
+                    <div id="dominantSpeakerAvatarContainer" />
                 </div>
-                <div id = 'remotePresenceMessage' />
-                <span id = 'remoteConnectionMessage' />
-                <div id = 'largeVideoElementsContainer'>
-                    <div id = 'largeVideoBackgroundContainer' />
+                <div id="remotePresenceMessage" />
+                <span id="remoteConnectionMessage" />
+                <div id="largeVideoElementsContainer">
+                    <div id="largeVideoBackgroundContainer" />
                     {/*
-                      * FIXME: the architecture of elements related to the large
-                      * video and the naming. The background is not part of
-                      * largeVideoWrapper because we are controlling the size of
-                      * the video through largeVideoWrapper. That's why we need
-                      * another container for the background and the
-                      * largeVideoWrapper in order to hide/show them.
-                      */}
-                    { _displayScreenSharingPlaceholder ? <ScreenSharePlaceholder /> : <></>}
-                    <div
-                        id = 'largeVideoWrapper'
-                        onTouchEnd = { this._onDoubleTap }
-                        ref = { this._wrapperRef }
-                        role = 'figure' >
-                        <video
-                            autoPlay = { !_noAutoPlayVideo }
-                            id = 'largeVideo'
-                            muted = { true }
-                            playsInline = { true } /* for Safari on iOS to work */ />
+                     * FIXME: the architecture of elements related to the large
+                     * video and the naming. The background is not part of
+                     * largeVideoWrapper because we are controlling the size of
+                     * the video through largeVideoWrapper. That's why we need
+                     * another container for the background and the
+                     * largeVideoWrapper in order to hide/show them.
+                     */}
+                    {_displayScreenSharingPlaceholder ? <ScreenSharePlaceholder /> : <></>}
+                    <div id="largeVideoWrapper" onTouchEnd={this._onDoubleTap} ref={this._wrapperRef} role="figure">
+                        <video autoPlay={!_noAutoPlayVideo} id="largeVideo" muted={true} playsInline={true} />
                     </div>
                 </div>
-                { interfaceConfig.DISABLE_TRANSCRIPTION_SUBTITLES
-                    || <Captions /> }
+                {interfaceConfig.DISABLE_TRANSCRIPTION_SUBTITLES || <Captions />}
                 {_showDominantSpeakerBadge && <StageParticipantNameLabel />}
             </div>
         );
@@ -285,13 +274,13 @@ class LargeVideo extends Component<IProps> {
         const { _verticalFilmstripWidth, _resizableFilmstrip } = this.props;
 
         if (_resizableFilmstrip && Number(_verticalFilmstripWidth) >= FILMSTRIP_BREAKPOINT) {
-            this._containerRef.current?.classList.add('transition');
-            this._wrapperRef.current?.classList.add('transition');
+            this._containerRef.current?.classList.add("transition");
+            this._wrapperRef.current?.classList.add("transition");
             VideoLayout.refreshLayout();
 
             setTimeout(() => {
-                this._containerRef?.current && this._containerRef.current.classList.remove('transition');
-                this._wrapperRef?.current && this._wrapperRef.current.classList.remove('transition');
+                this._containerRef?.current && this._containerRef.current.classList.remove("transition");
+                this._wrapperRef?.current && this._wrapperRef.current.classList.remove("transition");
             }, 1000);
         } else {
             VideoLayout.refreshLayout();
@@ -322,7 +311,7 @@ class LargeVideo extends Component<IProps> {
             _customBackgroundImageUrl,
             _verticalFilmstripWidth,
             _verticalViewMaxWidth,
-            _visibleFilmstrip
+            _visibleFilmstrip,
         } = this.props;
 
         styles.backgroundColor = _customBackgroundColor || interfaceConfig.DEFAULT_BACKGROUND;
@@ -335,7 +324,7 @@ class LargeVideo extends Component<IProps> {
 
         if (_customBackgroundImageUrl) {
             styles.backgroundImage = `url(${_customBackgroundImageUrl})`;
-            styles.backgroundSize = 'cover';
+            styles.backgroundSize = "cover";
         }
 
         if (_visibleFilmstrip && Number(_verticalFilmstripWidth) >= FILMSTRIP_BREAKPOINT) {
@@ -365,7 +354,6 @@ class LargeVideo extends Component<IProps> {
     }
 }
 
-
 /**
  * Maps (parts of) the Redux state to the associated LargeVideo props.
  *
@@ -374,30 +362,30 @@ class LargeVideo extends Component<IProps> {
  * @returns {IProps}
  */
 function _mapStateToProps(state: IReduxState) {
-    const testingConfig = state['features/base/config'].testing;
-    const { backgroundColor, backgroundImageUrl } = state['features/dynamic-branding'];
-    const { isOpen: isChatOpen } = state['features/chat'];
-    const { width: verticalFilmstripWidth, visible } = state['features/filmstrip'];
-    const { defaultLocalDisplayName, hideDominantSpeakerBadge } = state['features/base/config'];
-    const { seeWhatIsBeingShared } = state['features/large-video'];
+    const testingConfig = state["features/base/config"].testing;
+    const { backgroundColor, backgroundImageUrl } = state["features/dynamic-branding"];
+    const { isOpen: isChatOpen } = state["features/chat"];
+    const { width: verticalFilmstripWidth, visible } = state["features/filmstrip"];
+    const { defaultLocalDisplayName, hideDominantSpeakerBadge } = state["features/base/config"];
+    const { seeWhatIsBeingShared } = state["features/large-video"];
     const localParticipantId = getLocalParticipant(state)?.id;
     const largeVideoParticipant = getLargeVideoParticipant(state);
     const videoTrack = getVideoTrackByParticipant(state, largeVideoParticipant);
-    const isLocalScreenshareOnLargeVideo = largeVideoParticipant?.id?.includes(localParticipantId ?? '')
-        && videoTrack?.videoType === VIDEO_TYPE.DESKTOP;
+    const isLocalScreenshareOnLargeVideo =
+        largeVideoParticipant?.id?.includes(localParticipantId ?? "") && videoTrack?.videoType === VIDEO_TYPE.DESKTOP;
     const isOnSpot = defaultLocalDisplayName === SPOT_DISPLAY_NAME;
-    const messages  = state['features/videotranslatorai'].messages; //videotranslatorai
+    const messages = state["features/videotranslatorai"].messages; // videotranslatorai
 
     return {
-        _backgroundAlpha: state['features/base/config'].backgroundAlpha,
+        _backgroundAlpha: state["features/base/config"].backgroundAlpha,
         _customBackgroundColor: backgroundColor,
         _customBackgroundImageUrl: backgroundImageUrl,
         _displayScreenSharingPlaceholder: Boolean(isLocalScreenshareOnLargeVideo && !seeWhatIsBeingShared && !isOnSpot),
         _hideSelfView: getHideSelfView(state),
         _isChatOpen: isChatOpen,
         _isScreenSharing: Boolean(isLocalScreenshareOnLargeVideo),
-        _largeVideoParticipantId: largeVideoParticipant?.id ?? '',
-        _localParticipantId: localParticipantId ?? '',
+        _largeVideoParticipantId: largeVideoParticipant?.id ?? "",
+        _localParticipantId: localParticipantId ?? "",
         _noAutoPlayVideo: Boolean(testingConfig?.noAutoPlayVideo),
         _resizableFilmstrip: isFilmstripResizable(state),
         _seeWhatIsBeingShared: Boolean(seeWhatIsBeingShared),
@@ -406,8 +394,8 @@ function _mapStateToProps(state: IReduxState) {
         _verticalViewMaxWidth: getVerticalViewMaxWidth(state),
         _visibleFilmstrip: visible,
         _whiteboardEnabled: isWhiteboardEnabled(state),
-        _messages: messages, //videotranslatorai
-        _state: state //videotranslatorai
+        _messages: messages, // videotranslatorai
+        _state: state, // videotranslatorai
     };
 }
 
