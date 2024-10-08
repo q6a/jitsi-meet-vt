@@ -215,7 +215,7 @@ class LargeVideo extends Component<IProps> {
                     messageToDisplay = "";
                     this.forceUpdate(); // Trigger re-render to update the UI
                 }
-            }, 8000);
+            }, 20000);
         }
 
         // videotranslatorai
