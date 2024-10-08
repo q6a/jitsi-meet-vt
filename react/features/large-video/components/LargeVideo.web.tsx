@@ -141,6 +141,7 @@ let messageToDisplay = "";
 class LargeVideo extends Component<IProps> {
     _tappedTimeout: number | undefined;
     private messageTimeout: ReturnType<typeof setTimeout> | null = null;
+    private lastMessageTimestamp = 0; // Track the last message timestamp
 
     _containerRef: React.RefObject<HTMLDivElement>;
 
@@ -200,15 +201,20 @@ class LargeVideo extends Component<IProps> {
         if (prevProps._messages !== _messages) {
             dispatch(setMessages());
             messageToDisplay = toState(_state)["features/videotranslatorai"].latestPrivateMessage;
+            this.lastMessageTimestamp = Date.now();
 
             // Clear any existing timeout before setting a new one
             if (this.messageTimeout) {
                 clearTimeout(this.messageTimeout);
             }
 
-            // Set a timeout to clear the message after 8 seconds
+            // Set a new timeout with a check on the timestamp
             this.messageTimeout = setTimeout(() => {
-                messageToDisplay = "";
+                // Only clear the message if it’s still the latest one
+                if (Date.now() - this.lastMessageTimestamp >= 8000) {
+                    messageToDisplay = "";
+                    this.forceUpdate(); // Trigger re-render to update the UI
+                }
             }, 8000);
         }
 
