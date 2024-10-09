@@ -8,7 +8,7 @@ import { startRecordingOpenAi, startTextToSpeech, stopRecordingOpenAi, translate
 import SoundToggleButton from "./buttons/soundToggleButton";
 import TranscriptionButton from "./buttons/transcriptionButton";
 
-const TranscriptionAndTranslationOpenAiButton: FC = () => {
+const TranscriptionAndTranslationOpenAi: FC = () => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
 
@@ -95,4 +95,4 @@ const TranscriptionAndTranslationOpenAiButton: FC = () => {
     );
 };
 
-export default TranscriptionAndTranslationOpenAiButton;
+export default TranscriptionAndTranslationOpenAi;

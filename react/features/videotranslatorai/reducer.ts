@@ -6,6 +6,12 @@ import {
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
     FETCH_MEETING_DATA,
+    INPERSON_START_RECORDING_PERSONONE,
+    INPERSON_START_RECORDING_PERSONTWO,
+    INPERSON_START_TRANSCRIPTION,
+    INPERSON_STOP_RECORDING_PERSONONE,
+    INPERSON_STOP_RECORDING_PERSONTWO,
+    INPERSON_TRANSLATE_OPENAI,
     MESSAGE_NOTIFICATION,
     RECOGNITION_RESULT,
     SET_DISPLAY_DIALECT,
@@ -47,6 +53,11 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     isTranscribing: false,
     isRecording: false,
     isPlayingTTS: false,
+    inPersonStartTranscription: false,
+    inPersonStopTranscription: false,
+    inPersonIsRecordingPersonOne: false,
+    inPersonIsRecordingPersonTwo: false,
+    meetingType: "",
     transcriptionResults: [],
     meetingData: {
         displayName: "",
@@ -109,6 +120,7 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     meetingId: action.payload.meetingId || state.meetingId,
                     clientId: action.payload.clientId || state.clientId,
                     textToSpeechCode: action.payload.textToSpeechCode || state.textToSpeechCode,
+                    meetingType: action.payload.meetingType || state.meetingType,
                 };
 
             case SET_LATEST_PRIVATE_MESSAGE:
@@ -281,6 +293,47 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     messages,
                 };
             }
+
+            case INPERSON_START_RECORDING_PERSONONE:
+                return {
+                    ...state,
+                    inPersonIsRecordingPersonOne: true,
+                };
+
+            case INPERSON_STOP_RECORDING_PERSONONE:
+                return {
+                    ...state,
+                    inPersonIsRecordingPersonOne: false,
+                };
+
+            case INPERSON_START_RECORDING_PERSONTWO:
+                return {
+                    ...state,
+                    inPersonIsRecordingPersonTwo: true,
+                };
+
+            case INPERSON_STOP_RECORDING_PERSONTWO:
+                return {
+                    ...state,
+                    inPersonIsRecordingPersonTwo: false,
+                };
+
+            case INPERSON_START_TRANSCRIPTION:
+                return {
+                    ...state,
+                    inPersonStartTranscription: true,
+                };
+
+            case INPERSON_START_TRANSCRIPTION:
+                return {
+                    ...state,
+                    inPersonStopTranscription: true,
+                };
+
+            case INPERSON_TRANSLATE_OPENAI:
+                return {
+                    ...state,
+                };
 
             case DEBUGGING:
                 return {

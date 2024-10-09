@@ -29,6 +29,7 @@ export interface IRoomParams {
     jwtToken: string;
     meetingId: string;
     meetingName: string;
+    meetingType: string;
     participantName: string;
     textToSpeechCode: string;
 }
@@ -121,6 +122,10 @@ export interface IVideoTranslatorAiState {
     clientId: string;
     displayDialect: string;
     displayName: string;
+    inPersonIsRecordingPersonOne: boolean;
+    inPersonIsRecordingPersonTwo: boolean;
+    inPersonStartTranscription: boolean;
+    inPersonStopTranscription: boolean;
     isPlayingTTS: boolean;
     isRecording: boolean;
     isTranscribing: boolean;
@@ -130,6 +135,7 @@ export interface IVideoTranslatorAiState {
     meetingData: IMessage;
     meetingId: string;
     meetingName: string;
+    meetingType: string;
     messageNotification: boolean;
     messages: Array<IMessage>;
     microsoftRecognizerSDK: speechsdk.TranslationRecognizer;

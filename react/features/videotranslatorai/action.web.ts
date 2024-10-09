@@ -5,6 +5,12 @@ import { IReduxState } from "../app/types";
 import {
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
+    INPERSON_START_RECORDING_PERSONONE,
+    INPERSON_START_RECORDING_PERSONTWO,
+    INPERSON_START_TRANSCRIPTION,
+    INPERSON_STOP_RECORDING_PERSONONE,
+    INPERSON_STOP_RECORDING_PERSONTWO,
+    INPERSON_STOP_TRANSCRIPTION,
     MESSAGE_NOTIFICATION,
     SET_DISPLAY_DIALECT,
     SET_DISPLAY_NAME,
@@ -30,6 +36,7 @@ import {
     STOP_TRANSCRIPTION,
 } from "./actionTypes";
 import { createDisplayNameAndDialect } from "./services/displayNameAndDialectService";
+import { inPersonServiceOpenAi } from "./services/inPersonServiceOpenAi";
 import { getMeetingInformation } from "./services/meetingService";
 import { stopTranscriptionService, transcribeAndTranslateService } from "./services/transcriptionService";
 import { transcribeAndTranslateServiceOpenAi } from "./services/transcriptionServiceOpenAi";
@@ -288,3 +295,58 @@ export const startTextToSpeech = (text: string) => async (dispatch: any, getStat
         dispatch(setIsPlayingTTS(false)); // Ensure isPlaying is reset after completion
     }
 };
+
+export const inPersonStartRecordingPersonOne = () => {
+    return {
+        type: INPERSON_START_RECORDING_PERSONONE,
+    };
+};
+
+export const inPersonStopRecordingPersonOne = () => {
+    return {
+        type: INPERSON_STOP_RECORDING_PERSONONE,
+    };
+};
+
+export const inPersonStartRecordingPersonTwo = () => {
+    return {
+        type: INPERSON_START_RECORDING_PERSONTWO,
+    };
+};
+
+export const inPersonStopRecordingPersonTwo = () => {
+    return {
+        type: INPERSON_STOP_RECORDING_PERSONTWO,
+    };
+};
+
+export const inPersonStartTranscription = () => {
+    return {
+        type: INPERSON_START_TRANSCRIPTION,
+    };
+};
+
+export const inPersonStopTranscription = () => {
+    return {
+        type: INPERSON_STOP_TRANSCRIPTION,
+    };
+};
+
+export const inPersonTranslateOpenAi =
+    (recordedBlobParam: any, langFrom: any, participantName: any) => async (dispatch: any, getState: any) => {
+        try {
+            // Dispatch action to stop the recording
+            dispatch(setIsRecording(false));
+
+            // Call the async service and pass the recorded blob
+            await inPersonServiceOpenAi(dispatch, getState, recordedBlobParam, langFrom, "", participantName);
+
+            // Optionally handle results, such as dispatching success actions
+            // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
+        } catch (err) {
+            console.error("Error in OpenAI translate service:", err);
+
+            // Optionally dispatch a failure action if needed
+            // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
+        }
+    };

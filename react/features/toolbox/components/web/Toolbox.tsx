@@ -8,6 +8,7 @@ import { isMobileBrowser } from "../../../base/environment/utils";
 import { getLocalParticipant, isLocalParticipantModerator } from "../../../base/participants/functions";
 import ContextMenu from "../../../base/ui/components/web/ContextMenu";
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from "../../../reactions/functions.web";
+import InPersonOpenAi from "../../../videotranslatorai/components/inPersonOpenAi";
 import TranscriptionAndTranslationOpenAi from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAi";
 import { setHangupMenuVisible, setOverflowMenuVisible, setToolbarHovered, showToolbox } from "../../actions.web";
 import { getJwtDisabledButtons, getVisibleButtons, isButtonEnabled, isToolboxVisible } from "../../functions.web";
@@ -80,6 +81,10 @@ export default function Toolbox({ toolbarButtons }: IProps) {
     const shiftUp = useSelector((state: IReduxState) => state["features/toolbox"].shiftUp);
     const overflowMenuVisible = useSelector((state: IReduxState) => state["features/toolbox"].overflowMenuVisible);
     const hangupMenuVisible = useSelector((state: IReduxState) => state["features/toolbox"].hangupMenuVisible);
+    const meetingTypeVideoTranslatorAi = useSelector(
+        (state: IReduxState) => state["features/videotranslatorai"].meetingType
+    );
+
     const buttonsWithNotifyClick = useSelector(
         (state: IReduxState) => state["features/toolbox"].buttonsWithNotifyClick
     );
@@ -256,7 +261,11 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                         )}
                         {/* videotranslatorai */}
                         {/* {conference && <TranscriptionAndTranslationMicrosoft />} */}
-                        {conference && <TranscriptionAndTranslationOpenAi />}
+                        {conference && meetingTypeVideoTranslatorAi === "video_call" && (
+                            <TranscriptionAndTranslationOpenAi />
+                        )}
+                        {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAi />}
+
                         {Boolean(overflowMenuButtons.length) && (
                             <OverflowMenuButton
                                 ariaControls="overflow-menu"
