@@ -15,12 +15,10 @@ import { IMessage } from "./types";
 MiddlewareRegistry.register((store) => (next) => (action) => {
     switch (action.type) {
         case START_RECORDING_OPENAI:
-            console.log("START RECORDING");
             store.dispatch(setIsRecording(true));
             break;
 
         case STOP_RECORDING_OPENAI:
-            console.log("STOP RECORDING");
             store.dispatch(setIsRecording(false));
             break;
 

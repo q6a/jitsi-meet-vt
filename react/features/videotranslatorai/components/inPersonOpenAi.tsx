@@ -121,16 +121,10 @@ const InPersonOpenAi: FC = () => {
 
     const handleOnStop = async (recordedBlob: any) => {
         if (whichPerson === 1 && !isRecordingPersonTwo) {
-            console.log("PERSON 1");
-            console.log("LANG FROM", langFromPersonOne);
-            console.log("PERSON NAME", personOneName);
             dispatch(inPersonTranslateOpenAi(recordedBlob, langFromPersonOne, personOneName));
         }
 
         if (whichPerson === 2 && !isRecordingPersonOne) {
-            console.log("PERSON 2");
-            console.log("LANG FROM", langFromPersonTwo);
-            console.log("PERSON NAME", personTwoName);
             dispatch(inPersonTranslateOpenAi(recordedBlob, langFromPersonTwo, personTwoName));
         }
     };

@@ -11,8 +11,6 @@ import axios from "axios";
  */
 async function transcribeAudioOpenAi(langFrom: any, recordedBlob: any, apiEndpoint: any, tokenData: any) {
     try {
-        console.log("insidetranscribe");
-
         // Get the current timestamp for lastModified
         const lastModifiedDate = new Date();
         const lastModified = lastModifiedDate.getTime();
