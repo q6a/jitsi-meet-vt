@@ -3,6 +3,7 @@ import { ReactMic } from "react-mic";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../app/types";
+import { toState } from "../../base/redux/functions";
 import { startRecordingOpenAi, startTextToSpeech, stopRecordingOpenAi, translateOpenAi } from "../action.web";
 
 import SoundToggleButton from "./buttons/soundToggleButton";
@@ -31,7 +32,9 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
             const lastMessage = messages[messages.length - 1];
 
             if (lastMessage) {
-                dispatch(startTextToSpeech(lastMessage.message));
+                const textToSpeechCode = toState(state)["features/videotranslatorai"].textToSpeechCode;
+
+                dispatch(startTextToSpeech(lastMessage.message, textToSpeechCode));
             }
             setPreviousMessages(messages);
         }

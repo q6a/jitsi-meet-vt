@@ -39,6 +39,13 @@ const InPersonOpenAi: FC = () => {
     const isAudioMuted = useSelector((state: IReduxState) => state["features/base/media"].audio.muted);
     const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].messages);
 
+    const ttsCodePersonOne = useSelector(
+        (state: IReduxState) => state["features/videotranslatorai"].inPersontextToSpeechCodePersonOne
+    );
+    const ttsCodePersonTwo = useSelector(
+        (state: IReduxState) => state["features/videotranslatorai"].inPersontextToSpeechCodePersonTwo
+    );
+
     const [previousMessages, setPreviousMessages] = useState(messages);
     const [isSoundOn, setIsSoundOn] = useState(true);
 
@@ -48,16 +55,26 @@ const InPersonOpenAi: FC = () => {
 
     useEffect(() => {
         if (!isSoundOn) {
+            whichPerson = 0;
+
             return;
         }
         if (messages !== previousMessages) {
             const lastMessage = messages[messages.length - 1];
 
             if (lastMessage) {
-                dispatch(startTextToSpeech(lastMessage.message));
+                if (whichPerson === 1) {
+                    dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonTwo));
+                }
+
+                if (whichPerson === 2) {
+                    dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonOne));
+                }
             }
             setPreviousMessages(messages);
         }
+
+        whichPerson = 0;
     }, [messages, previousMessages]);
 
     const handleStartTranscriptionOne = () => {
@@ -116,8 +133,6 @@ const InPersonOpenAi: FC = () => {
             console.log("PERSON NAME", personTwoName);
             dispatch(inPersonTranslateOpenAi(recordedBlob, langFromPersonTwo, personTwoName));
         }
-
-        whichPerson = 0;
     };
 
     const handleOnData = (recordedBlob: any) => {

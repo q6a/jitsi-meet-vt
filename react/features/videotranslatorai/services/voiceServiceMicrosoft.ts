@@ -1,12 +1,11 @@
 import { IReduxState } from "../../app/types";
-import { toState } from "../../base/redux/functions";
 
 // Import Azure Speech SDK
 const sdk = require("microsoft-cognitiveservices-speech-sdk");
 
 let isPlaying = false;
 
-export async function playVoiceFromMessage(text: any, state: IReduxState) {
+export async function playVoiceFromMessage(text: any, state: IReduxState, textToSpeechCode: string) {
     if (isPlaying) {
         console.log("Audio is already playing. Skipping...");
 
@@ -17,7 +16,7 @@ export async function playVoiceFromMessage(text: any, state: IReduxState) {
     const subscriptionKey = process.env.REACT_APP_MICROSOFT_TTS_API_KEY_AUSTRALIAEAST; // Replace with your actual key
     const region = "australiaeast"; // Your Azure region
 
-    let textToSpeechCode = toState(state)["features/videotranslatorai"].textToSpeechCode;
+    // let textToSpeechCode = toState(state)["features/videotranslatorai"].textToSpeechCode;
 
     textToSpeechCode = textToSpeechCode.split(" ")[0];
 

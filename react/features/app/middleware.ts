@@ -9,7 +9,7 @@ import { getURLWithoutParams } from "../base/connection/utils";
 import { PARTICIPANT_JOINED } from "../base/participants/actionTypes";
 import MiddlewareRegistry from "../base/redux/MiddlewareRegistry";
 import { inIframe } from "../base/util/iframeUtils";
-import { debugging, fetchMeetingData, setRoomParams } from "../videotranslatorai/action.web"; // Make sure this is the correct path to your action creator
+import { debugging, fetchMeetingData, inPersonSetTTSParams, setRoomParams } from "../videotranslatorai/action.web"; // Make sure this is the correct path to your action creator
 
 import { reloadNow } from "./actions";
 import { _getRouteToRender } from "./getRouteToRender";
@@ -199,6 +199,17 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
                     meetingType,
                 })
             );
+
+            if (meetingType === "in_person") {
+                store.dispatch(
+                    inPersonSetTTSParams({
+                        inPersontextToSpeechCodePersonOne: JSON.parse(atob(payload)).context.user
+                            .moderatorTextToSpeechCode,
+                        inPersontextToSpeechCodePersonTwo: JSON.parse(atob(payload)).context.user
+                            .participantTextToSpeechCode,
+                    })
+                );
+            }
 
             store.dispatch(
                 fetchMeetingData({

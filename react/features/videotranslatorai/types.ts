@@ -35,6 +35,12 @@ export interface IRoomParams {
 }
 
 // Define interface for Room Parameters
+export interface IInPersonTTSCode {
+    inPersontextToSpeechCodePersonOne: string;
+    inPersontextToSpeechCodePersonTwo: string;
+}
+
+// Define interface for Room Parameters
 export interface IFetchMeetingData {
     initialName: string;
     meetingId: string;
@@ -126,6 +132,8 @@ export interface IVideoTranslatorAiState {
     inPersonIsRecordingPersonTwo: boolean;
     inPersonStartTranscription: boolean;
     inPersonStopTranscription: boolean;
+    inPersontextToSpeechCodePersonOne: string;
+    inPersontextToSpeechCodePersonTwo: string;
     isPlayingTTS: boolean;
     isRecording: boolean;
     isTranscribing: boolean;

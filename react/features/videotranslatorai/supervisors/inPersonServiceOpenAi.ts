@@ -1,16 +1,22 @@
-import axios from "axios";
-
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
+import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
+import transcribeAudioOpenAi from "../services/transcribeAudioOpenAi";
 
-import { createMessageStorageSendTranslationToDatabase } from "./messageService";
+import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 
-export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getState: any, recordedBlobParam: any) => {
+export const inPersonServiceOpenAi = async (
+    dispatch: any,
+    getState: any,
+    recordedBlobParam: any,
+    langFrom: any,
+    langFromTranslation: any = "",
+    participantName: any = ""
+) => {
     const state: IReduxState = getState();
 
     const tokenData = toState(state)["features/videotranslatorai"].jwtToken;
     const participantState = toState(state)["features/base/participants"];
-    const participantName = toState(state)["features/videotranslatorai"].participantName;
     const participantData = toState(state)["features/videotranslatorai"].participantData;
     const meetingData: any = toState(state)["features/videotranslatorai"].meetingData;
     const moderatorData = toState(state)["features/videotranslatorai"].moderatorData;
@@ -30,46 +36,10 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
     }
 
     try {
-        let langFrom = "en";
-        let langFromTranslation = "en-AU";
+        // langFrom = participant.transcriptionDialect.dialectCode;
+        // langFromTranslation = participant.translationDialect.dialectCode;
 
-        // Find the local participant's language name
-        for (const participant of participantAndModeratorData) {
-            if (participant.name === participantName) {
-                langFrom = participant.transcriptionDialect.dialectCode;
-                langFromTranslation = participant.translationDialect.dialectCode;
-                break;
-            }
-        }
-
-        const formData = new FormData();
-
-        // You can get the current timestamp or provide a custom lastModified date
-        const lastModifiedDate = new Date(); // Set it to the current date and time, or any desired date
-        const lastModified = lastModifiedDate.getTime(); // Get the timestamp in milliseconds
-
-        // Create a complete File object with custom lastModified date and type
-        const correctedBlob = new File([recordedBlobParam.blob], "audio.wav", {
-            type: "audio/wav",
-            lastModified, // Assign the custom lastModified timestamp
-        });
-
-        formData.append("file", correctedBlob); // Append the corrected Blob object, ensure filename
-        // formData.append("file", correctedBlob); // Append the corrected Blob object
-        formData.append("langFrom", langFrom); // Specify the language (optional)
-
-        // Set the new API endpoint for transcription
-
-        // Make the request to the new API
-        const transcriptionResponse = await axios.post(apiEndpoint, formData, {
-            headers: {
-                Authorization: `Bearer ${tokenData}`, // Bearer token for authentication
-                "Content-Type": "multipart/form-data", // Ensure the correct content type for form data
-            },
-        });
-
-        // Extract the transcription text from the response
-        const transcriptionText = transcriptionResponse.data.data.transcription;
+        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam.blob, apiEndpoint, tokenData);
 
         console.log("TRANSCRIPTION TEXT", transcriptionText);
         if (!transcriptionText) {
@@ -84,32 +54,19 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                     conference
                 ) {
                     try {
-                        // Translate the transcribed text
-                        const translationResponse = await axios.post(
-                            translationEndpoint,
-                            [{ Text: transcriptionText }],
-                            {
-                                headers: {
-                                    "Ocp-Apim-Subscription-Key": translateApiKey,
-                                    "Ocp-Apim-Subscription-Region": "australiaeast",
-                                    "Content-Type": "application/json",
-                                },
-                                params: {
-                                    // from: langFromTranslation,
-                                    to: participant.translationDialect.dialectCode,
-                                },
-                            }
+                        const translationText = await translateTextMicrosoft(
+                            transcriptionText,
+                            translateApiKey,
+                            participant.translationDialect.dialectCode,
+                            translationEndpoint
                         );
 
-                        const translationText = translationResponse.data[0].translations[0].text;
                         const translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;
 
                         let participantId = "";
 
-                        for (const [key, value] of participantState.remote.entries()) {
-                            if (value.name === participant.name) {
-                                participantId = key;
-                            }
+                        if (conference) {
+                            participantId = conference.myUserId();
                         }
 
                         // arrayPromises.push(await conference.sendPrivateTextMessage(participantId, translationSent));
@@ -168,10 +125,8 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                         const translationSent = " (videotranslatoraiservice)";
                         let participantId = "";
 
-                        for (const [key, value] of participantState.remote.entries()) {
-                            if (value.name === participant.name) {
-                                participantId = key;
-                            }
+                        if (conference) {
+                            participantId = conference.myUserId();
                         }
 
                         if (participantId && conference) {

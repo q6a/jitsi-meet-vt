@@ -3,9 +3,8 @@ import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
 import { setIsTranscribing, setMicrosoftRecognizerSDK } from "../action.web";
-
-import { getAuthToken } from "./authService";
-import { createMessageStorageSendTranslationToDatabase } from "./messageService";
+import { getAuthToken } from "../services/authService";
+import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 
 export const transcribeAndTranslateService = async (dispatch: any, getState: any) => {
     const state: IReduxState = getState();

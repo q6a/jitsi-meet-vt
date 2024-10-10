@@ -5,6 +5,7 @@ import { IReduxState } from "../app/types";
 import {
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
+    INPERSON_SET_TTS_PARAMS,
     INPERSON_START_RECORDING_PERSONONE,
     INPERSON_START_RECORDING_PERSONTWO,
     INPERSON_START_TRANSCRIPTION,
@@ -36,14 +37,15 @@ import {
     STOP_TRANSCRIPTION,
 } from "./actionTypes";
 import { createDisplayNameAndDialect } from "./services/displayNameAndDialectService";
-import { inPersonServiceOpenAi } from "./services/inPersonServiceOpenAi";
 import { getMeetingInformation } from "./services/meetingService";
-import { stopTranscriptionService, transcribeAndTranslateService } from "./services/transcriptionService";
-import { transcribeAndTranslateServiceOpenAi } from "./services/transcriptionServiceOpenAi";
 import { playVoiceFromMessage } from "./services/voiceServiceMicrosoft";
+import { inPersonServiceOpenAi } from "./supervisors/inPersonServiceOpenAi";
+import { stopTranscriptionService, transcribeAndTranslateService } from "./supervisors/transcriptionService";
+import { transcribeAndTranslateServiceOpenAi } from "./supervisors/transcriptionServiceOpenAi";
 import {
     IEntityData,
     IFetchMeetingData,
+    IInPersonTTSCode,
     ILinguist,
     IMeetingData,
     IMessage,
@@ -64,6 +66,14 @@ export const setRecordingBlobOpenAi = (blob: any) => {
 export const setRoomParams = (params: IRoomParams) => {
     return {
         type: SET_ROOM_PARAMS,
+        payload: params,
+    };
+};
+
+// Existing action creators
+export const inPersonSetTTSParams = (params: IInPersonTTSCode) => {
+    return {
+        type: INPERSON_SET_TTS_PARAMS,
         payload: params,
     };
 };
@@ -274,7 +284,7 @@ export const stopTranscription = () => async (dispatch: any, getState: any) => {
     }
 };
 
-export const startTextToSpeech = (text: string) => async (dispatch: any, getState: any) => {
+export const startTextToSpeech = (text: string, textToSpeechCode: string) => async (dispatch: any, getState: any) => {
     dispatch({ type: START_TEXT_TO_SPEECH });
 
     try {
@@ -284,7 +294,7 @@ export const startTextToSpeech = (text: string) => async (dispatch: any, getStat
         const state: IReduxState = getState();
 
         // Call the playVoiceFromMessage function with the text and state
-        await playVoiceFromMessage(text, state);
+        await playVoiceFromMessage(text, state, textToSpeechCode);
 
         // Handle success if needed
     } catch (err) {

@@ -6,6 +6,7 @@ import {
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
     FETCH_MEETING_DATA,
+    INPERSON_SET_TTS_PARAMS,
     INPERSON_START_RECORDING_PERSONONE,
     INPERSON_START_RECORDING_PERSONTWO,
     INPERSON_START_TRANSCRIPTION,
@@ -47,6 +48,8 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     meetingId: "",
     clientId: "",
     textToSpeechCode: "",
+    inPersontextToSpeechCodePersonOne: "",
+    inPersontextToSpeechCodePersonTwo: "",
     participantData: [],
     moderatorData: [],
     linguistData: [],
@@ -121,6 +124,16 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     clientId: action.payload.clientId || state.clientId,
                     textToSpeechCode: action.payload.textToSpeechCode || state.textToSpeechCode,
                     meetingType: action.payload.meetingType || state.meetingType,
+                };
+
+            // Room slice reducers
+            case INPERSON_SET_TTS_PARAMS:
+                return {
+                    ...state,
+                    inPersontextToSpeechCodePersonOne:
+                        action.payload.inPersontextToSpeechCodePersonOne || state.inPersontextToSpeechCodePersonOne,
+                    inPersontextToSpeechCodePersonTwo:
+                        action.payload.inPersontextToSpeechCodePersonTwo || state.inPersontextToSpeechCodePersonTwo,
                 };
 
             case SET_LATEST_PRIVATE_MESSAGE:
