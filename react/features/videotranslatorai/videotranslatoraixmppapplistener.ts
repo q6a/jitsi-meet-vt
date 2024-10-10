@@ -53,6 +53,7 @@ export function onCustomIq(stanza: any, store: IStore) {
         const languageName = "";
         const clientId = "";
         const textToSpeechCode = "";
+        const meetingType = "",
 
         console.log("Extracted Meeting Name:", meetingName);
         console.log("Extracted Participant Name:", participantName);
@@ -69,6 +70,7 @@ export function onCustomIq(stanza: any, store: IStore) {
                     meetingId,
                     clientId,
                     textToSpeechCode,
+                    meetingType,
                 })
             );
 
