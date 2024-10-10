@@ -10,12 +10,12 @@ import axios from "axios";
  * @returns {Promise<string>} - A promise that resolves to the translated text.
  */
 async function translateTextMicrosoft(
-    transcriptionText,
-    translateApiKey,
-    targetDialectCode,
-    translationEndpoint,
-    langFrom = "",
-    region = "australiaeast"
+    transcriptionText: any,
+    translateApiKey: any,
+    targetDialectCode: any,
+    translationEndpoint: any,
+    langFrom: any = "",
+    region: any = "australiaeast"
 ) {
     try {
         // const translationEndpoint = "https://api.cognitive.microsofttranslator.com/translate";
