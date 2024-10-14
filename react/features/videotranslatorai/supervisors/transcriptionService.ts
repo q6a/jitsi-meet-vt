@@ -3,7 +3,7 @@ import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
 import { setIsTranscribing, setMicrosoftRecognizerSDK } from "../action.web";
-import { getAuthToken } from "../services/authService";
+import fetchAzureToken from "../services/fetchAzureToken"; // Adjust the path as necessary
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 
 export const transcribeAndTranslateService = async (dispatch: any, getState: any) => {
@@ -42,7 +42,9 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
             }
         }
 
-        authToken = await getAuthToken();
+        authToken = await fetchAzureToken(speechRegion, tokenData);
+
+        // authToken = await getAuthToken();
         const translationConfig = speechsdk.SpeechTranslationConfig.fromAuthorizationToken(authToken, speechRegion);
 
         translationConfig.speechRecognitionLanguage = langFrom || "en-US";

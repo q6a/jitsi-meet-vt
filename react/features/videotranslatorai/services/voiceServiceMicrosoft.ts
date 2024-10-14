@@ -21,7 +21,7 @@ export async function playVoiceFromMessage(text: any, state: IReduxState, textTo
 
     textToSpeechCode = textToSpeechCode.split(" ")[0];
 
-    if (!subscriptionKey || !region) {
+    if (!region || !authToken) {
         throw new Error("One or more required variables are not set.");
     }
 

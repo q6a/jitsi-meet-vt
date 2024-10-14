@@ -28,7 +28,8 @@ async function translateTextMicrosoft(
             {
                 transcriptionText,
                 targetDialectCode,
-                langFrom,
+
+                // langFrom,
                 region,
             },
             {
