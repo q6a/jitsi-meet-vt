@@ -56,9 +56,10 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                     try {
                         const translationText = await translateTextMicrosoft(
                             transcriptionText,
-                            translateApiKey,
+                            tokenData,
                             participant.translationDialect.dialectCode,
-                            translationEndpoint
+                            undefined,
+                            "australiaeast"
                         );
 
                         const translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;

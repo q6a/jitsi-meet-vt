@@ -1,9 +1,8 @@
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
+import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioOpenAi from "../services/transcribeAudioOpenAi";
-
-import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 
 export const inPersonServiceOpenAi = async (
     dispatch: any,
@@ -56,8 +55,10 @@ export const inPersonServiceOpenAi = async (
                     try {
                         const translationText = await translateTextMicrosoft(
                             transcriptionText,
-                            translateApiKey,
+                            tokenData,
                             participant.translationDialect.dialectCode,
+                            undefined,
+                            "australiaeast",
                             translationEndpoint
                         );
 

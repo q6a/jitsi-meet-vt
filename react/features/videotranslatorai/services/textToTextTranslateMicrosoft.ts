@@ -1,41 +1,47 @@
 import axios from "axios";
 
 /**
- * Translates a given transcription text to the specified target dialect.
+ * Translates a given transcription text to the specified target dialect by calling the backend translation API.
  *
  * @param {string} transcriptionText - The text to be translated.
- * @param {string} translateApiKey - The API key for the translation service.
  * @param {string} targetDialectCode - The target dialect code for translation.
+ * @param {string} langFrom - The source language code for translation (optional).
  * @param {string} [region='australiaeast'] - The region for the translation service.
+ * @param {string} authToken - Authorization token for accessing the backend API.
  * @returns {Promise<string>} - A promise that resolves to the translated text.
  */
 async function translateTextMicrosoft(
-    transcriptionText: any,
-    translateApiKey: any,
-    targetDialectCode: any,
-    translationEndpoint: any,
-    langFrom: any = "",
-    region: any = "australiaeast"
-) {
+    transcriptionText: string,
+    authToken: string,
+    targetDialectCode: string,
+    langFrom = "",
+    region = "australiaeast"
+): Promise<string> {
     try {
-        // const translationEndpoint = "https://api.cognitive.microsofttranslator.com/translate";
+        const backendEndpoint = process.env.REACT_APP_TRANSLATE_API_ENDPOINT;
 
-        const response = await axios.post(translationEndpoint, [{ Text: transcriptionText }], {
-            headers: {
-                "Ocp-Apim-Subscription-Key": translateApiKey,
-                "Ocp-Apim-Subscription-Region": region,
-                "Content-Type": "application/json",
+        if (!backendEndpoint) {
+            throw new Error("Envrionment variable not set");
+        }
+        const response = await axios.post(
+            backendEndpoint,
+            {
+                transcriptionText,
+                targetDialectCode,
+                langFrom,
+                region,
             },
-            params: {
-                // from: langFromTranslation,
+            {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
-                to: targetDialectCode,
-            },
-        });
+        const translatedText = response.data.data.translatedText;
 
-        const translationText = response.data[0].translations[0].text;
-
-        return translationText;
+        return translatedText;
     } catch (error) {
         console.error("Error translating text:", error);
         throw new Error("Failed to translate text");
