@@ -26,11 +26,10 @@ export const inPersonServiceOpenAi = async (
     const participantAndModeratorData = [...moderatorData, ...participantData];
 
     const translateApiKey = process.env.REACT_APP_MICROSOFT_TRANSLATE_API_KEY;
-    const transcriptionEndpoint = process.env.REACT_APP_OPENAI_TRANSCRIPTION_ENDPOINT;
     const translationEndpoint = process.env.REACT_APP_MICROSOFT_TRANSLATION_ENDPOINT;
     const apiEndpoint = process.env.REACT_APP_OPENAI_TRANSCRIBE_ENDPOINT_VIDEOTRANSLATORAI; // New API endpoint
 
-    if (!translateApiKey || !transcriptionEndpoint || !translationEndpoint || !apiEndpoint) {
+    if (!translateApiKey || !translationEndpoint || !apiEndpoint) {
         throw new Error("One or more environment variables are not set.");
     }
 

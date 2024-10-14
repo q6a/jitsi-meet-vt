@@ -26,10 +26,9 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
     try {
         let authToken = "";
         const speechRegion = process.env.REACT_APP_SPEECH_REGION_MICROSOFT_SDK;
-        const subscriptionKey = process.env.REACT_APP_SUBSCRIPTION_KEY_MICROSOFT_SDK;
 
         // Error checking for environment variables
-        if (!speechRegion || !subscriptionKey) {
+        if (!speechRegion) {
             throw new Error("Required environment variables are missing.");
         }
         let langFrom = "en-AU";
