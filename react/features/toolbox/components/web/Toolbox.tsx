@@ -105,6 +105,7 @@ export default function Toolbox({ toolbarButtons }: IProps) {
     const mainToolbarButtonsThresholds = useSelector(
         (state: IReduxState) => state["features/toolbox"].mainToolbarButtonsThresholds
     );
+
     const allButtons = useToolboxButtons(customToolbarButtons);
 
     useKeyboardShortcuts(toolbarButtonsToUse);
@@ -271,9 +272,9 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                         )}
                         {/* videotranslatorai */}
                         {/* {conference && <TranscriptionAndTranslationMicrosoft />} */}
-                        {conference && meetingTypeVideoTranslatorAi === "video_call" && (
-                            <TranscriptionAndTranslationOpenAi />
-                        )}
+                        {conference &&
+                            (meetingTypeVideoTranslatorAi === "video_call" ||
+                                meetingTypeVideoTranslatorAi === "broadcast") && <TranscriptionAndTranslationOpenAi />}
                         {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAi />}
 
                         {Boolean(overflowMenuButtons.length) && (
