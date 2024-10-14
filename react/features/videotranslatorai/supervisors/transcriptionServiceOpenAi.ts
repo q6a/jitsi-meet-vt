@@ -35,9 +35,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
         // Find the local participant's language name
         for (const participant of participantAndModeratorData) {
             if (participant.name === participantName) {
-                console.log("participantName", participant.name);
                 langFrom = participant.transcriptionDialect?.dialectCode || langFrom;
-                console.log("langFrom", langFrom);
 
                 langFromTranslation = participant.translationDialect.dialectCode;
                 break;
