@@ -35,7 +35,10 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
         // Find the local participant's language name
         for (const participant of participantAndModeratorData) {
             if (participant.name === participantName) {
-                langFrom = participant.transcriptionDialect.dialectCode;
+                console.log("participantName", participant.name);
+                langFrom = participant.transcriptionDialect?.dialectCode || langFrom;
+                console.log("langFrom", langFrom);
+
                 langFromTranslation = participant.translationDialect.dialectCode;
                 break;
             }
@@ -49,7 +52,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
             participantAndModeratorData.map(async (participant) => {
                 if (
                     participant.translationDialect.dialectCode &&
-                    participant.transcriptionDialect.dialectCode !== langFrom &&
+                    participant.transcriptionDialect?.dialectCode !== langFrom &&
                     conference
                 ) {
                     try {
@@ -120,7 +123,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
             participantAndModeratorData.map(async (participant) => {
                 if (
                     participant.translationDialect.dialectCode &&
-                    participant.transcriptionDialect.dialectCode !== langFrom
+                    participant.transcriptionDialect?.dialectCode !== langFrom
                 ) {
                     try {
                         const translationSent = " (videotranslatoraiservice)";

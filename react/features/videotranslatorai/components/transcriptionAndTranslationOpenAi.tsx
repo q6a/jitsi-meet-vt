@@ -3,6 +3,7 @@ import { ReactMic } from "react-mic";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../app/types";
+import { isLocalParticipantModerator } from "../../base/participants/functions";
 import { toState } from "../../base/redux/functions";
 import { startRecordingOpenAi, startTextToSpeech, stopRecordingOpenAi, translateOpenAi } from "../action.web";
 
@@ -16,6 +17,10 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
     const isRecording = useSelector((state: IReduxState) => state["features/videotranslatorai"].isRecording);
     const isAudioMuted = useSelector((state: IReduxState) => state["features/base/media"].audio.muted);
     const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].messages);
+    const isModerator = useSelector(isLocalParticipantModerator);
+    const meetingTypeVideoTranslatorAi = useSelector(
+        (state: IReduxState) => state["features/videotranslatorai"].meetingType
+    );
 
     const [previousMessages, setPreviousMessages] = useState(messages);
     const [isSoundOn, setIsSoundOn] = useState(true);
@@ -88,11 +93,14 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
             {/* Buttons */}
             <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                 <SoundToggleButton isSoundOn={isSoundOn} toggleSound={toggleSound} />
-                <TranscriptionButton
-                    handleStart={handleStartTranscription}
-                    handleStop={handleStopTranscription}
-                    isRecording={isRecording}
-                />
+
+                {(meetingTypeVideoTranslatorAi !== "broadcast" || isModerator) && (
+                    <TranscriptionButton
+                        handleStart={handleStartTranscription}
+                        handleStop={handleStopTranscription}
+                        isRecording={isRecording}
+                    />
+                )}
             </div>
         </div>
     );

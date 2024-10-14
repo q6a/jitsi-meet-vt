@@ -19,7 +19,8 @@ export const createDisplayNameAndDialect = (
     }
 
     const entityType = participantEntity ? participantEntity.type : "UNKNOWN";
-    const dialectType = participantEntity ? participantEntity.transcriptionDialect.name : "UNKNOWN";
+    const dialectType =
+        participantEntity?.transcriptionDialect?.name || participantEntity?.translationDialect?.name || "UNKNOWN";
 
     let displayName = "";
 
