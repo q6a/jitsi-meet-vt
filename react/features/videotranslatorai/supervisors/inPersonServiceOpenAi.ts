@@ -58,8 +58,7 @@ export const inPersonServiceOpenAi = async (
                             tokenData,
                             participant.translationDialect.dialectCode,
                             undefined,
-                            "australiaeast",
-                            translationEndpoint
+                            "australiaeast"
                         );
 
                         const translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;
