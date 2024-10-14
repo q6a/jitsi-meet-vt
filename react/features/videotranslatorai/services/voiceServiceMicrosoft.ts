@@ -1,4 +1,7 @@
 import { IReduxState } from "../../app/types";
+import { toState } from "../../base/redux/functions";
+
+import fetchAzureToken from "./fetchAzureToken"; // Adjust the path as necessary
 
 // Import Azure Speech SDK
 const sdk = require("microsoft-cognitiveservices-speech-sdk");
@@ -13,10 +16,8 @@ export async function playVoiceFromMessage(text: any, state: IReduxState, textTo
     }
     isPlaying = true;
 
-    const subscriptionKey = process.env.REACT_APP_MICROSOFT_TTS_API_KEY_AUSTRALIAEAST; // Replace with your actual key
     const region = "australiaeast"; // Your Azure region
-
-    // let textToSpeechCode = toState(state)["features/videotranslatorai"].textToSpeechCode;
+    const authToken = toState(state)["features/videotranslatorai"].jwtToken;
 
     textToSpeechCode = textToSpeechCode.split(" ")[0];
 
@@ -27,8 +28,14 @@ export async function playVoiceFromMessage(text: any, state: IReduxState, textTo
     const messageContent = text.includes(":") ? text.split(":")[1].trim() : text;
 
     try {
+        const azureToken = await fetchAzureToken(region, authToken);
+
+        if (!azureToken) {
+            throw new Error("Failed to retrieve Azure token.");
+        }
+
         // Step 1: Set up Speech SDK configuration for Azure
-        const speechConfig = sdk.SpeechConfig.fromSubscription(subscriptionKey, region);
+        const speechConfig = sdk.SpeechConfig.fromAuthorizationToken(azureToken, region);
 
         // Set the voice and language you want to use (e.g., Indonesian male voice)
         speechConfig.speechSynthesisVoiceName = textToSpeechCode;
