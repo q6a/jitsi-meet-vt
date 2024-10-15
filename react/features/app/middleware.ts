@@ -10,6 +10,7 @@ import { PARTICIPANT_JOINED } from "../base/participants/actionTypes";
 import MiddlewareRegistry from "../base/redux/MiddlewareRegistry";
 import { inIframe } from "../base/util/iframeUtils";
 import { debugging, fetchMeetingData, inPersonSetTTSParams, setRoomParams } from "../videotranslatorai/action.web"; // Make sure this is the correct path to your action creator
+// import { addIqHandler } from "../videotranslatorai/videotranslatoraixmppapplistener"; // Adjust the path as needed
 
 import { reloadNow } from "./actions";
 import { _getRouteToRender } from "./getRouteToRender";
@@ -177,6 +178,8 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
     // videotranslatorai
     const params = new URLSearchParams(window.location.search);
     const jwtToken = params.get("jwt");
+
+    // addIqHandler(store); // Add the IQ handler here to capture XMPP logs
 
     if (jwtToken) {
         const [header, payload] = jwtToken.split(".");

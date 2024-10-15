@@ -1,6 +1,7 @@
 import React, { FC } from "react";
 
 import Tooltip from "../../../base/tooltip/components/Tooltip";
+
 import "./transcriptionButton.css"; // Import your CSS file
 
 interface InPersonButtonProps {
@@ -8,10 +9,17 @@ interface InPersonButtonProps {
     handleStop: () => void;
     isRecording: boolean;
     number: number;
+    toolTipContent: string;
 }
 
-const InPersonToggleButton: FC<InPersonButtonProps> = ({ isRecording, handleStart, handleStop, number }) => (
-    <Tooltip containerClassName="transcription-tooltip" content="Transcription/Translation" position="top">
+const InPersonToggleButton: FC<InPersonButtonProps> = ({
+    isRecording,
+    handleStart,
+    handleStop,
+    number,
+    toolTipContent,
+}) => (
+    <Tooltip containerClassName="transcription-tooltip" content={toolTipContent} position="top">
         <div className="toolbox-icon">
             <div
                 className="circle-region"

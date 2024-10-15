@@ -3,6 +3,7 @@ import { ReactMic } from "react-mic";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../app/types";
+import { isLocalParticipantModerator } from "../../base/participants/functions";
 import { toState } from "../../base/redux/functions";
 import {
     inPersonStartRecordingPersonOne,
@@ -20,6 +21,7 @@ let whichPerson = 0;
 const InPersonOpenAi: FC = () => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
+    const isModerator = useSelector(isLocalParticipantModerator);
 
     const moderatorData = toState(state)["features/videotranslatorai"].moderatorData;
     const participantData = toState(state)["features/videotranslatorai"].participantData;
@@ -28,6 +30,9 @@ const InPersonOpenAi: FC = () => {
     const personTwoName = participantData[0].name;
     const langFromPersonOne = moderatorData[0].translationDialect.dialectCode;
     const langFromPersonTwo = participantData[0].translationDialect.dialectCode;
+
+    const toolTipContentPersonOne = moderatorData[0].translationDialect.name;
+    const toolTipContenPersonTwo = participantData[0].translationDialect.name;
 
     const isRecordingPersonOne = useSelector(
         (state: IReduxState) => state["features/videotranslatorai"].inPersonIsRecordingPersonOne
@@ -153,12 +158,14 @@ const InPersonOpenAi: FC = () => {
                     handleStop={handleStopTranscriptionOne}
                     isRecording={isRecordingPersonOne}
                     number={1}
+                    toolTipContent={toolTipContentPersonOne}
                 />
                 <InPersonButton
                     handleStart={handleStartTranscriptionTwo}
                     handleStop={handleStopTranscriptionTwo}
                     isRecording={isRecordingPersonTwo}
                     number={2}
+                    toolTipContent={toolTipContenPersonTwo}
                 />
             </div>
         </div>
