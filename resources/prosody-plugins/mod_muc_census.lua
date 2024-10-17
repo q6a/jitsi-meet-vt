@@ -38,13 +38,22 @@ local tostring = tostring;
 local muc_domain_prefix = module:get_option_string("muc_mapper_domain_prefix", "conference");
 
 local leaked_rooms = 0;
-
+local total_rooms = 0
+local total_occupants = 0
 --- handles request to get number of participants in all rooms
 -- @return GET response
 function handle_get_room_census(event)
-    local host_session = prosody.hosts[muc_domain_prefix .. "." .. tostring(module.host)]
+
+    total_rooms = 0;
+    total_occupants = 0;
+    module:log("error", "handle get room event");
+    --local host_session = prosody.hosts[muc_domain_prefix .. "." .. tostring(module.host)]
+    local host_session = prosody.hosts["conference.meet.stg.qbl-media.com"]
+    -- module:log("error", "INSIDE FUNCTON MUC DOMAIN PREFIX: %s, MODULE HOST %s", tostring(muc_domain_prefix), tostring(module.host) );	
+
     if not host_session or not host_session.modules.muc then
-        return { status_code = 400; }
+        module:log("error", "not session census");
+	return { status_code = 400; }
     end
 
     room_data = {}
@@ -73,6 +82,13 @@ function handle_get_room_census(event)
                 leaked = true;
                 leaked_rooms = leaked_rooms + 1;
             end
+	
+  	   -- Increment total occupants and total rooms
+            total_occupants = total_occupants + participant_count
+            total_rooms = total_rooms + 1
+
+            -- Log room name and participant count
+            module:log("error", "Room: %s, Occupants: %d", tostring(room.jid), participant_count)
 
             table.insert(room_data, {
                 room_name = room.jid;
@@ -83,9 +99,19 @@ function handle_get_room_census(event)
         end
     end
 
+
+ -- Log total rooms and total occupants
+    module:log("error", "Total Rooms: %d, Total Occupants: %d", total_rooms, total_occupants)
+
     census_resp = json.encode({
         room_census = room_data;
+	num_rooms = total_rooms;
+	num_participants = total_occupants;
     });
+
+    module:log("error", "Room Census Data: %s", census_resp)  -- Log room census data
+
+
     return { status_code = 200; body = census_resp }
 end
 
