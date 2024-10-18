@@ -343,13 +343,21 @@ export const inPersonStopTranscription = () => {
 };
 
 export const inPersonTranslateOpenAi =
-    (recordedBlobParam: any, langFrom: any, participantName: any) => async (dispatch: any, getState: any) => {
+    (recordedBlobParam: any, langFrom: any, participantName: any, langFromTranslation: any) =>
+    async (dispatch: any, getState: any) => {
         try {
             // Dispatch action to stop the recording
             dispatch(setIsRecording(false));
 
             // Call the async service and pass the recorded blob
-            await inPersonServiceOpenAi(dispatch, getState, recordedBlobParam, langFrom, "", participantName);
+            await inPersonServiceOpenAi(
+                dispatch,
+                getState,
+                recordedBlobParam,
+                langFrom,
+                langFromTranslation,
+                participantName
+            );
 
             // Optionally handle results, such as dispatching success actions
             // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });

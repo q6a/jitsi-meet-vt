@@ -56,7 +56,7 @@ export const inPersonServiceOpenAi = async (
                             transcriptionText,
                             tokenData,
                             participant.translationDialect.dialectCode,
-                            undefined,
+                            langFromTranslation,
                             "australiaeast"
                         );
 

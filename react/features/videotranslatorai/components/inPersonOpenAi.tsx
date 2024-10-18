@@ -28,8 +28,12 @@ const InPersonOpenAi: FC = () => {
 
     const personOneName = moderatorData[0].name;
     const personTwoName = participantData[0].name;
-    const langFromPersonOne = moderatorData[0].translationDialect.dialectCode;
-    const langFromPersonTwo = participantData[0].translationDialect.dialectCode;
+
+    const langFromPersonOneTranscription = moderatorData[0].transcriptionDialect.dialectCode;
+    const langFromPersonTwoTranscription = participantData[0].transcriptionDialect.dialectCode;
+
+    const langFromPersonOneTranslation = moderatorData[0].translationDialect.dialectCode;
+    const langFromPersonTwoTranslation = participantData[0].translationDialect.dialectCode;
 
     const toolTipContentPersonOne = moderatorData[0].translationDialect.name;
     const toolTipContenPersonTwo = participantData[0].translationDialect.name;
@@ -126,11 +130,25 @@ const InPersonOpenAi: FC = () => {
 
     const handleOnStop = async (recordedBlob: any) => {
         if (whichPerson === 1 && !isRecordingPersonTwo) {
-            dispatch(inPersonTranslateOpenAi(recordedBlob, langFromPersonOne, personOneName));
+            dispatch(
+                inPersonTranslateOpenAi(
+                    recordedBlob,
+                    langFromPersonOneTranscription,
+                    personOneName,
+                    langFromPersonOneTranslation
+                )
+            );
         }
 
         if (whichPerson === 2 && !isRecordingPersonOne) {
-            dispatch(inPersonTranslateOpenAi(recordedBlob, langFromPersonTwo, personTwoName));
+            dispatch(
+                inPersonTranslateOpenAi(
+                    recordedBlob,
+                    langFromPersonTwoTranscription,
+                    personTwoName,
+                    langFromPersonTwoTranslation
+                )
+            );
         }
     };
 

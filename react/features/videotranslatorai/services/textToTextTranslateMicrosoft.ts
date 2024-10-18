@@ -1,21 +1,11 @@
 import axios from "axios";
 
-/**
- * Translates a given transcription text to the specified target dialect by calling the backend translation API.
- *
- * @param {string} transcriptionText - The text to be translated.
- * @param {string} targetDialectCode - The target dialect code for translation.
- * @param {string} langFrom - The source language code for translation (optional).
- * @param {string} [region='australiaeast'] - The region for the translation service.
- * @param {string} authToken - Authorization token for accessing the backend API.
- * @returns {Promise<string>} - A promise that resolves to the translated text.
- */
 async function translateTextMicrosoft(
-    transcriptionText: string,
+    transcriptionTextParam: string,
     authToken: string,
-    targetDialectCode: string,
-    langFrom = "",
-    region = "australiaeast"
+    targetDialectCodeParam: string,
+    langFromParam = "",
+    regionParam = "australiaeast"
 ): Promise<string> {
     try {
         const backendEndpoint = process.env.REACT_APP_TRANSLATE_API_ENDPOINT;
@@ -23,14 +13,17 @@ async function translateTextMicrosoft(
         if (!backendEndpoint) {
             throw new Error("Envrionment variable not set");
         }
+
+        console.log("target Dialect code", targetDialectCodeParam);
+        console.log("lang from dialect code", langFromParam);
+
         const response = await axios.post(
             backendEndpoint,
             {
-                transcriptionText,
-                targetDialectCode,
-
-                // langFrom,
-                region,
+                transcriptionText: transcriptionTextParam,
+                targetDialectCode: targetDialectCodeParam,
+                langFrom: langFromParam, // Explicitly assigning langFrom to langFrom
+                region: regionParam, // Explicitly assigning region to region
             },
             {
                 headers: {
@@ -41,6 +34,8 @@ async function translateTextMicrosoft(
         );
 
         const translatedText = response.data.data.translatedText;
+
+        console.log("TRANSLATED TEXTS", translatedText);
 
         return translatedText;
     } catch (error) {
