@@ -55,7 +55,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                             transcriptionText,
                             tokenData,
                             participant.translationDialect.dialectCode,
-                            undefined,
+                            langFromTranslation,
                             "australiaeast"
                         );
 
