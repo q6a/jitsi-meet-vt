@@ -14,9 +14,6 @@ async function translateTextMicrosoft(
             throw new Error("Envrionment variable not set");
         }
 
-        console.log("target Dialect code", targetDialectCodeParam);
-        console.log("lang from dialect code", langFromParam);
-
         const response = await axios.post(
             backendEndpoint,
             {
