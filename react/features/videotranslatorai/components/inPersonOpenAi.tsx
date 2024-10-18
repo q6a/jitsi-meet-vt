@@ -35,6 +35,12 @@ const InPersonOpenAi: FC = () => {
     const langFromPersonOneTranslation = moderatorData[0].translationDialect.dialectCode;
     const langFromPersonTwoTranslation = participantData[0].translationDialect.dialectCode;
 
+    console.log("langFromPersonOneTranscription:", langFromPersonOneTranscription);
+    console.log("langFromPersonTwoTranscription:", langFromPersonTwoTranscription);
+
+    console.log("langFromPersonOneTranslation:", langFromPersonOneTranslation);
+    console.log("langFromPersonTwoTranslation:", langFromPersonTwoTranslation);
+
     const toolTipContentPersonOne = moderatorData[0].translationDialect.name;
     const toolTipContenPersonTwo = participantData[0].translationDialect.name;
 
