@@ -9,7 +9,6 @@ import { getURLWithoutParams } from "../base/connection/utils";
 import { PARTICIPANT_JOINED } from "../base/participants/actionTypes";
 import MiddlewareRegistry from "../base/redux/MiddlewareRegistry";
 import { inIframe } from "../base/util/iframeUtils";
-import { toggleChat } from "../chat/actions.web";
 import { debugging, fetchMeetingData, inPersonSetTTSParams, setRoomParams } from "../videotranslatorai/action.web"; // Make sure this is the correct path to your action creator
 // import { addIqHandler } from "../videotranslatorai/videotranslatoraixmppapplistener"; // Adjust the path as needed
 
@@ -243,8 +242,6 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
  */
 function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
-
-    store.dispatch(toggleChat()); // Dispatch toggleChat when the conference is created/joined
 
     store.dispatch(debugging());
 
