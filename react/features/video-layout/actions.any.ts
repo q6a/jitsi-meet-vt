@@ -1,11 +1,7 @@
-import { IStore } from '../app/types';
-import { isTileViewModeDisabled } from '../filmstrip/functions.any';
+import { IStore } from "../app/types";
+import { isTileViewModeDisabled } from "../filmstrip/functions.any";
 
-import {
-    SET_TILE_VIEW,
-    VIRTUAL_SCREENSHARE_REMOTE_PARTICIPANTS_UPDATED
-} from './actionTypes';
-import { shouldDisplayTileView } from './functions';
+import { SET_TILE_VIEW, VIRTUAL_SCREENSHARE_REMOTE_PARTICIPANTS_UPDATED } from "./actionTypes";
 
 /**
  * Creates a (redux) action which signals that the list of known remote virtual screen share participant ids has
@@ -20,7 +16,7 @@ import { shouldDisplayTileView } from './functions';
 export function virtualScreenshareParticipantsUpdated(participantIds: Array<string>) {
     return {
         type: VIRTUAL_SCREENSHARE_REMOTE_PARTICIPANTS_UPDATED,
-        participantIds
+        participantIds,
     };
 }
 
@@ -35,13 +31,20 @@ export function virtualScreenshareParticipantsUpdated(participantIds: Array<stri
  * }}
  */
 export function setTileView(enabled?: boolean) {
-    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+    return (dispatch: IStore["dispatch"], getState: IStore["getState"]) => {
         const tileViewDisabled = isTileViewModeDisabled(getState());
 
-        !tileViewDisabled && dispatch({
-            type: SET_TILE_VIEW,
-            enabled
-        });
+        // !tileViewDisabled &&
+        //     dispatch({
+        //         type: SET_TILE_VIEW,
+        //         enabled,
+        //     });
+
+        !tileViewDisabled &&
+            dispatch({
+                type: SET_TILE_VIEW,
+                enabled: true,
+            });
     };
 }
 
@@ -52,7 +55,7 @@ export function setTileView(enabled?: boolean) {
  * @returns {Function}
  */
 export function toggleTileView() {
-    return (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
+    return (dispatch: IStore["dispatch"], getState: IStore["getState"]) => {
         const tileViewActive = shouldDisplayTileView(getState());
 
         dispatch(setTileView(!tileViewActive));
