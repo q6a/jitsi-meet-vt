@@ -2,6 +2,7 @@ import { IStore } from "../app/types";
 import { isTileViewModeDisabled } from "../filmstrip/functions.any";
 
 import { SET_TILE_VIEW, VIRTUAL_SCREENSHARE_REMOTE_PARTICIPANTS_UPDATED } from "./actionTypes";
+import { shouldDisplayTileView } from "./functions";
 
 /**
  * Creates a (redux) action which signals that the list of known remote virtual screen share participant ids has
