@@ -35,18 +35,10 @@ export function setTileView(enabled?: boolean) {
     return (dispatch: IStore["dispatch"], getState: IStore["getState"]) => {
         const tileViewDisabled = isTileViewModeDisabled(getState());
 
-        // !tileViewDisabled &&
-        //     dispatch({
-        //         type: SET_TILE_VIEW,
-        //         enabled,
-        //     });
-
-        // videotranslator.ai
-
         !tileViewDisabled &&
             dispatch({
                 type: SET_TILE_VIEW,
-                enabled: true,
+                enabled,
             });
     };
 }
