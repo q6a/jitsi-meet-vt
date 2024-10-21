@@ -1,7 +1,7 @@
 import { IStore } from "../app/types";
 import { isTileViewModeDisabled } from "../filmstrip/functions.any";
 
-import { SET_TILE_VIEW, VIRTUAL_SCREENSHARE_REMOTE_PARTICIPANTS_UPDATED } from "./actionTypes";
+import { VIRTUAL_SCREENSHARE_REMOTE_PARTICIPANTS_UPDATED } from "./actionTypes";
 import { shouldDisplayTileView } from "./functions";
 
 /**
@@ -35,19 +35,19 @@ export function setTileView(enabled?: boolean) {
     return (dispatch: IStore["dispatch"], getState: IStore["getState"]) => {
         const tileViewDisabled = isTileViewModeDisabled(getState());
 
-        // !tileViewDisabled &&
-        //     dispatch({
-        //         type: SET_TILE_VIEW,
-        //         enabled,
-        //     });
-
-        // videotranslator.ai
-
         !tileViewDisabled &&
             dispatch({
                 type: SET_TILE_VIEW,
-                enabled: true,
+                enabled,
             });
+
+        // videotranslator.ai
+
+        // !tileViewDisabled &&
+        //     dispatch({
+        //         type: SET_TILE_VIEW,
+        //         enabled: true,
+        //     });
     };
 }
 
