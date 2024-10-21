@@ -247,7 +247,7 @@ export const fetchMeetingData = (params: IFetchMeetingData) => async (dispatch: 
 export const translateOpenAi = (recordedBlobParam: any) => async (dispatch: any, getState: any) => {
     try {
         // Dispatch action to stop the recording
-        dispatch(setIsRecording(false));
+        // dispatch(setIsRecording(false));
 
         // Call the async service and pass the recorded blob
         await transcribeAndTranslateServiceOpenAi(dispatch, getState, recordedBlobParam);
