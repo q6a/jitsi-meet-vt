@@ -5,6 +5,7 @@ import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
 import { toState } from "../../base/redux/functions";
 import { startTextToSpeech, stopRecordingOpenAi, translateOpenAi } from "../action.web";
+import { AmplifyAudio } from "../services/amplifyAudioService";
 
 import SoundToggleButton from "./buttons/soundToggleButton";
 import TranscriptionButton from "./buttons/transcriptionButton";
@@ -25,6 +26,7 @@ const TranscriptionAndTranslationOpenAi = () => {
 
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
     const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+    const [realTimeAudioChunks, setRealTimeAudioChunks] = useState<Blob[]>([]);
 
     const silenceStartTime = useRef<number | null>(null);
 
@@ -37,6 +39,7 @@ const TranscriptionAndTranslationOpenAi = () => {
     const dataArrayRef = useRef<Float32Array | null>(null);
     const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
     const animationFrameIdRef = useRef<number | null>(null);
+    const audioWorkletNodeRef = useRef<AudioWorkletNode | null>(null); // Explicitly define type
 
     const [previousMessages, setPreviousMessages] = useState(messages);
 
@@ -87,6 +90,7 @@ const TranscriptionAndTranslationOpenAi = () => {
             dispatch(stopRecordingOpenAi());
         }
     }, [isAudioMuted]);
+
     const isAudioBlobSilent = async (audioBlob: Blob): Promise<boolean> => {
         const audioContext = new AudioContext();
 
@@ -107,9 +111,6 @@ const TranscriptionAndTranslationOpenAi = () => {
         }
         const rms = Math.sqrt(squares / rawData.length);
 
-        // Define a threshold for silence
-        const SILENCE_THRESHOLD = 0.01;
-
         return rms < SILENCE_THRESHOLD;
     };
 
@@ -122,12 +123,18 @@ const TranscriptionAndTranslationOpenAi = () => {
 
                 console.log("AUDIO CHUNKS", audioChunks);
                 console.log("AUDIO BLOB", audioBlob);
+                const amplifier = new AmplifyAudio();
 
                 // Send the audio blob for transcription/translation
                 const isSilent = await isAudioBlobSilent(audioBlob);
 
                 if (!isSilent && audioBlob.size > 0) {
-                    dispatch(translateOpenAi({ blob: audioBlob }));
+                    const amplifiedBlob = await amplifier.amplify(audioBlob);
+
+                    // Play the amplified audio back to check the volume
+                    // const amplifiedAudio = new Audio(URL.createObjectURL(amplifiedBlob));
+                    // amplifiedAudio.play();
+                    dispatch(translateOpenAi({ blob: amplifiedBlob }));
                 }
             };
 
@@ -142,7 +149,7 @@ const TranscriptionAndTranslationOpenAi = () => {
         const source = audioContext.createMediaStreamSource(stream);
         const analyser = audioContext.createAnalyser();
 
-        analyser.fftSize = 2048;
+        analyser.fftSize = 4096;
         const bufferLength = analyser.fftSize;
         const dataArray = new Float32Array(bufferLength);
 
@@ -153,6 +160,91 @@ const TranscriptionAndTranslationOpenAi = () => {
         dataArrayRef.current = dataArray;
         sourceRef.current = source;
     };
+
+    // const setupAudioContext = async (stream: MediaStream) => {
+    //     const audioContext = new AudioContext();
+
+    //     // Ensure the audio context is resumed
+    //     if (audioContext.state === "suspended") {
+    //         await audioContext.resume();
+    //     }
+
+    //     const source = audioContext.createMediaStreamSource(stream);
+    //     const analyser = audioContext.createAnalyser();
+
+    //     analyser.fftSize = 4096;
+    //     const bufferLength = analyser.fftSize;
+    //     const dataArray = new Float32Array(bufferLength);
+
+    //     source.connect(analyser);
+
+    //     // Inline definition of AudioProcessor class as a string
+    //     const processorCode = `
+    //         class AudioProcessor extends AudioWorkletProcessor {
+    //             process(inputs, outputs, parameters) {
+    //                 const input = inputs[0];
+    //                 if (input.length > 0) {
+    //                     const channelData = input[0];
+    //                     // Send the audio data to the main thread for further processing
+    //                     this.port.postMessage(channelData);
+    //                 }
+    //                 return true;
+    //             }
+    //         }
+
+    //         registerProcessor('audio-processor', AudioProcessor);
+    //     `;
+
+    //     // Create a Blob from the processor code
+    //     const blob = new Blob([processorCode], { type: "application/javascript" });
+    //     const blobUrl = URL.createObjectURL(blob);
+    //     let intervalId;
+
+    //     try {
+    //         // Load the processor from the Blob URL
+    //         await audioContext.audioWorklet.addModule(blobUrl);
+
+    //         const audioWorkletNode = new AudioWorkletNode(audioContext, "audio-processor");
+
+    //         // Listen to messages from the AudioWorkletProcessor
+    //         audioWorkletNode.port.onmessage = (event) => {
+    //             const audioData = event.data;
+
+    //             // Clear any previous interval if already set
+    //             if (intervalId) {
+    //                 clearInterval(intervalId);
+    //             }
+
+    //             // Set interval to run every 1000 milliseconds when no silence is detected
+    //             intervalId = setInterval(() => {
+    //                 if (!isSilenceDetected) {
+    //                     console.log("Processing audio data every second...");
+
+    //                     // Do something with the data, e.g., process or save it
+    //                 }
+    //             }, 1000);
+
+    //             // Check if silence is detected (this part is assumed to be handled elsewhere)
+    //             // You can update the 'isSilenceDetected' based on some logic or analysis of 'audioData'
+    //         };
+
+    //         // Connect the source to both the analyser and the audioWorkletNode
+    //         source.connect(analyser);
+    //         source.connect(audioWorkletNode);
+
+    //         // Optionally connect the audioWorkletNode to the destination (speakers)
+    //         audioWorkletNode.connect(audioContext.destination);
+
+    //         // Save references for later cleanup or further usage
+    //         audioContextRef.current = audioContext;
+    //         analyserRef.current = analyser;
+    //         dataArrayRef.current = dataArray;
+    //         sourceRef.current = source;
+    //         audioWorkletNodeRef.current = audioWorkletNode;
+    //     } catch (error) {
+    //         console.error("Error loading inline audio worklet module:", error);
+    //     }
+    // };
 
     const stopRecordingAndSendAudio = () => {
         console.log("MEDIA RECORDER", mediaRecorder);
@@ -192,15 +284,16 @@ const TranscriptionAndTranslationOpenAi = () => {
             } else if (Date.now() - silenceStartTime.current > SILENCE_DURATION) {
                 console.log("SILENCE DETECTED");
 
-                stopRecordingAndSendAudio();
+                setTimeout(() => {
+                    stopRecordingAndSendAudio();
 
-                if (mediaRecorder.state !== "inactive") {
-                    mediaRecorder?.requestData();
-                }
+                    if (mediaRecorder.state !== "inactive") {
+                        mediaRecorder?.requestData();
+                    }
 
-                setIsSilenceDetected(true);
-                setIsSetAudioChunkToNull(true);
-
+                    setIsSilenceDetected(true);
+                    setIsSetAudioChunkToNull(true);
+                }, 100); // 100ms delay
                 silenceStartTime.current = null;
             }
         } else {
