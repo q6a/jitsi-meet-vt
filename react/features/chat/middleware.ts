@@ -26,7 +26,6 @@ import { pushReactions } from "../reactions/actions.any";
 import { ENDPOINT_REACTION_NAME } from "../reactions/constants";
 import { getReactionMessageFromBuffer, isReactionsEnabled } from "../reactions/functions.any";
 import { showToolbox } from "../toolbox/actions";
-import { addMessageVideoTranslatorAI } from "../videotranslatorai/action.web";
 
 import {
     ADD_MESSAGE,
@@ -120,13 +119,16 @@ MiddlewareRegistry.register((store) => (next) => (action) => {
             const { participant, data } = action;
 
             if (data?.name === ENDPOINT_REACTION_NAME) {
-                store.dispatch(pushReactions(data.reactions));
+                // Skip duplicates, keep just 3.
+                const reactions = Array.from(new Set(data.reactions)).slice(0, 3) as string[];
+
+                store.dispatch(pushReactions(reactions));
 
                 _handleReceivedMessage(
                     store,
                     {
                         participantId: participant.getId(),
-                        message: getReactionMessageFromBuffer(data.reactions),
+                        message: getReactionMessageFromBuffer(reactions),
                         privateMessage: false,
                         lobbyChat: false,
                         timestamp: data.timestamp,
@@ -170,8 +172,6 @@ MiddlewareRegistry.register((store) => (next) => (action) => {
         }
 
         case SEND_MESSAGE: {
-            debugger;
-
             const state = store.getState();
             const conference = getCurrentConference(state);
 
@@ -569,46 +569,21 @@ function _handleReceivedMessage(
         displayNameToShow = `${displayNameToShow} ${i18next.t("visitors.chatIndicator")}`;
     }
 
-    // videotranslatorai
-    if (!message.includes("(videotranslatoraiservice)")) {
-        dispatch(
-            addMessage({
-                displayName: displayNameToShow,
-                hasRead,
-                participantId,
-                messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
-                message,
-                privateMessage,
-                lobbyChat,
-                recipient: getParticipantDisplayName(state, localParticipant?.id ?? ""),
-                timestamp: millisecondsTimestamp,
-                messageId,
-                isReaction,
-            })
-        );
-    }
-
-    if (message.includes("(videotranslatoraiservice)")) {
-        message = message.replace("(videotranslatoraiservice)", "");
-
-        dispatch(
-            addMessageVideoTranslatorAI({
-                displayName: displayNameToShow,
-                hasRead,
-                participantId,
-                messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
-                message,
-                privateMessage,
-                lobbyChat,
-                recipient: getParticipantDisplayName(state, localParticipant?.id ?? ""),
-                timestamp: millisecondsTimestamp,
-                messageId,
-                isReaction,
-            })
-        );
-    }
-
-    // videotranslatorai
+    dispatch(
+        addMessage({
+            displayName: displayNameToShow,
+            hasRead,
+            participantId,
+            messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
+            message,
+            privateMessage,
+            lobbyChat,
+            recipient: getParticipantDisplayName(state, localParticipant?.id ?? ""),
+            timestamp: millisecondsTimestamp,
+            messageId,
+            isReaction,
+        })
+    );
 
     if (shouldShowNotification) {
         dispatch(
