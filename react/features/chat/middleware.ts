@@ -26,6 +26,7 @@ import { pushReactions } from "../reactions/actions.any";
 import { ENDPOINT_REACTION_NAME } from "../reactions/constants";
 import { getReactionMessageFromBuffer, isReactionsEnabled } from "../reactions/functions.any";
 import { showToolbox } from "../toolbox/actions";
+import { addMessageVideoTranslatorAI } from "../videotranslatorai/action.web";
 
 import {
     ADD_MESSAGE,
@@ -569,21 +570,46 @@ function _handleReceivedMessage(
         displayNameToShow = `${displayNameToShow} ${i18next.t("visitors.chatIndicator")}`;
     }
 
-    dispatch(
-        addMessage({
-            displayName: displayNameToShow,
-            hasRead,
-            participantId,
-            messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
-            message,
-            privateMessage,
-            lobbyChat,
-            recipient: getParticipantDisplayName(state, localParticipant?.id ?? ""),
-            timestamp: millisecondsTimestamp,
-            messageId,
-            isReaction,
-        })
-    );
+    // videotranslatorai
+    if (!message.includes("(videotranslatoraiservice)")) {
+        dispatch(
+            addMessage({
+                displayName: displayNameToShow,
+                hasRead,
+                participantId,
+                messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
+                message,
+                privateMessage,
+                lobbyChat,
+                recipient: getParticipantDisplayName(state, localParticipant?.id ?? ""),
+                timestamp: millisecondsTimestamp,
+                messageId,
+                isReaction,
+            })
+        );
+    }
+
+    if (message.includes("(videotranslatoraiservice)")) {
+        message = message.replace("(videotranslatoraiservice)", "");
+
+        dispatch(
+            addMessageVideoTranslatorAI({
+                displayName: displayNameToShow,
+                hasRead,
+                participantId,
+                messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
+                message,
+                privateMessage,
+                lobbyChat,
+                recipient: getParticipantDisplayName(state, localParticipant?.id ?? ""),
+                timestamp: millisecondsTimestamp,
+                messageId,
+                isReaction,
+            })
+        );
+    }
+
+    // videotranslatorai
 
     if (shouldShowNotification) {
         dispatch(
