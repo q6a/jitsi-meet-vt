@@ -6,10 +6,10 @@ const PrivateMessageDisplay: React.FC<PrivateMessageDisplayProps> = ({ message }
     return (
         <div style={{ 
             color: "black", 
-            zIndex: 10, 
+            zIndex: 5000, 
             fontSize: "30px", 
             position: "absolute", 
-            bottom: 80, 
+            bottom: 180, 
             left: 10, 
             display: 'flex', 
             flexDirection: "column", 
