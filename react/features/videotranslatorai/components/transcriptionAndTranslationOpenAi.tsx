@@ -18,6 +18,7 @@ const TranscriptionAndTranslationOpenAi = () => {
     const messages = useSelector((state) => state["features/videotranslatorai"].messages);
     const isModerator = useSelector(isLocalParticipantModerator);
     const meetingTypeVideoTranslatorAi = useSelector((state) => state["features/videotranslatorai"].meetingType);
+    const transcriptionButtonRef = useRef<HTMLDivElement>(null);
 
     const [isRecording, setIsRecording] = useState(false);
     const [isSoundOn, setIsSoundOn] = useState(true);
@@ -129,12 +130,12 @@ const TranscriptionAndTranslationOpenAi = () => {
                 const isSilent = await isAudioBlobSilent(audioBlob);
 
                 if (!isSilent && audioBlob.size > 0) {
-                    const amplifiedBlob = await amplifier.amplify(audioBlob);
+                    // const amplifiedBlob = await amplifier.amplify(audioBlob);
 
                     // Play the amplified audio back to check the volume
                     // const amplifiedAudio = new Audio(URL.createObjectURL(amplifiedBlob));
                     // amplifiedAudio.play();
-                    dispatch(translateOpenAi({ blob: amplifiedBlob }));
+                    dispatch(translateOpenAi({ blob: audioBlob }));
                 }
             };
 
@@ -161,91 +162,6 @@ const TranscriptionAndTranslationOpenAi = () => {
         sourceRef.current = source;
     };
 
-    // const setupAudioContext = async (stream: MediaStream) => {
-    //     const audioContext = new AudioContext();
-
-    //     // Ensure the audio context is resumed
-    //     if (audioContext.state === "suspended") {
-    //         await audioContext.resume();
-    //     }
-
-    //     const source = audioContext.createMediaStreamSource(stream);
-    //     const analyser = audioContext.createAnalyser();
-
-    //     analyser.fftSize = 4096;
-    //     const bufferLength = analyser.fftSize;
-    //     const dataArray = new Float32Array(bufferLength);
-
-    //     source.connect(analyser);
-
-    //     // Inline definition of AudioProcessor class as a string
-    //     const processorCode = `
-    //         class AudioProcessor extends AudioWorkletProcessor {
-    //             process(inputs, outputs, parameters) {
-    //                 const input = inputs[0];
-    //                 if (input.length > 0) {
-    //                     const channelData = input[0];
-    //                     // Send the audio data to the main thread for further processing
-    //                     this.port.postMessage(channelData);
-    //                 }
-    //                 return true;
-    //             }
-    //         }
-
-    //         registerProcessor('audio-processor', AudioProcessor);
-    //     `;
-
-    //     // Create a Blob from the processor code
-    //     const blob = new Blob([processorCode], { type: "application/javascript" });
-    //     const blobUrl = URL.createObjectURL(blob);
-    //     let intervalId;
-
-    //     try {
-    //         // Load the processor from the Blob URL
-    //         await audioContext.audioWorklet.addModule(blobUrl);
-
-    //         const audioWorkletNode = new AudioWorkletNode(audioContext, "audio-processor");
-
-    //         // Listen to messages from the AudioWorkletProcessor
-    //         audioWorkletNode.port.onmessage = (event) => {
-    //             const audioData = event.data;
-
-    //             // Clear any previous interval if already set
-    //             if (intervalId) {
-    //                 clearInterval(intervalId);
-    //             }
-
-    //             // Set interval to run every 1000 milliseconds when no silence is detected
-    //             intervalId = setInterval(() => {
-    //                 if (!isSilenceDetected) {
-    //                     console.log("Processing audio data every second...");
-
-    //                     // Do something with the data, e.g., process or save it
-    //                 }
-    //             }, 1000);
-
-    //             // Check if silence is detected (this part is assumed to be handled elsewhere)
-    //             // You can update the 'isSilenceDetected' based on some logic or analysis of 'audioData'
-    //         };
-
-    //         // Connect the source to both the analyser and the audioWorkletNode
-    //         source.connect(analyser);
-    //         source.connect(audioWorkletNode);
-
-    //         // Optionally connect the audioWorkletNode to the destination (speakers)
-    //         audioWorkletNode.connect(audioContext.destination);
-
-    //         // Save references for later cleanup or further usage
-    //         audioContextRef.current = audioContext;
-    //         analyserRef.current = analyser;
-    //         dataArrayRef.current = dataArray;
-    //         sourceRef.current = source;
-    //         audioWorkletNodeRef.current = audioWorkletNode;
-    //     } catch (error) {
-    //         console.error("Error loading inline audio worklet module:", error);
-    //     }
-    // };
-
     const stopRecordingAndSendAudio = () => {
         console.log("MEDIA RECORDER", mediaRecorder);
         if (!mediaRecorder || mediaRecorder.state === "inactive") {
@@ -257,6 +173,7 @@ const TranscriptionAndTranslationOpenAi = () => {
         console.log("Stopping recording...", mediaRecorder);
 
         mediaRecorder.stop();
+        setIsRecording(false);
 
         // The rest of the logic is handled in mediaRecorder.onstop
     };
@@ -285,8 +202,6 @@ const TranscriptionAndTranslationOpenAi = () => {
                 console.log("SILENCE DETECTED");
 
                 setTimeout(() => {
-                    stopRecordingAndSendAudio();
-
                     if (mediaRecorder.state !== "inactive") {
                         mediaRecorder?.requestData();
                     }
@@ -295,6 +210,11 @@ const TranscriptionAndTranslationOpenAi = () => {
                     setIsSetAudioChunkToNull(true);
                 }, 100); // 100ms delay
                 silenceStartTime.current = null;
+
+                console.log("BUTTON CLICK");
+                transcriptionButtonRef.current?.click();
+
+                return;
             }
         } else {
             silenceStartTime.current = null;
@@ -344,7 +264,7 @@ const TranscriptionAndTranslationOpenAi = () => {
             }
         };
 
-        recorder.start();
+        recorder.start(1000);
 
         await setupAudioContext(stream);
 
@@ -356,10 +276,8 @@ const TranscriptionAndTranslationOpenAi = () => {
     useEffect(() => {
         if (isSilenceDetected) {
             setIsSilenceDetected(false);
-            mediaRecorder?.stop();
-            startRecording();
-            detectSilence();
-            setIsRecording(false);
+
+            transcriptionButtonRef.current?.click();
         }
     }, [isSilenceDetected]);
 
@@ -381,9 +299,9 @@ const TranscriptionAndTranslationOpenAi = () => {
                         handleStart={startRecording}
                         handleStop={() => {
                             stopRecordingAndSendAudio();
-                            setIsRecording(false);
                         }}
                         isRecording={isRecording}
+                        ref={transcriptionButtonRef}
                     />
                 )}
             </div>
