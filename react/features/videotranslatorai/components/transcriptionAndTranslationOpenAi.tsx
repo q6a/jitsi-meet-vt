@@ -5,10 +5,10 @@ import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
 import { toState } from "../../base/redux/functions";
 import { startTextToSpeech, stopRecordingOpenAi, translateOpenAi } from "../action.web";
-import { AmplifyAudio } from "../services/amplifyAudioService";
 
 import SoundToggleButton from "./buttons/soundToggleButton";
 import TranscriptionButton from "./buttons/transcriptionButton";
+const MIN_DECIBELS = -45;
 
 const TranscriptionAndTranslationOpenAi = () => {
     const dispatch = useDispatch();
@@ -20,14 +20,15 @@ const TranscriptionAndTranslationOpenAi = () => {
     const meetingTypeVideoTranslatorAi = useSelector((state) => state["features/videotranslatorai"].meetingType);
     const transcriptionButtonRef = useRef<HTMLDivElement>(null);
 
+    // const audioChunks = useRef<Blob[]>([]);
+    const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
+    const [totalAudioChunk, setTotalAudioChunks] = useState<Blob[]>([]);
+
     const [isRecording, setIsRecording] = useState(false);
     const [isSoundOn, setIsSoundOn] = useState(true);
     const [isSilenceDetected, setIsSilenceDetected] = useState(false);
-    const [isSetAudioChunkToNull, setIsSetAudioChunkToNull] = useState(false);
-
+    const [isSilenceFinished, setIsSilenceFinished] = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-    const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
-    const [realTimeAudioChunks, setRealTimeAudioChunks] = useState<Blob[]>([]);
 
     const silenceStartTime = useRef<number | null>(null);
 
@@ -37,16 +38,15 @@ const TranscriptionAndTranslationOpenAi = () => {
     // Refs for audio processing
     const audioContextRef = useRef<AudioContext | null>(null);
     const analyserRef = useRef<AnalyserNode | null>(null);
-    const dataArrayRef = useRef<Float32Array | null>(null);
+    const dataArrayRef = useRef<Uint8Array | null>(null);
     const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
     const animationFrameIdRef = useRef<number | null>(null);
-    const audioWorkletNodeRef = useRef<AudioWorkletNode | null>(null); // Explicitly define type
 
     const [previousMessages, setPreviousMessages] = useState(messages);
 
     useEffect(
         () =>
-            // Cleanup on component unmount
+            // Cleanup function to stop recording and close audio context
             () => {
                 if (mediaRecorder && mediaRecorder.state !== "inactive") {
                     mediaRecorder.stop();
@@ -65,6 +65,7 @@ const TranscriptionAndTranslationOpenAi = () => {
         if (!isSoundOn) {
             return;
         }
+
         if (messages !== previousMessages) {
             const lastMessage = messages[messages.length - 1];
 
@@ -78,219 +79,140 @@ const TranscriptionAndTranslationOpenAi = () => {
     }, [messages, previousMessages]);
 
     useEffect(() => {
-        // This will run only once when the component mounts
-        if (isRecording) {
-            dispatch(stopRecordingOpenAi());
-        }
-
-        setIsSoundOn(false);
-    }, []);
-
-    useEffect(() => {
         if (isAudioMuted) {
             dispatch(stopRecordingOpenAi());
         }
     }, [isAudioMuted]);
-
-    const isAudioBlobSilent = async (audioBlob: Blob): Promise<boolean> => {
-        const audioContext = new AudioContext();
-
-        // Read the audio blob as an array buffer
-        const arrayBuffer = await audioBlob.arrayBuffer();
-
-        // Decode the audio data
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
-        // Extract audio data from the buffer
-        const rawData = audioBuffer.getChannelData(0); // Assuming mono audio
-
-        // Calculate RMS (Root Mean Square)
-        let squares = 0;
-
-        for (let i = 0; i < rawData.length; i++) {
-            squares += rawData[i] * rawData[i];
-        }
-        const rms = Math.sqrt(squares / rawData.length);
-
-        return rms < SILENCE_THRESHOLD;
-    };
-
-    useEffect(() => {
-        if (!isAudioMuted) {
-            // Create a blob from the audio chunks
-
-            const processAudio = async () => {
-                const audioBlob = new Blob(audioChunks, { type: "audio/webm; codecs=opus" });
-
-                console.log("AUDIO CHUNKS", audioChunks);
-                console.log("AUDIO BLOB", audioBlob);
-                const amplifier = new AmplifyAudio();
-
-                // Send the audio blob for transcription/translation
-                const isSilent = await isAudioBlobSilent(audioBlob);
-
-                if (!isSilent && audioBlob.size > 0) {
-                    // const amplifiedBlob = await amplifier.amplify(audioBlob);
-
-                    // Play the amplified audio back to check the volume
-                    // const amplifiedAudio = new Audio(URL.createObjectURL(amplifiedBlob));
-                    // amplifiedAudio.play();
-                    dispatch(translateOpenAi({ blob: audioBlob }));
-                }
-            };
-
-            if (audioChunks.length > 0) {
-                processAudio();
-            }
-        }
-    }, [audioChunks]);
 
     const setupAudioContext = async (stream: MediaStream) => {
         const audioContext = new AudioContext();
         const source = audioContext.createMediaStreamSource(stream);
         const analyser = audioContext.createAnalyser();
 
+        analyser.minDecibels = MIN_DECIBELS;
         analyser.fftSize = 4096;
-        const bufferLength = analyser.fftSize;
-        const dataArray = new Float32Array(bufferLength);
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
 
         source.connect(analyser);
-
         audioContextRef.current = audioContext;
         analyserRef.current = analyser;
         dataArrayRef.current = dataArray;
         sourceRef.current = source;
     };
 
-    const stopRecordingAndSendAudio = () => {
-        console.log("MEDIA RECORDER", mediaRecorder);
-        if (!mediaRecorder || mediaRecorder.state === "inactive") {
-            return;
-        }
-
-        setIsSetAudioChunkToNull(true);
-
-        console.log("Stopping recording...", mediaRecorder);
-
-        mediaRecorder.stop();
-        setIsRecording(false);
-
-        // The rest of the logic is handled in mediaRecorder.onstop
-    };
-
     const detectSilence = () => {
-        const analyser = analyserRef.current;
-        const dataArray = dataArrayRef.current;
-
-        if (!analyser || !dataArray || !mediaRecorder || mediaRecorder.state === "inactive") {
+        if (!analyserRef.current || !dataArrayRef.current) {
             return;
         }
 
-        analyser.getFloatTimeDomainData(dataArray);
+        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+        const isSilent = dataArrayRef.current.every((value) => value < 10);
 
-        let sumSquares = 0.0;
-
-        for (const amplitude of dataArray) {
-            sumSquares += amplitude * amplitude;
-        }
-        const volume = Math.sqrt(sumSquares / dataArray.length);
-
-        if (volume < SILENCE_THRESHOLD) {
+        if (isSilent) {
             if (!silenceStartTime.current) {
                 silenceStartTime.current = Date.now();
             } else if (Date.now() - silenceStartTime.current > SILENCE_DURATION) {
                 console.log("SILENCE DETECTED");
-
-                setTimeout(() => {
-                    if (mediaRecorder.state !== "inactive") {
-                        mediaRecorder?.requestData();
-                    }
-
-                    setIsSilenceDetected(true);
-                    setIsSetAudioChunkToNull(true);
-                }, 100); // 100ms delay
-                silenceStartTime.current = null;
-
-                console.log("BUTTON CLICK");
-                transcriptionButtonRef.current?.click();
+                setIsSilenceDetected(true);
+                silenceStartTime.current = null; // Reset on sound detection
+                setAudioChunks([]);
 
                 return;
             }
         } else {
-            silenceStartTime.current = null;
+            silenceStartTime.current = null; // Reset on sound detection
         }
 
+        // Re-run the detectSilence function in the next animation frame
         animationFrameIdRef.current = requestAnimationFrame(detectSilence);
     };
-
-    useEffect(() => {
-        if (mediaRecorder) {
-            console.log("MEDIA RECORDER DETECTED");
-            detectSilence();
-        }
-    }, [mediaRecorder]);
 
     const startRecording = async () => {
         if (isAudioMuted) {
             return;
         }
 
-        console.log("START RECORDING");
-
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const recorder = new MediaRecorder(stream);
 
         setMediaRecorder(recorder);
-
-        // Set up event handlers before starting recording
-        recorder.ondataavailable = (event) => {
-            console.log("ON DATA AVAILABLE", event);
-            setAudioChunks((prev) => [...prev, event.data]);
+        recorder.ondataavailable = async (event) => {
+            setAudioChunks((prevChunks) => [...prevChunks, event.data]);
         };
 
-        recorder.onstop = async () => {
-            console.log("Recording stopped, processing audio chunks...");
-
-            // Clean up audio context
-            if (audioContextRef.current) {
-                audioContextRef.current.close();
-                audioContextRef.current = null;
-            }
-
-            // Cancel the animation frame if it exists
-            if (animationFrameIdRef.current !== null) {
-                cancelAnimationFrame(animationFrameIdRef.current);
-                animationFrameIdRef.current = null;
-            }
-        };
-
-        recorder.start(1000);
+        recorder.onstop = () => console.log("Recording stopped, processing audio chunks...");
+        recorder.start(1000); // Capture data every 1 second
 
         await setupAudioContext(stream);
-
-        // detectSilence();
-
         setIsRecording(true);
+
+        animationFrameIdRef.current = requestAnimationFrame(detectSilence); // Start detecting silence
+    };
+
+    const stopRecordingAndSendAudio = () => {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+        }
+        if (audioContextRef.current) {
+            audioContextRef.current.close();
+            audioContextRef.current = null;
+        }
+
+        if (animationFrameIdRef.current !== null) {
+            cancelAnimationFrame(animationFrameIdRef.current);
+            animationFrameIdRef.current = null;
+        }
+        setAudioChunks([]);
     };
 
     useEffect(() => {
         if (isSilenceDetected) {
+            console.log("SILENCE DETECTED");
             setIsSilenceDetected(false);
+            console.log("CLICK 1");
+            setIsSilenceFinished(true);
+            stopRecordingAndSendAudio();
+            setAudioChunks([]);
 
-            transcriptionButtonRef.current?.click();
+            // stopRecordingAndSendAudio();
+            // setIsSilenceFinished(true);
+            // mediaRecorder?.start();
+
+            // stopRecordingAndSendAudio();
         }
     }, [isSilenceDetected]);
 
     useEffect(() => {
-        if (isSetAudioChunkToNull) {
-            setAudioChunks([]);
-            setIsSetAudioChunkToNull(false);
+        if (isSilenceFinished) {
+            setTimeout(() => {
+                // startRecording();
+                console.log("CLICK 2");
+                transcriptionButtonRef.current?.click();
+                transcriptionButtonRef.current?.click();
+            }, 100);
         }
-    }, [isSetAudioChunkToNull]);
+        setIsSilenceFinished(false);
+    }, [isSilenceFinished]);
+
+    useEffect(() => {
+        if (!isAudioMuted) {
+            console.log("AUDIO CHUNKS", audioChunks);
+            if (audioChunks.length > 0) {
+                const audioBlob = new Blob(audioChunks, { type: "audio/webm; codecs=opus" });
+
+                if (audioBlob.size > 0) {
+                    dispatch(translateOpenAi({ blob: audioBlob }));
+
+                    // setAudioChunks([]); // Clear chunks after dispatch
+                }
+            }
+        }
+    }, [audioChunks]);
 
     return (
         <div>
-            {/* Buttons */}
             <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                 <SoundToggleButton isSoundOn={isSoundOn} toggleSound={() => setIsSoundOn(!isSoundOn)} />
 
@@ -298,7 +220,8 @@ const TranscriptionAndTranslationOpenAi = () => {
                     <TranscriptionButton
                         handleStart={startRecording}
                         handleStop={() => {
-                            stopRecordingAndSendAudio();
+                            stopRecordingAndSendAudio(); // Call your stop function
+                            setIsRecording(false); // Then set recording state to false
                         }}
                         isRecording={isRecording}
                         ref={transcriptionButtonRef}
