@@ -708,11 +708,13 @@ export function endpointMessageReceived(participant: Object, data: Object) {
 export function endConference() {
     return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const { conference } = getConferenceState(toState(getState));
-
+        console.log('End Conference Started')
         const state: IReduxState = getState();
         const token = toState(state)["features/videotranslatorai"].jwtToken;
         const meetingId = toState(state)["features/videotranslatorai"].meetingId;
-        await endMeetingForAllParticipants(meetingId, token);
+        let response = await endMeetingForAllParticipants(meetingId, token);
+        console.log("End Meeting Respone")
+        console.log(response)
         
         conference?.end();
     };
