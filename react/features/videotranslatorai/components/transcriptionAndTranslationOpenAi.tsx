@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import VAD from "voice-activity-detection";
 
 import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
@@ -8,7 +9,12 @@ import { startTextToSpeech, stopRecordingOpenAi, translateOpenAi } from "../acti
 
 import SoundToggleButton from "./buttons/soundToggleButton";
 import TranscriptionButton from "./buttons/transcriptionButton";
-const MIN_DECIBELS = -45;
+
+// let audioChunks: any = [];
+let lastVoiceStopTime: number | null = Date.now();
+let lastDispatchTime: number | null = null;
+
+let audioChunks: any[] = [];
 
 const TranscriptionAndTranslationOpenAi = () => {
     const dispatch = useDispatch();
@@ -20,46 +26,142 @@ const TranscriptionAndTranslationOpenAi = () => {
     const meetingTypeVideoTranslatorAi = useSelector((state) => state["features/videotranslatorai"].meetingType);
     const transcriptionButtonRef = useRef<HTMLDivElement>(null);
 
-    // const audioChunks = useRef<Blob[]>([]);
-    const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
-    const [totalAudioChunk, setTotalAudioChunks] = useState<Blob[]>([]);
-
+    // const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
     const [isRecording, setIsRecording] = useState(false);
     const [isSoundOn, setIsSoundOn] = useState(true);
-    const [isSilenceDetected, setIsSilenceDetected] = useState(false);
-    const [isSilenceFinished, setIsSilenceFinished] = useState(false);
-    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-
-    const silenceStartTime = useRef<number | null>(null);
-
-    const SILENCE_THRESHOLD = 0.01;
-    const SILENCE_DURATION = 3000;
-
-    // Refs for audio processing
-    const audioContextRef = useRef<AudioContext | null>(null);
-    const analyserRef = useRef<AnalyserNode | null>(null);
-    const dataArrayRef = useRef<Uint8Array | null>(null);
-    const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
-    const animationFrameIdRef = useRef<number | null>(null);
-
     const [previousMessages, setPreviousMessages] = useState(messages);
+    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+    const [vadInstance, setVadInstance] = useState<any>(null);
+    const [stream, setStream] = useState<MediaStream | undefined>(undefined); // Initialize stream state
+    const [audioContext, setAudioContext] = useState<any | null>(null);
+    const [sendDataWhenReady, setSendDataWhenReady] = useState<boolean>(false);
 
-    useEffect(
-        () =>
-            // Cleanup function to stop recording and close audio context
-            () => {
+    const [lastVoiceStopTimeEnd, setLastVoiceStopTimeEnd] = useState<boolean>(false);
+
+    // Initialize VAD options
+    const vadOptions = {
+        onUpdate: (isSpeech: boolean) => {
+            if (lastVoiceStopTime && Date.now() - lastVoiceStopTime >= 3600) {
+                setLastVoiceStopTimeEnd(true);
+
+                audioChunks = [];
                 if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                    mediaRecorder.stop();
+                    mediaRecorder?.stop();
                 }
-                if (audioContextRef.current) {
-                    audioContextRef.current.close();
+                lastVoiceStopTime = null;
+            }
+
+            // for some reason mediarecorder sometimes is inactvie when it gets deactivated
+            if (mediaRecorder?.state === "inactive") {
+                mediaRecorder?.start();
+            }
+
+            if (isSpeech) {
+                // if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder?.requestData();
+
+                // }
+
+                const currentTime = Date.now();
+
+                if (!lastDispatchTime || currentTime - lastDispatchTime >= 1500) {
+                    setTimeout(() => {
+                        setSendDataWhenReady(true);
+
+                        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                            mediaRecorder?.requestData();
+                        }
+                    }, 1000);
+
+                    lastDispatchTime = currentTime;
                 }
-                if (animationFrameIdRef.current) {
-                    cancelAnimationFrame(animationFrameIdRef.current);
-                }
-            },
-        []
-    );
+            }
+
+            if (isSpeech) {
+                lastVoiceStopTime = null;
+            } else if (lastVoiceStopTime === null && !isSpeech) {
+                lastVoiceStopTime = Date.now();
+            }
+        },
+
+        onVoiceStart: () => {},
+
+        onVoiceStop: () => {},
+        noiseCaptureDuration: 100, // in ms
+    };
+
+    const handleStartVAD = async () => {
+        const streamVar = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+        });
+        const audioContextVar = new AudioContext();
+
+        setAudioContext(audioContextVar);
+        const recorder = new MediaRecorder(streamVar);
+
+        // Collect audio data as chunks when recording is active
+        recorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                audioChunks.push(event.data);
+            }
+        };
+
+        recorder.onstop = () => {
+            audioChunks = [];
+        };
+
+        recorder.start();
+        setMediaRecorder(recorder);
+
+        setStream(streamVar);
+        setIsRecording(true);
+    };
+
+    useEffect(() => {
+        if (mediaRecorder && stream && audioContext) {
+            const vad = VAD(audioContext, stream, vadOptions);
+
+            setVadInstance(vad); // Store the VAD instance to stop later
+        }
+    }, [mediaRecorder, stream, audioContext]);
+
+    useEffect(() => {
+        if (lastVoiceStopTimeEnd) {
+            setLastVoiceStopTimeEnd(false);
+            if (mediaRecorder && mediaRecorder.state === "inactive") {
+                mediaRecorder?.start();
+            }
+        }
+    }, [lastVoiceStopTimeEnd, mediaRecorder]);
+
+    // Stop VAD when Transcription button is turned off
+    const handleStopVAD = () => {
+        stream?.getTracks().forEach((track) => track.stop());
+        setStream(undefined);
+        setIsRecording(false);
+
+        // mediaRecorder?.requestData();
+        mediaRecorder?.stop();
+        setIsRecording(false);
+        if (vadInstance) {
+            vadInstance.destroy();
+            setVadInstance(null);
+        }
+
+        // setAudioChunks([]); // Reset chunks for next recording
+        audioChunks = [];
+    };
+
+    useEffect(() => {
+        if (sendDataWhenReady) {
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+
+            if (audioChunks.length > 0) {
+                dispatch(translateOpenAi({ blob: audioBlob }));
+            }
+            setSendDataWhenReady(false);
+        }
+    }, [sendDataWhenReady]);
 
     useEffect(() => {
         if (!isSoundOn) {
@@ -84,145 +186,14 @@ const TranscriptionAndTranslationOpenAi = () => {
         }
     }, [isAudioMuted]);
 
-    const setupAudioContext = async (stream: MediaStream) => {
-        const audioContext = new AudioContext();
-        const source = audioContext.createMediaStreamSource(stream);
-        const analyser = audioContext.createAnalyser();
-
-        analyser.minDecibels = MIN_DECIBELS;
-        analyser.fftSize = 4096;
-
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-
-        source.connect(analyser);
-        audioContextRef.current = audioContext;
-        analyserRef.current = analyser;
-        dataArrayRef.current = dataArray;
-        sourceRef.current = source;
-    };
-
-    const detectSilence = () => {
-        if (!analyserRef.current || !dataArrayRef.current) {
-            return;
-        }
-
-        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-        const isSilent = dataArrayRef.current.every((value) => value < 10);
-
-        if (isSilent) {
-            if (!silenceStartTime.current) {
-                silenceStartTime.current = Date.now();
-            } else if (Date.now() - silenceStartTime.current > SILENCE_DURATION) {
-                console.log("SILENCE DETECTED");
-                setIsSilenceDetected(true);
-                silenceStartTime.current = null; // Reset on sound detection
-                setAudioChunks([]);
-
-                return;
-            }
-        } else {
-            silenceStartTime.current = null; // Reset on sound detection
-        }
-
-        // Re-run the detectSilence function in the next animation frame
-        animationFrameIdRef.current = requestAnimationFrame(detectSilence);
-    };
-
-    const startRecording = async () => {
-        if (isAudioMuted) {
-            return;
-        }
-
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const recorder = new MediaRecorder(stream);
-
-        setMediaRecorder(recorder);
-        recorder.ondataavailable = async (event) => {
-            setAudioChunks((prevChunks) => [...prevChunks, event.data]);
-        };
-
-        recorder.onstop = () => console.log("Recording stopped, processing audio chunks...");
-        recorder.start(1000); // Capture data every 1 second
-
-        await setupAudioContext(stream);
-        setIsRecording(true);
-
-        animationFrameIdRef.current = requestAnimationFrame(detectSilence); // Start detecting silence
-    };
-
-    const stopRecordingAndSendAudio = () => {
-        if (mediaRecorder && mediaRecorder.state !== "inactive") {
-            mediaRecorder.stop();
-        }
-        if (audioContextRef.current) {
-            audioContextRef.current.close();
-            audioContextRef.current = null;
-        }
-
-        if (animationFrameIdRef.current !== null) {
-            cancelAnimationFrame(animationFrameIdRef.current);
-            animationFrameIdRef.current = null;
-        }
-        setAudioChunks([]);
-    };
-
-    useEffect(() => {
-        if (isSilenceDetected) {
-            console.log("SILENCE DETECTED");
-            setIsSilenceDetected(false);
-            console.log("CLICK 1");
-            setIsSilenceFinished(true);
-            stopRecordingAndSendAudio();
-            setAudioChunks([]);
-
-            // stopRecordingAndSendAudio();
-            // setIsSilenceFinished(true);
-            // mediaRecorder?.start();
-
-            // stopRecordingAndSendAudio();
-        }
-    }, [isSilenceDetected]);
-
-    useEffect(() => {
-        if (isSilenceFinished) {
-            setTimeout(() => {
-                // startRecording();
-                console.log("CLICK 2");
-                transcriptionButtonRef.current?.click();
-                transcriptionButtonRef.current?.click();
-            }, 100);
-        }
-        setIsSilenceFinished(false);
-    }, [isSilenceFinished]);
-
-    useEffect(() => {
-        if (!isAudioMuted) {
-            console.log("AUDIO CHUNKS", audioChunks);
-            if (audioChunks.length > 0) {
-                const audioBlob = new Blob(audioChunks, { type: "audio/webm; codecs=opus" });
-
-                if (audioBlob.size > 0) {
-                    dispatch(translateOpenAi({ blob: audioBlob }));
-
-                    // setAudioChunks([]); // Clear chunks after dispatch
-                }
-            }
-        }
-    }, [audioChunks]);
-
     return (
         <div>
             <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                 <SoundToggleButton isSoundOn={isSoundOn} toggleSound={() => setIsSoundOn(!isSoundOn)} />
-
                 {(meetingTypeVideoTranslatorAi !== "broadcast" || isModerator) && (
                     <TranscriptionButton
-                        handleStart={startRecording}
-                        handleStop={() => {
-                            stopRecordingAndSendAudio(); // Call your stop function
-                            setIsRecording(false); // Then set recording state to false
-                        }}
+                        handleStart={handleStartVAD}
+                        handleStop={handleStopVAD}
                         isRecording={isRecording}
                         ref={transcriptionButtonRef}
                     />
