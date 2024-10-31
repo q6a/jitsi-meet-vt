@@ -37,7 +37,7 @@ export const inPersonServiceOpenAi = async (
         // langFrom = participant.transcriptionDialect.dialectCode;
         // langFromTranslation = participant.translationDialect.dialectCode;
 
-        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam.blob, apiEndpoint, tokenData);
+        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
 
         console.log("TRANSCRIPTION TEXT", transcriptionText);
         if (!transcriptionText) {

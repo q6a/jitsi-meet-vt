@@ -4,7 +4,7 @@ import { createMessageStorageSendTranslationToDatabase } from "../services/messa
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioOpenAi from "../services/transcribeAudioOpenAi";
 
-export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getState: any, recordedBlobParam: any) => {
+export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getState: any, recordedBlobParam: Blob) => {
     const state: IReduxState = getState();
 
     const tokenData = toState(state)["features/videotranslatorai"].jwtToken;
@@ -39,7 +39,7 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
             }
         }
 
-        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam.blob, apiEndpoint, tokenData);
+        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
 
         console.log("TRANSCRIPTION TEXT", transcriptionText);
 

@@ -1,5 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
-import { ReactMic } from "react-mic";
+import React, { FC, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../app/types";
@@ -57,6 +56,8 @@ const InPersonOpenAi: FC = () => {
 
     const [previousMessages, setPreviousMessages] = useState(messages);
     const [isSoundOn, setIsSoundOn] = useState(true);
+    const mediaRecorder = useRef<MediaRecorder | null>(null);
+    const audioChunks = useRef<Blob[]>([]);
 
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
@@ -86,26 +87,84 @@ const InPersonOpenAi: FC = () => {
         whichPerson = 0;
     }, [messages, previousMessages]);
 
+    const handleStartTranscription = async () => {
+        if (!isAudioMuted) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const recorder = new MediaRecorder(stream);
+
+                mediaRecorder.current = recorder;
+
+                recorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.current.push(event.data);
+                    }
+                };
+
+                recorder.onstop = () => {
+                    const recordedBlob = new Blob(audioChunks.current, { type: "audio/webm" });
+
+                    if (whichPerson === 1 && !isRecordingPersonTwo) {
+                        console.log("on stop p1");
+
+                        dispatch(
+                            inPersonTranslateOpenAi(
+                                recordedBlob,
+                                langFromPersonOneTranscription,
+                                personOneName,
+                                langFromPersonOneTranslation
+                            )
+                        );
+                    }
+
+                    if (whichPerson === 2 && !isRecordingPersonOne) {
+                        dispatch(
+                            inPersonTranslateOpenAi(
+                                recordedBlob,
+                                langFromPersonTwoTranscription,
+                                personTwoName,
+                                langFromPersonTwoTranslation
+                            )
+                        );
+                    }
+                    audioChunks.current = [];
+                };
+
+                recorder.start();
+            } catch (error) {
+                console.error("Error accessing media devices:", error);
+            }
+        }
+    };
+
     const handleStartTranscriptionOne = () => {
         if (!isAudioMuted && !isRecordingPersonTwo) {
             dispatch(inPersonStartRecordingPersonOne());
+            handleStartTranscription();
             whichPerson = 1;
         }
     };
 
     const handleStopTranscriptionOne = () => {
-        dispatch(inPersonStopRecordingPersonOne());
+        if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
+            mediaRecorder.current.stop();
+            dispatch(inPersonStopRecordingPersonOne());
+        }
     };
 
     const handleStartTranscriptionTwo = () => {
         if (!isAudioMuted && !isRecordingPersonOne) {
             dispatch(inPersonStartRecordingPersonTwo());
+            handleStartTranscription();
             whichPerson = 2;
         }
     };
 
     const handleStopTranscriptionTwo = () => {
-        dispatch(inPersonStopRecordingPersonTwo());
+        if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
+            mediaRecorder.current.stop();
+            dispatch(inPersonStopRecordingPersonTwo());
+        }
     };
 
     useEffect(() => {
@@ -128,46 +187,8 @@ const InPersonOpenAi: FC = () => {
         }
     }, [isAudioMuted]);
 
-    const handleOnStop = async (recordedBlob: any) => {
-        if (whichPerson === 1 && !isRecordingPersonTwo) {
-            dispatch(
-                inPersonTranslateOpenAi(
-                    recordedBlob,
-                    langFromPersonOneTranscription,
-                    personOneName,
-                    langFromPersonOneTranslation
-                )
-            );
-        }
-
-        if (whichPerson === 2 && !isRecordingPersonOne) {
-            dispatch(
-                inPersonTranslateOpenAi(
-                    recordedBlob,
-                    langFromPersonTwoTranscription,
-                    personTwoName,
-                    langFromPersonTwoTranslation
-                )
-            );
-        }
-    };
-
-    const handleOnData = (recordedBlob: any) => {
-        // console.log("Chunk of real-time data:", recordedBlob);
-    };
-
     return (
         <div>
-            <div style={{ visibility: "hidden", height: 0, width: 0, overflow: "hidden" }}>
-                <ReactMic
-                    backgroundColor="#FF4081"
-                    className="sound-wave"
-                    onStop={handleOnStop}
-                    record={isRecordingPersonOne || isRecordingPersonTwo}
-                    strokeColor="#000000"
-                />
-            </div>
-
             {/* Buttons */}
             <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                 <SoundToggleButton isSoundOn={isSoundOn} toggleSound={toggleSound} />

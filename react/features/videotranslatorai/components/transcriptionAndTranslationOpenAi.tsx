@@ -1,5 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
-import { ReactMic } from "react-mic";
+import React, { FC, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../app/types";
@@ -25,6 +24,10 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
     const [previousMessages, setPreviousMessages] = useState(messages);
     const [isSoundOn, setIsSoundOn] = useState(true);
 
+    // const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+    const mediaRecorder = useRef<MediaRecorder | null>(null);
+    const audioChunks = useRef<Blob[]>([]);
+
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
     };
@@ -45,55 +48,62 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
         }
     }, [messages, previousMessages]);
 
-    const handleStartTranscription = () => {
+    const handleStartTranscription = async () => {
         if (!isAudioMuted) {
             dispatch(startRecordingOpenAi());
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const recorder = new MediaRecorder(stream);
+
+                mediaRecorder.current = recorder;
+
+                recorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.current.push(event.data);
+                    }
+                };
+
+                recorder.onstop = () => {
+                    const recordedBlob = new Blob(audioChunks.current, { type: "audio/webm" });
+
+                    dispatch(translateOpenAi(recordedBlob));
+                    audioChunks.current = [];
+                };
+
+                recorder.start();
+            } catch (error) {
+                console.error("Error accessing media devices:", error);
+            }
         }
     };
 
     const handleStopTranscription = () => {
-        dispatch(stopRecordingOpenAi());
+        if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
+            mediaRecorder.current.stop();
+            dispatch(stopRecordingOpenAi());
+        }
     };
 
     useEffect(() => {
-        // This will run only once when the component mounts
+        // Stop any existing recording when component mounts or audio is muted
         if (isRecording) {
-            dispatch(stopRecordingOpenAi());
+            handleStopTranscription();
         }
-
         setIsSoundOn(false);
     }, []);
 
     useEffect(() => {
         if (isAudioMuted) {
-            dispatch(stopRecordingOpenAi());
+            handleStopTranscription();
         }
     }, [isAudioMuted]);
 
-    const handleOnStop = async (recordedBlob: any) => {
-        dispatch(translateOpenAi(recordedBlob));
-    };
-
-    const handleOnData = (recordedBlob: any) => {
-        // console.log("Chunk of real-time data:", recordedBlob);
-    };
-
     return (
         <div>
-            <div style={{ visibility: "hidden", height: 0, width: 0, overflow: "hidden" }}>
-                <ReactMic
-                    backgroundColor="#FF4081"
-                    className="sound-wave"
-                    onStop={handleOnStop}
-                    record={isRecording}
-                    strokeColor="#000000"
-                />
-            </div>
-
             {/* Buttons */}
             <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                 <SoundToggleButton isSoundOn={isSoundOn} toggleSound={toggleSound} />
-
                 {(meetingTypeVideoTranslatorAi !== "broadcast" || isModerator) && (
                     <TranscriptionButton
                         handleStart={handleStartTranscription}

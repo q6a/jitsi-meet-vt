@@ -9,11 +9,11 @@ import { getLocalParticipant, isLocalParticipantModerator } from "../../../base/
 import ContextMenu from "../../../base/ui/components/web/ContextMenu";
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from "../../../reactions/functions.web";
 import { isTranscribing } from "../../../transcribing/functions";
+import InPersonOpenAiCont from "../../../videotranslatorai/components/inPersonOpenAiCont";
 
-// import InPersonOpenAi from "../../../videotranslatorai/components/inPersonOpenAi";
-import TranscriptionAndTranslationMicrosoft from "../../../videotranslatorai/components/transcriptionAndTranslationMicrosoft";
+// import TranscriptionAndTranslationOpenAiCont from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAiCont";
 
-// import TranscriptionAndTranslationOpenAi from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAi";
+// import TranscriptionAndTranslationMicrosoftMan from "../../../videotranslatorai/components/transcriptionAndTranslationMicrosoftMan";
 import { setHangupMenuVisible, setOverflowMenuVisible, setToolbarHovered, setToolboxVisible } from "../../actions.web";
 import { getJwtDisabledButtons, getVisibleButtons, isButtonEnabled, isToolboxVisible } from "../../functions.web";
 import { useKeyboardShortcuts, useToolboxButtons } from "../../hooks.web";
@@ -274,18 +274,23 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                                 Content !== Separator && <Content {...rest} buttonKey={key} key={key} />
                         )}
                         {/* videotranslatorai */}
-
-                        {conference &&
+                        {/* {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
                                 meetingTypeVideoTranslatorAi === "broadcast") && (
                                 <TranscriptionAndTranslationMicrosoft />
-                            )}
-                        {/*
-                        {conference &&
+                            )} */}
+                        {/* {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
-                                meetingTypeVideoTranslatorAi === "broadcast") && <TranscriptionAndTranslationOpenAi />}
-                        {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAi />} */}
-
+                                meetingTypeVideoTranslatorAi === "broadcast") && (
+                                <TranscriptionAndTranslationMicrosoftMan />
+                            )} */}
+                        {/* {conference &&
+                            (meetingTypeVideoTranslatorAi === "video_call" ||
+                                meetingTypeVideoTranslatorAi === "broadcast") && (
+                                <TranscriptionAndTranslationOpenAiCont />
+                            )} */}
+                        {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAiCont />}
+                        {/* {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAi />} */}
                         {Boolean(overflowMenuButtons.length) && (
                             <OverflowMenuButton
                                 ariaControls="overflow-menu"
@@ -321,7 +326,6 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                                 showReactionsMenu={showReactionsInOverflowMenu}
                             />
                         )}
-
                         {isButtonEnabled("hangup", toolbarButtonsToUse) &&
                             (endConferenceSupported ? (
                                 <HangupMenuButton

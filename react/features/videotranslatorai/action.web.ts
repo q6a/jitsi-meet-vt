@@ -40,6 +40,7 @@ import {
     STOP_RECORDING_OPENAI,
     STOP_TRANSCRIPTION,
     STOP_TRANSLATE_MICROSOFT_MANUAL,
+    TRANSLATE_OPENAI,
 } from "./actionTypes";
 import { createDisplayNameAndDialect } from "./services/displayNameAndDialectService";
 import { getMeetingInformation } from "./services/meetingService";
@@ -250,7 +251,9 @@ export const fetchMeetingData = (params: IFetchMeetingData) => async (dispatch: 
     }
 };
 
-export const translateOpenAi = (recordedBlobParam: any) => async (dispatch: any, getState: any) => {
+export const translateOpenAi = (recordedBlobParam: Blob) => async (dispatch: any, getState: any) => {
+    dispatch({ type: TRANSLATE_OPENAI });
+
     try {
         // Dispatch action to stop the recording
         dispatch(setIsRecording(false));

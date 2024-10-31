@@ -157,7 +157,7 @@ const TranscriptionAndTranslationOpenAiCont = () => {
             const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
 
             if (audioChunks.length > 0) {
-                dispatch(translateOpenAi({ blob: audioBlob }));
+                dispatch(translateOpenAi(audioBlob));
             }
             setSendDataWhenReady(false);
         }
