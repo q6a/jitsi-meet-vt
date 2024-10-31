@@ -19,9 +19,8 @@ const TranscriptionAndTranslationButton: FC = () => {
         (state: IReduxState) => state["features/videotranslatorai"].meetingType
     );
     const isModerator = useSelector(isLocalParticipantModerator);
-    const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].completedMessage);
+    const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].completedMessages);
 
-    console.log("messages inside", messages);
     const [previousMessages, setPreviousMessages] = useState(messages);
     const [isSoundOn, setIsSoundOn] = useState(true);
 
@@ -39,7 +38,7 @@ const TranscriptionAndTranslationButton: FC = () => {
             if (lastMessage) {
                 const textToSpeechCode = toState(state)["features/videotranslatorai"].textToSpeechCode;
 
-                dispatch(startTextToSpeech(lastMessage.message, textToSpeechCode));
+                dispatch(startTextToSpeech(lastMessage, textToSpeechCode));
             }
             setPreviousMessages(messages);
         }
