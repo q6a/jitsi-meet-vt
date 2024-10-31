@@ -2,6 +2,7 @@ import { createStartMutedConfigurationEvent } from '../../analytics/AnalyticsEve
 import { sendAnalytics } from '../../analytics/functions';
 import { IReduxState, IStore } from '../../app/types';
 import { transcriberJoined, transcriberLeft } from '../../transcribing/actions';
+import { endMeetingForAllParticipants } from '../../videotranslatorai/services/meetingService';
 import { setIAmVisitor } from '../../visitors/actions';
 import { iAmVisitor } from '../../visitors/functions';
 import { overwriteConfig } from '../config/actions';
@@ -707,7 +708,11 @@ export function endpointMessageReceived(participant: Object, data: Object) {
 export function endConference() {
     return async (dispatch: IStore['dispatch'], getState: IStore['getState']) => {
         const { conference } = getConferenceState(toState(getState));
-
+        const state: IReduxState = getState();
+        const token = toState(state)["features/videotranslatorai"].jwtToken;
+        const meetingId = toState(state)["features/videotranslatorai"].meetingId;
+        let response = await endMeetingForAllParticipants(meetingId, token);
+        
         conference?.end();
     };
 }
