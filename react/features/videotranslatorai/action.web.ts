@@ -3,6 +3,7 @@ import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 import { IReduxState } from "../app/types";
 
 import {
+    ADD_COMPLETED_MESSAGE,
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
     INPERSON_SET_TTS_PARAMS,
@@ -30,16 +31,21 @@ import {
     SET_RECORDING_BLOB_OPENAI,
     SET_ROOM_PARAMS,
     SET_TRANSCRIPTION_RESULT,
+    START_RECORDING_MICROSOFT_MANUAL,
     START_RECORDING_OPENAI,
     START_TEXT_TO_SPEECH,
     START_TRANSCRIPTION,
+    START_TRANSLATE_MICROSOFT_MANUAL,
+    STOP_RECORDING_MICROSOFT_MANUAL,
     STOP_RECORDING_OPENAI,
     STOP_TRANSCRIPTION,
+    STOP_TRANSLATE_MICROSOFT_MANUAL,
 } from "./actionTypes";
 import { createDisplayNameAndDialect } from "./services/displayNameAndDialectService";
 import { getMeetingInformation } from "./services/meetingService";
 import { playVoiceFromMessage } from "./services/voiceServiceMicrosoft";
 import { inPersonServiceOpenAi } from "./supervisors/inPersonServiceOpenAi";
+import { transcribeAndTranslateServiceMicrosoftMan } from "./supervisors/transcribeAndTranslateMicrosoftMan";
 import { stopTranscriptionService, transcribeAndTranslateService } from "./supervisors/transcriptionService";
 import { transcribeAndTranslateServiceOpenAi } from "./supervisors/transcriptionServiceOpenAi";
 import {
@@ -368,3 +374,44 @@ export const inPersonTranslateOpenAi =
             // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
         }
     };
+
+export const startTranslateMicrosoftManual = (recordedBlobParam: any) => async (dispatch: any, getState: any) => {
+    dispatch({ type: START_TRANSLATE_MICROSOFT_MANUAL });
+    try {
+        await transcribeAndTranslateServiceMicrosoftMan(dispatch, getState, recordedBlobParam);
+
+        // Handle success if needed
+    } catch (err) {
+        console.error("Error during transcription:", err);
+        dispatch(setIsTranscribing(false));
+    }
+};
+
+export const stopTranslateMicrosoftManual = () => async (dispatch: any, getState: any) => {
+    dispatch({ type: STOP_TRANSLATE_MICROSOFT_MANUAL });
+    try {
+        // await stopTranscriptionService(dispatch, getState);
+        // dispatch(setIsTranscribing(false));
+    } catch (err) {
+        console.error("Error stopping transcription:", err);
+    }
+};
+
+export const startRecordingMirosoftManual = () => {
+    return {
+        type: START_RECORDING_MICROSOFT_MANUAL,
+    };
+};
+
+export const stopRecordingMirosoftManual = () => {
+    return {
+        type: STOP_RECORDING_MICROSOFT_MANUAL,
+    };
+};
+
+export const addCompletedMessage = (message: string) => {
+    return {
+        type: ADD_COMPLETED_MESSAGE,
+        payload: message,
+    };
+};

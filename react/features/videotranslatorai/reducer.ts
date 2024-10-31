@@ -3,6 +3,7 @@ import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 import ReducerRegistry from "../base/redux/ReducerRegistry";
 
 import {
+    ADD_COMPLETED_MESSAGE,
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
     FETCH_MEETING_DATA,
@@ -31,9 +32,11 @@ import {
     SET_RECORDING_BLOB_OPENAI,
     SET_ROOM_PARAMS,
     SET_TRANSCRIPTION_RESULT,
+    START_RECORDING_MICROSOFT_MANUAL,
     START_RECORDING_OPENAI,
     START_TEXT_TO_SPEECH,
     START_TRANSCRIPTION,
+    STOP_RECORDING_MICROSOFT_MANUAL,
     STOP_RECORDING_OPENAI,
     STOP_TRANSCRIPTION,
     TRANSLATE_OPENAI,
@@ -60,7 +63,10 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     inPersonStopTranscription: false,
     inPersonIsRecordingPersonOne: false,
     inPersonIsRecordingPersonTwo: false,
+    isRecordingMicrosoftMan: false,
+    completedMessages: [],
     meetingType: "",
+    modeContOrMan: "",
     transcriptionResults: [],
     meetingData: {
         displayName: "",
@@ -124,6 +130,7 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     clientId: action.payload.clientId || state.clientId,
                     textToSpeechCode: action.payload.textToSpeechCode || state.textToSpeechCode,
                     meetingType: action.payload.meetingType || state.meetingType,
+                    modeContOrMan: action.payload.modeContOrMan || state.modeContOrMan,
                 };
 
             // Room slice reducers
@@ -200,6 +207,16 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     ...state,
                     linguistData: action.payload,
                 };
+
+            case ADD_COMPLETED_MESSAGE: {
+                // React native, unlike web, needs a reverse sorted message list.
+                const completedMessages = [...state.completedMessages, action.payload];
+
+                return {
+                    ...state,
+                    completedMessages,
+                };
+            }
 
             case SET_IS_TRANSCRIBING:
                 return {
@@ -346,6 +363,18 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
             case INPERSON_TRANSLATE_OPENAI:
                 return {
                     ...state,
+                };
+
+            case START_RECORDING_MICROSOFT_MANUAL:
+                return {
+                    ...state,
+                    isRecordingMicrosoftMan: true,
+                };
+
+            case STOP_RECORDING_MICROSOFT_MANUAL:
+                return {
+                    ...state,
+                    isRecordingMicrosoftMan: false,
                 };
 
             case DEBUGGING:

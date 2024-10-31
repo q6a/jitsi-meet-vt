@@ -30,6 +30,7 @@ export interface IRoomParams {
     meetingId: string;
     meetingName: string;
     meetingType: string;
+    modeContOrMan: string;
     participantName: string;
     textToSpeechCode: string;
 }
@@ -126,6 +127,7 @@ export interface IEntityData {
 
 export interface IVideoTranslatorAiState {
     clientId: string;
+    completedMessages: string[];
     displayDialect: string;
     displayName: string;
     inPersonIsRecordingPersonOne: boolean;
@@ -136,6 +138,7 @@ export interface IVideoTranslatorAiState {
     inPersontextToSpeechCodePersonTwo: string;
     isPlayingTTS: boolean;
     isRecording: boolean;
+    isRecordingMicrosoftMan: boolean;
     isTranscribing: boolean;
     jwtToken: string;
     latestPrivateMessage: string;
@@ -147,6 +150,7 @@ export interface IVideoTranslatorAiState {
     messageNotification: boolean;
     messages: Array<IMessage>;
     microsoftRecognizerSDK: speechsdk.TranslationRecognizer;
+    modeContOrMan: string;
     moderatorData: Array<IModerator>;
     openAiRecordingBlob: any;
     participantData: Array<IParticipant>;

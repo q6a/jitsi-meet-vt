@@ -26,7 +26,7 @@ import { pushReactions } from "../reactions/actions.any";
 import { ENDPOINT_REACTION_NAME } from "../reactions/constants";
 import { getReactionMessageFromBuffer, isReactionsEnabled } from "../reactions/functions.any";
 import { showToolbox } from "../toolbox/actions";
-import { addMessageVideoTranslatorAI } from "../videotranslatorai/action.web";
+import { addCompletedMessage, addMessageVideoTranslatorAI } from "../videotranslatorai/action.web";
 
 import {
     ADD_MESSAGE,
@@ -607,6 +607,13 @@ function _handleReceivedMessage(
                 isReaction,
             })
         );
+    }
+
+    if (message.includes("(videotranslatoraiservice:::) (completed)")) {
+        message = message.replace("(videotranslatoraiservice:::) (completed)", "");
+        console.log("MESSAGE", message);
+
+        dispatch(addCompletedMessage(message));
     }
 
     // videotranslatorai

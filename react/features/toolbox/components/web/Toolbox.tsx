@@ -9,8 +9,11 @@ import { getLocalParticipant, isLocalParticipantModerator } from "../../../base/
 import ContextMenu from "../../../base/ui/components/web/ContextMenu";
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from "../../../reactions/functions.web";
 import { isTranscribing } from "../../../transcribing/functions";
-import InPersonOpenAi from "../../../videotranslatorai/components/inPersonOpenAi";
-import TranscriptionAndTranslationOpenAi from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAi";
+
+// import InPersonOpenAi from "../../../videotranslatorai/components/inPersonOpenAi";
+import TranscriptionAndTranslationMicrosoft from "../../../videotranslatorai/components/transcriptionAndTranslationMicrosoft";
+
+// import TranscriptionAndTranslationOpenAi from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAi";
 import { setHangupMenuVisible, setOverflowMenuVisible, setToolbarHovered, setToolboxVisible } from "../../actions.web";
 import { getJwtDisabledButtons, getVisibleButtons, isButtonEnabled, isToolboxVisible } from "../../functions.web";
 import { useKeyboardShortcuts, useToolboxButtons } from "../../hooks.web";
@@ -271,11 +274,17 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                                 Content !== Separator && <Content {...rest} buttonKey={key} key={key} />
                         )}
                         {/* videotranslatorai */}
-                        {/* {conference && <TranscriptionAndTranslationMicrosoft />} */}
+
+                        {conference &&
+                            (meetingTypeVideoTranslatorAi === "video_call" ||
+                                meetingTypeVideoTranslatorAi === "broadcast") && (
+                                <TranscriptionAndTranslationMicrosoft />
+                            )}
+                        {/*
                         {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
                                 meetingTypeVideoTranslatorAi === "broadcast") && <TranscriptionAndTranslationOpenAi />}
-                        {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAi />}
+                        {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAi />} */}
 
                         {Boolean(overflowMenuButtons.length) && (
                             <OverflowMenuButton

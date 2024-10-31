@@ -190,6 +190,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
         const clientId: any = JSON.parse(atob(payload)).context.user.clientId;
         const textToSpeechCode: any = JSON.parse(atob(payload)).context.user.textToSpeechCode;
         const meetingType: any = JSON.parse(atob(payload)).context.user.meetingType;
+        const modeContOrMan: any = JSON.parse(atob(payload)).context.user.mode;
 
         if (initialMeetingName && initialParticipantName) {
             store.dispatch(
@@ -201,6 +202,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
                     clientId,
                     textToSpeechCode,
                     meetingType,
+                    modeContOrMan,
                 })
             );
 
