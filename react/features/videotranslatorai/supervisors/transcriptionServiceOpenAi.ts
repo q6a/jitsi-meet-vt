@@ -4,7 +4,12 @@ import { createMessageStorageSendTranslationToDatabase } from "../services/messa
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioOpenAi from "../services/transcribeAudioOpenAi";
 
-export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getState: any, recordedBlobParam: Blob) => {
+export const transcribeAndTranslateServiceOpenAi = async (
+    dispatch: any,
+    getState: any,
+    recordedBlobParam: Blob,
+    isMessageCompleted: boolean
+) => {
     const state: IReduxState = getState();
 
     const tokenData = toState(state)["features/videotranslatorai"].jwtToken;
@@ -59,7 +64,13 @@ export const transcribeAndTranslateServiceOpenAi = async (dispatch: any, getStat
                             "australiaeast"
                         );
 
-                        const translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;
+                        let translationSent = "";
+
+                        if (isMessageCompleted) {
+                            translationSent = `${participantName}: ${translationText}(videotranslatoraiservice:::) (completed)`;
+                        } else {
+                            translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;
+                        }
 
                         let participantId = "";
 

@@ -9,7 +9,7 @@ import { getLocalParticipant, isLocalParticipantModerator } from "../../../base/
 import ContextMenu from "../../../base/ui/components/web/ContextMenu";
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from "../../../reactions/functions.web";
 import { isTranscribing } from "../../../transcribing/functions";
-import InPersonOpenAiCont from "../../../videotranslatorai/components/inPersonOpenAiCont";
+import TranscriptionAndTranslationOpenAiCont from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAiCont";
 
 // import TranscriptionAndTranslationMicrosoftMan from "../../../videotranslatorai/components/transcriptionAndTranslationMicrosoftMan";
 import { setHangupMenuVisible, setOverflowMenuVisible, setToolbarHovered, setToolboxVisible } from "../../actions.web";
@@ -282,12 +282,12 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                                 meetingTypeVideoTranslatorAi === "broadcast") && (
                                 <TranscriptionAndTranslationMicrosoftMan />
                             )} */}
-                        {/* {conference &&
+                        {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
                                 meetingTypeVideoTranslatorAi === "broadcast") && (
                                 <TranscriptionAndTranslationOpenAiCont />
-                            )} */}
-                        {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAiCont />}
+                            )}
+                        {/* {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAiCont />} */}
                         {/* {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAi />} */}
                         {Boolean(overflowMenuButtons.length) && (
                             <OverflowMenuButton

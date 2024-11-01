@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
+import { toState } from "../../base/redux/functions";
 import { createRnnoiseProcessor } from "../../stream-effects/rnnoise"; // Import the create function
-import { translateOpenAi } from "../action.web";
+import { startTextToSpeech, translateOpenAi } from "../action.web";
 
 import SoundToggleButton from "./buttons/soundToggleButton";
 import TranscriptionButton from "./buttons/transcriptionButton";
@@ -13,7 +14,7 @@ import TranscriptionButton from "./buttons/transcriptionButton";
 let lastVoiceStopTime: number | null = Date.now();
 let lastDispatchTime: number | null = null;
 let speechStartTime: number | null = null;
-
+let speechEndTime: number | null = null;
 let audioChunks: Blob[] = [];
 
 const TranscriptionAndTranslationOpenAiCont: FC = () => {
@@ -21,14 +22,14 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     const state = useSelector((state: IReduxState) => state);
 
     const isAudioMuted = useSelector((state) => state["features/base/media"].audio.muted);
-    const messages = useSelector((state) => state["features/videotranslatorai"].messages);
+    const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].completedMessages);
     const isModerator = useSelector(isLocalParticipantModerator);
     const meetingTypeVideoTranslatorAi = useSelector((state) => state["features/videotranslatorai"].meetingType);
     const transcriptionButtonRef = useRef<HTMLDivElement>(null);
 
     const [isRecording, setIsRecording] = useState(false);
     const [isSoundOn, setIsSoundOn] = useState(true);
-    const [previousMessages, setPreviousMessages] = useState(messages);
+    const [previousMessages, setPreviousMessages] = useState<string>("");
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
     const [stream, setStream] = useState<MediaStream | undefined>(undefined);
     const [rnnoiseProcessor, setRnnoiseProcessor] = useState<any | null>(null);
@@ -40,31 +41,27 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
     function handleVADScore(vadScore) {
-        if (lastVoiceStopTime && Date.now() - lastVoiceStopTime >= 3600) {
-            setLastVoiceStopTimeEnd(true);
+        const currentTime = Date.now();
 
-            audioChunks.current = [];
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.stop();
-            }
-            lastVoiceStopTime = null;
-        }
+        // console.log(" VAD score:", vadScore);
 
         if (vadScore > 0.85) {
+            // Start of voice activity
+            if (!speechStartTime) {
+                speechStartTime = currentTime;
+            }
+
+            // Reset end time because we are detecting continuous speech
+            speechEndTime = null;
+            lastVoiceStopTime = null;
+
+            // Start the media recorder if it's inactive
             if (mediaRecorder && mediaRecorder.state === "inactive") {
                 mediaRecorder.start();
             }
-            mediaRecorder.requestData();
 
-            if (speechStartTime) {
-                // console.log("start time elapsed", Date.now() - speechStartTime);
-            }
-
-            // console.log("Voice detected with VAD score:", vadScore);
-            lastVoiceStopTime = null;
-            const currentTime = Date.now();
-
-            if (!lastDispatchTime || currentTime - lastDispatchTime >= 500) {
+            // Request data periodically during speech
+            if (!lastDispatchTime || currentTime - lastDispatchTime >= 800) {
                 setTimeout(() => {
                     setSendDataWhenReady(true);
 
@@ -75,15 +72,35 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
                 lastDispatchTime = currentTime;
             }
-
-            lastVoiceStopTime = null;
-        }
-
-        if (vadScore <= 0.7) {
-            if (lastVoiceStopTime === null) {
-                lastVoiceStopTime = Date.now();
+        } else if (vadScore <= 0.85) {
+            // End of voice activity
+            if (!speechEndTime) {
+                speechEndTime = currentTime;
             }
-            speechStartTime = Date.now();
+
+            // Mark the end of this voice activity and prepare for potential new speech detection
+            if (!lastVoiceStopTime) {
+                lastVoiceStopTime = currentTime;
+            }
+
+            // Check if the voice activity lasted longer than 150 ms
+            if (speechStartTime && speechEndTime - speechStartTime > 100) {
+                // Handle any actions needed when valid speech is detected
+                mediaRecorder.requestData();
+
+                // Stop recording if it was an extended pause in speech (e.g., 3600 ms)
+                if (lastVoiceStopTime && currentTime - lastVoiceStopTime >= 3600) {
+                    setLastVoiceStopTimeEnd(true);
+
+                    // if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                    //     mediaRecorder.stop();
+                    // }
+                    lastVoiceStopTime = null;
+
+                    // Reset start time after processing this speech segment
+                    speechStartTime = null;
+                }
+            }
         }
     }
 
@@ -106,6 +123,10 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
         recorder.onstop = () => {
             audioChunks = [];
+        };
+
+        recorder.onstart = () => {
+            // audioChunks = [];
         };
 
         recorder.start();
@@ -175,7 +196,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
             const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
 
             if (audioChunks.length > 0) {
-                dispatch(translateOpenAi(audioBlob));
+                dispatch(translateOpenAi(audioBlob, false));
             }
             setSendDataWhenReady(false);
         }
@@ -183,12 +204,40 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
     useEffect(() => {
         if (lastVoiceStopTimeEnd) {
-            setLastVoiceStopTimeEnd(false);
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+
+            console.log("LASTVOICE");
+            if (audioChunks.length > 0) {
+                dispatch(translateOpenAi(audioBlob, true));
+            }
+
+            audioChunks = [];
+
+            mediaRecorder?.stop();
+
             if (mediaRecorder && mediaRecorder.state === "inactive") {
                 mediaRecorder?.start();
             }
+
+            setLastVoiceStopTimeEnd(false);
         }
     }, [lastVoiceStopTimeEnd, mediaRecorder]);
+
+    useEffect(() => {
+        if (!isSoundOn) {
+            return;
+        }
+        if (messages !== previousMessages) {
+            const lastMessage = messages[messages.length - 1];
+
+            if (lastMessage) {
+                const textToSpeechCode = toState(state)["features/videotranslatorai"].textToSpeechCode;
+
+                dispatch(startTextToSpeech(lastMessage, textToSpeechCode));
+            }
+            setPreviousMessages(messages);
+        }
+    }, [messages, previousMessages]);
 
     return (
         <div>

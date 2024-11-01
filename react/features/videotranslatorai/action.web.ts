@@ -251,25 +251,26 @@ export const fetchMeetingData = (params: IFetchMeetingData) => async (dispatch: 
     }
 };
 
-export const translateOpenAi = (recordedBlobParam: Blob) => async (dispatch: any, getState: any) => {
-    dispatch({ type: TRANSLATE_OPENAI });
+export const translateOpenAi =
+    (recordedBlobParam: Blob, isMessageCompleted: boolean) => async (dispatch: any, getState: any) => {
+        dispatch({ type: TRANSLATE_OPENAI });
 
-    try {
-        // Dispatch action to stop the recording
-        dispatch(setIsRecording(false));
+        try {
+            // Dispatch action to stop the recording
+            dispatch(setIsRecording(false));
 
-        // Call the async service and pass the recorded blob
-        await transcribeAndTranslateServiceOpenAi(dispatch, getState, recordedBlobParam);
+            // Call the async service and pass the recorded blob
+            await transcribeAndTranslateServiceOpenAi(dispatch, getState, recordedBlobParam, isMessageCompleted);
 
-        // Optionally handle results, such as dispatching success actions
-        // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
-    } catch (err) {
-        console.error("Error in OpenAI translate service:", err);
+            // Optionally handle results, such as dispatching success actions
+            // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
+        } catch (err) {
+            console.error("Error in OpenAI translate service:", err);
 
-        // Optionally dispatch a failure action if needed
-        // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
-    }
-};
+            // Optionally dispatch a failure action if needed
+            // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
+        }
+    };
 
 export const startTranscription = () => async (dispatch: any, getState: any) => {
     dispatch({ type: START_TRANSCRIPTION });

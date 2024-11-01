@@ -15,9 +15,6 @@ async function transcribeAudioOpenAi(langFrom: any, recordedBlob: any, apiEndpoi
         const lastModifiedDate = new Date();
         const lastModified = lastModifiedDate.getTime();
 
-        console.log("AUDIO BLOB", recordedBlob);
-        console.log("Recorded Blob", recordedBlob);
-
         // Create a File object from the Blob with the appropriate properties
         const audioFile = new File([recordedBlob], "audio.wav", {
             type: "audio/wav",
