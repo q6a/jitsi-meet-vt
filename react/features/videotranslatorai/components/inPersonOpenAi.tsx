@@ -112,7 +112,8 @@ const InPersonOpenAi: FC = () => {
                                 recordedBlob,
                                 langFromPersonOneTranscription,
                                 personOneName,
-                                langFromPersonOneTranslation
+                                langFromPersonOneTranslation,
+                                false
                             )
                         );
                     }
@@ -123,7 +124,8 @@ const InPersonOpenAi: FC = () => {
                                 recordedBlob,
                                 langFromPersonTwoTranscription,
                                 personTwoName,
-                                langFromPersonTwoTranslation
+                                langFromPersonTwoTranslation,
+                                false
                             )
                         );
                     }

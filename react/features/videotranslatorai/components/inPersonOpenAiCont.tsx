@@ -21,6 +21,7 @@ let whichPerson = 0;
 // let audioChunks: any = [];
 let lastVoiceStopTime: number | null = Date.now();
 let lastDispatchTime: number | null = null;
+let speechStartTime: number | null = null;
 
 const InPersonOpenAiCont: FC = () => {
     const dispatch = useDispatch();
@@ -61,8 +62,11 @@ const InPersonOpenAiCont: FC = () => {
 
     const [previousMessages, setPreviousMessages] = useState(messages);
     const [isSoundOn, setIsSoundOn] = useState(true);
-    const mediaRecorder = useRef<MediaRecorder | null>(null);
+
+    // const mediaRecorder = useRef<MediaRecorder | null>(null);
     const audioChunks = useRef<Blob[]>([]);
+
+    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
     const [vadInstance, setVadInstance] = useState<any>(null);
     const [stream, setStream] = useState<MediaStream | undefined>(undefined); // Initialize stream state
@@ -70,16 +74,22 @@ const InPersonOpenAiCont: FC = () => {
     const [sendDataWhenReady, setSendDataWhenReady] = useState<boolean>(false);
 
     const [lastVoiceStopTimeEnd, setLastVoiceStopTimeEnd] = useState<boolean>(false);
+    const [startTTSForLastMessage, setStartTTSForLastMessage] = useState<boolean>(false);
 
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
     };
 
     useEffect(() => {
+        if (!isSoundOn) {
+            return;
+        }
+
         if (messages !== previousMessages) {
             const lastMessage = messages[messages.length - 1];
 
-            if (lastMessage) {
+            if (lastMessage && startTTSForLastMessage) {
+                console.log("start speech to text", lastMessage);
                 if (whichPerson === 1) {
                     dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonTwo));
                 }
@@ -87,32 +97,41 @@ const InPersonOpenAiCont: FC = () => {
                 if (whichPerson === 2) {
                     dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonOne));
                 }
+
+                setStartTTSForLastMessage(false);
+                setPreviousMessages(messages);
             }
-            setPreviousMessages(messages);
         }
-    }, [messages, previousMessages]);
+    }, [messages, previousMessages, startTTSForLastMessage]);
 
     // Initialize VAD options
     const vadOptions = {
         onUpdate: (isSpeech: boolean) => {
             if (lastVoiceStopTime && Date.now() - lastVoiceStopTime >= 3600) {
                 setLastVoiceStopTimeEnd(true);
-
+                setStartTTSForLastMessage(true);
                 audioChunks.current = [];
-                if (mediaRecorder.current && mediaRecorder.current?.state !== "inactive") {
-                    mediaRecorder.current?.stop();
+                if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                    mediaRecorder?.stop();
                 }
                 lastVoiceStopTime = null;
-            }
-
-            // for some reason mediarecorder sometimes is inactvie when it gets deactivated
-            if (mediaRecorder.current?.state === "inactive") {
-                mediaRecorder.current?.start();
+            } else {
+                // for some reason mediarecorder sometimes is inactvie when it gets deactivated
+                if (mediaRecorder?.state === "inactive") {
+                    mediaRecorder?.start();
+                }
             }
 
             if (isSpeech) {
                 // if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.current?.requestData();
+                if (speechStartTime) {
+                    console.log("start time elapsed", Date.now() - speechStartTime);
+                }
+
+                if (speechStartTime && Date.now() - speechStartTime >= 100 && mediaRecorder?.state !== "inactive") {
+                    mediaRecorder?.requestData();
+                    console.log("start time elapsed", Date.now() - speechStartTime);
+                }
 
                 // }
 
@@ -122,8 +141,8 @@ const InPersonOpenAiCont: FC = () => {
                     setTimeout(() => {
                         setSendDataWhenReady(true);
 
-                        if (mediaRecorder.current && mediaRecorder.current?.state !== "inactive") {
-                            mediaRecorder.current?.requestData();
+                        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                            mediaRecorder?.requestData();
                         }
                     }, 1000);
 
@@ -136,6 +155,10 @@ const InPersonOpenAiCont: FC = () => {
             } else if (lastVoiceStopTime === null && !isSpeech) {
                 lastVoiceStopTime = Date.now();
             }
+
+            if (!isSpeech) {
+                speechStartTime = Date.now();
+            }
         },
 
         onVoiceStart: () => {},
@@ -145,13 +168,11 @@ const InPersonOpenAiCont: FC = () => {
     };
 
     useEffect(() => {
-        if (sendDataWhenReady) {
+        if (sendDataWhenReady && audioChunks.current.length > 0) {
             const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
 
-            if (audioChunks.current?.length > 0) {
+            if (audioChunks.current.length > 0) {
                 if (whichPerson === 1 && !isRecordingPersonTwo) {
-                    console.log("on stop p1");
-
                     dispatch(
                         inPersonTranslateOpenAi(
                             audioBlob,
@@ -172,7 +193,6 @@ const InPersonOpenAiCont: FC = () => {
                         )
                     );
                 }
-                audioChunks.current = [];
             }
             setSendDataWhenReady(false);
         }
@@ -191,7 +211,6 @@ const InPersonOpenAiCont: FC = () => {
             // Collect audio data as chunks when recording is active
             recorder.ondataavailable = (event) => {
                 if (event.data.size > 0) {
-                    console.log("EVENT", event);
                     audioChunks.current.push(event.data);
                 }
             };
@@ -201,18 +220,18 @@ const InPersonOpenAiCont: FC = () => {
             };
 
             recorder.start();
-            mediaRecorder.current = recorder;
+            setMediaRecorder(recorder);
             setStream(streamVar);
         }
     };
 
     useEffect(() => {
-        if (mediaRecorder.current && stream && audioContext) {
+        if (mediaRecorder && stream && audioContext) {
             const vad = VAD(audioContext, stream, vadOptions);
 
             setVadInstance(vad); // Store the VAD instance to stop later
         }
-    }, [mediaRecorder.current, stream, audioContext]);
+    }, [mediaRecorder, stream, audioContext]);
 
     const handleStartTranscriptionOne = () => {
         if (!isAudioMuted && !isRecordingPersonTwo) {
@@ -223,24 +242,20 @@ const InPersonOpenAiCont: FC = () => {
     };
 
     const handleStopTranscriptionOne = () => {
-        if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
-            mediaRecorder.current.stop();
-            dispatch(inPersonStopRecordingPersonOne());
-            whichPerson = 0;
-
-            stream?.getTracks().forEach((track) => track.stop());
-            setStream(undefined);
-
-            // mediaRecorder?.requestData();
-            mediaRecorder?.current.stop();
-            if (vadInstance) {
-                vadInstance.destroy();
-                setVadInstance(null);
-            }
-
-            // setAudioChunks([]); // Reset chunks for next recording
-            audioChunks.current = [];
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
         }
+
+        dispatch(inPersonStopRecordingPersonOne());
+        whichPerson = 0;
+        stream?.getTracks().forEach((track) => track.stop());
+        setStream(undefined);
+
+        if (vadInstance) {
+            vadInstance.destroy();
+            setVadInstance(null);
+        }
+        audioChunks.current = [];
     };
 
     const handleStartTranscriptionTwo = () => {
@@ -252,24 +267,20 @@ const InPersonOpenAiCont: FC = () => {
     };
 
     const handleStopTranscriptionTwo = () => {
-        if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
-            mediaRecorder.current.stop();
-            dispatch(inPersonStopRecordingPersonTwo());
-            whichPerson = 0;
-
-            stream?.getTracks().forEach((track) => track.stop());
-            setStream(undefined);
-
-            // mediaRecorder?.requestData();
-            mediaRecorder?.current.stop();
-            if (vadInstance) {
-                vadInstance.destroy();
-                setVadInstance(null);
-            }
-
-            // setAudioChunks([]); // Reset chunks for next recording
-            audioChunks.current = [];
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
         }
+
+        dispatch(inPersonStopRecordingPersonOne());
+        whichPerson = 0;
+        stream?.getTracks().forEach((track) => track.stop());
+        setStream(undefined);
+
+        if (vadInstance) {
+            vadInstance.destroy();
+            setVadInstance(null);
+        }
+        audioChunks.current = [];
     };
 
     useEffect(() => {
@@ -295,11 +306,11 @@ const InPersonOpenAiCont: FC = () => {
     useEffect(() => {
         if (lastVoiceStopTimeEnd) {
             setLastVoiceStopTimeEnd(false);
-            if (mediaRecorder.current && mediaRecorder.current?.state === "inactive") {
-                mediaRecorder.current?.start();
+            if (mediaRecorder && mediaRecorder?.state === "inactive") {
+                mediaRecorder?.start();
             }
         }
-    }, [lastVoiceStopTimeEnd, mediaRecorder.current]);
+    }, [lastVoiceStopTimeEnd, mediaRecorder]);
 
     return (
         <div>

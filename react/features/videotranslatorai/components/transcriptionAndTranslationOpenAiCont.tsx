@@ -13,6 +13,7 @@ import TranscriptionButton from "./buttons/transcriptionButton";
 // let audioChunks: any = [];
 let lastVoiceStopTime: number | null = Date.now();
 let lastDispatchTime: number | null = null;
+let speechStartTime: number | null = null;
 
 let audioChunks: any[] = [];
 
@@ -49,16 +50,23 @@ const TranscriptionAndTranslationOpenAiCont = () => {
                     mediaRecorder?.stop();
                 }
                 lastVoiceStopTime = null;
-            }
-
-            // for some reason mediarecorder sometimes is inactvie when it gets deactivated
-            if (mediaRecorder?.state === "inactive") {
-                mediaRecorder?.start();
+            } else {
+                // for some reason mediarecorder sometimes is inactvie when it gets deactivated
+                if (mediaRecorder?.state === "inactive") {
+                    mediaRecorder?.start();
+                }
             }
 
             if (isSpeech) {
                 // if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder?.requestData();
+                if (speechStartTime) {
+                    console.log("start time elapsed", Date.now() - speechStartTime);
+                }
+
+                if (speechStartTime && Date.now() - speechStartTime >= 100 && mediaRecorder?.state !== "inactive") {
+                    mediaRecorder?.requestData();
+                    console.log("start time elapsed", Date.now() - speechStartTime);
+                }
 
                 // }
 
@@ -81,6 +89,10 @@ const TranscriptionAndTranslationOpenAiCont = () => {
                 lastVoiceStopTime = null;
             } else if (lastVoiceStopTime === null && !isSpeech) {
                 lastVoiceStopTime = Date.now();
+            }
+
+            if (!isSpeech) {
+                speechStartTime = Date.now();
             }
         },
 
