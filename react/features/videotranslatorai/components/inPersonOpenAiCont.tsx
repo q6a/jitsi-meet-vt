@@ -1,10 +1,10 @@
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import VAD from "voice-activity-detection";
 
 import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
 import { toState } from "../../base/redux/functions";
+import { createRnnoiseProcessor } from "../../stream-effects/rnnoise"; // Import the create function
 import {
     inPersonStartRecordingPersonOne,
     inPersonStartRecordingPersonTwo,
@@ -75,76 +75,63 @@ const InPersonOpenAiCont: FC = () => {
 
     const [lastVoiceStopTimeEnd, setLastVoiceStopTimeEnd] = useState<boolean>(false);
 
+    // State variables for media recorder, audio context, script processor, and RNNoise processor
+    const [scriptProcessor, setScriptProcessor] = useState<ScriptProcessorNode | null>(null);
+    const [rnnoiseProcessor, setRnnoiseProcessor] = useState<any | null>(null);
+
     // const [startTTSForLastMessage, setStartTTSForLastMessage] = useState<boolean>(false);
 
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
     };
 
-    // Initialize VAD options
-    const vadOptions = {
-        onUpdate: (isSpeech: boolean) => {
-            if (lastVoiceStopTime && Date.now() - lastVoiceStopTime >= 3600) {
-                console.log("LASTVOICE", lastVoiceStopTime);
-                setLastVoiceStopTimeEnd(true);
-                audioChunks.current = [];
-                if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                    mediaRecorder?.stop();
-                }
-                lastVoiceStopTime = null;
+    function handleVADScore(vadScore) {
+        if (lastVoiceStopTime && Date.now() - lastVoiceStopTime >= 3600) {
+            setLastVoiceStopTimeEnd(true);
+
+            audioChunks.current = [];
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
             }
+            lastVoiceStopTime = null;
+        }
 
-            // for some reason mediarecorder sometimes is inactvie when it gets deactivated
-            if (mediaRecorder?.state === "inactive") {
-                mediaRecorder?.start();
+        if (vadScore > 0.85) {
+            if (mediaRecorder && mediaRecorder.state === "inactive") {
+                mediaRecorder.start();
             }
+            mediaRecorder.requestData();
 
-            if (isSpeech) {
-                // if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                if (speechStartTime) {
-                    // console.log("start time elapsed", Date.now() - speechStartTime);
-                }
-
-                // if (speechStartTime && Date.now() - speechStartTime >= 100 && mediaRecorder?.state !== "inactive") {
-                mediaRecorder?.requestData();
-
+            if (speechStartTime) {
                 // console.log("start time elapsed", Date.now() - speechStartTime);
-                // }
-
-                // }
-
-                const currentTime = Date.now();
-
-                if (!lastDispatchTime || currentTime - lastDispatchTime >= 1500) {
-                    setTimeout(() => {
-                        setSendDataWhenReady(true);
-
-                        if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                            mediaRecorder?.requestData();
-                        }
-                    }, 1000);
-
-                    lastDispatchTime = currentTime;
-                }
             }
 
-            if (isSpeech) {
-                lastVoiceStopTime = null;
-            } else if (lastVoiceStopTime === null && !isSpeech) {
+            // console.log("Voice detected with VAD score:", vadScore);
+            lastVoiceStopTime = null;
+            const currentTime = Date.now();
+
+            if (!lastDispatchTime || currentTime - lastDispatchTime >= 500) {
+                setTimeout(() => {
+                    setSendDataWhenReady(true);
+
+                    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                        mediaRecorder.requestData();
+                    }
+                }, 500);
+
+                lastDispatchTime = currentTime;
+            }
+
+            lastVoiceStopTime = null;
+        }
+
+        if (vadScore <= 0.7) {
+            if (lastVoiceStopTime === null) {
                 lastVoiceStopTime = Date.now();
             }
-
-            if (!isSpeech) {
-                speechStartTime = Date.now();
-            }
-        },
-
-        onVoiceStart: () => {},
-
-        onVoiceStop: () => {},
-        noiseCaptureDuration: 100, // in ms
-    };
-
+            speechStartTime = Date.now();
+        }
+    }
     useEffect(() => {
         if (sendDataWhenReady && audioChunks.current.length > 0) {
             const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
@@ -181,9 +168,10 @@ const InPersonOpenAiCont: FC = () => {
             const streamVar = await navigator.mediaDevices.getUserMedia({
                 audio: true,
             });
-            const audioContextVar = new AudioContext();
+            const audioContextVar = new AudioContext({ sampleRate: 44100 });
 
             setAudioContext(audioContextVar);
+
             const recorder = new MediaRecorder(streamVar);
 
             // Collect audio data as chunks when recording is active
@@ -199,17 +187,50 @@ const InPersonOpenAiCont: FC = () => {
 
             recorder.start();
             setMediaRecorder(recorder);
+
+            const source = audioContextVar.createMediaStreamSource(streamVar);
+            const scriptProcessorVar = audioContextVar.createScriptProcessor(512, 1, 1);
+
+            source.connect(scriptProcessorVar);
+            scriptProcessorVar.connect(audioContextVar.destination);
             setStream(streamVar);
+
+            // Store audioContext and scriptProcessor to use in useEffect
+            setScriptProcessor(scriptProcessorVar);
         }
     };
 
+    // useEffect to initialize RNNoise processing only after recorder has been set
     useEffect(() => {
-        if (mediaRecorder && stream && audioContext) {
-            const vad = VAD(audioContext, stream, vadOptions);
+        if (mediaRecorder && stream && scriptProcessor && audioContext) {
+            const initializeRnnoise = async () => {
+                try {
+                    // Initialize RNNoise after mediaRecorder is set
+                    const rnnoise = await createRnnoiseProcessor();
 
-            setVadInstance(vad); // Store the VAD instance to stop later
+                    setRnnoiseProcessor(rnnoise);
+                    if (!rnnoise) {
+                        return;
+                    }
+                    scriptProcessor.onaudioprocess = (event) => {
+                        const pcmFrame = event.inputBuffer.getChannelData(0);
+
+                        // Process pcmFrame with rnnoise
+                        if (rnnoise) {
+                            const vadScore = rnnoise.calculateAudioFrameVAD(pcmFrame);
+
+                            // Handle VAD score as per your logic
+                            handleVADScore(vadScore);
+                        }
+                    };
+                } catch (error) {
+                    console.error("Failed to initialize RNNoise processor:", error);
+                }
+            };
+
+            initializeRnnoise();
         }
-    }, [mediaRecorder, stream, audioContext]);
+    }, [mediaRecorder, stream, scriptProcessor, audioContext]); // Run useEffect when mediaRecorder or stream changes
 
     const handleStartTranscriptionOne = () => {
         if (!isAudioMuted && !isRecordingPersonTwo) {
@@ -249,7 +270,7 @@ const InPersonOpenAiCont: FC = () => {
             mediaRecorder.stop();
         }
 
-        dispatch(inPersonStopRecordingPersonOne());
+        dispatch(inPersonStopRecordingPersonTwo());
         whichPerson = 0;
         stream?.getTracks().forEach((track) => track.stop());
         setStream(undefined);
@@ -285,7 +306,6 @@ const InPersonOpenAiCont: FC = () => {
 
     useEffect(() => {
         if (lastVoiceStopTimeEnd) {
-            console.log("inside");
             setLastVoiceStopTimeEnd(false);
             if (mediaRecorder && mediaRecorder?.state === "inactive") {
                 mediaRecorder?.start();
@@ -298,8 +318,6 @@ const InPersonOpenAiCont: FC = () => {
             if (messages) {
                 const lastMessage = messages[messages.length - 2];
 
-                setPreviousMessages(lastMessage.message);
-
                 if (lastMessage && lastMessage.message !== previousMessages) {
                     if (whichPerson === 1) {
                         dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonTwo));
@@ -308,6 +326,8 @@ const InPersonOpenAiCont: FC = () => {
                     if (whichPerson === 2) {
                         dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonOne));
                     }
+
+                    setPreviousMessages(lastMessage.message);
                 }
             }
         }
