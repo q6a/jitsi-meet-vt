@@ -42,6 +42,7 @@ const InPersonOpenAiCont: FC = () => {
 
     const toolTipContentPersonOne = moderatorData[0].translationDialect.name;
     const toolTipContenPersonTwo = participantData[0].translationDialect.name;
+    const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].messages);
 
     const isRecordingPersonOne = useSelector(
         (state: IReduxState) => state["features/videotranslatorai"].inPersonIsRecordingPersonOne
@@ -51,7 +52,6 @@ const InPersonOpenAiCont: FC = () => {
     );
 
     const isAudioMuted = useSelector((state: IReduxState) => state["features/base/media"].audio.muted);
-    const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].messages);
 
     const ttsCodePersonOne = useSelector(
         (state: IReduxState) => state["features/videotranslatorai"].inPersontextToSpeechCodePersonOne
@@ -60,7 +60,7 @@ const InPersonOpenAiCont: FC = () => {
         (state: IReduxState) => state["features/videotranslatorai"].inPersontextToSpeechCodePersonTwo
     );
 
-    const [previousMessages, setPreviousMessages] = useState(messages);
+    const [previousMessages, setPreviousMessages] = useState<string>("");
     const [isSoundOn, setIsSoundOn] = useState(true);
 
     // const mediaRecorder = useRef<MediaRecorder | null>(null);
@@ -74,64 +74,42 @@ const InPersonOpenAiCont: FC = () => {
     const [sendDataWhenReady, setSendDataWhenReady] = useState<boolean>(false);
 
     const [lastVoiceStopTimeEnd, setLastVoiceStopTimeEnd] = useState<boolean>(false);
-    const [startTTSForLastMessage, setStartTTSForLastMessage] = useState<boolean>(false);
+
+    // const [startTTSForLastMessage, setStartTTSForLastMessage] = useState<boolean>(false);
 
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
     };
 
-    useEffect(() => {
-        if (!isSoundOn) {
-            return;
-        }
-
-        if (messages !== previousMessages) {
-            const lastMessage = messages[messages.length - 1];
-
-            if (lastMessage && startTTSForLastMessage) {
-                console.log("start speech to text", lastMessage);
-                if (whichPerson === 1) {
-                    dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonTwo));
-                }
-
-                if (whichPerson === 2) {
-                    dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonOne));
-                }
-
-                setStartTTSForLastMessage(false);
-                setPreviousMessages(messages);
-            }
-        }
-    }, [messages, previousMessages, startTTSForLastMessage]);
-
     // Initialize VAD options
     const vadOptions = {
         onUpdate: (isSpeech: boolean) => {
             if (lastVoiceStopTime && Date.now() - lastVoiceStopTime >= 3600) {
+                console.log("LASTVOICE", lastVoiceStopTime);
                 setLastVoiceStopTimeEnd(true);
-                setStartTTSForLastMessage(true);
                 audioChunks.current = [];
                 if (mediaRecorder && mediaRecorder.state !== "inactive") {
                     mediaRecorder?.stop();
                 }
                 lastVoiceStopTime = null;
-            } else {
-                // for some reason mediarecorder sometimes is inactvie when it gets deactivated
-                if (mediaRecorder?.state === "inactive") {
-                    mediaRecorder?.start();
-                }
+            }
+
+            // for some reason mediarecorder sometimes is inactvie when it gets deactivated
+            if (mediaRecorder?.state === "inactive") {
+                mediaRecorder?.start();
             }
 
             if (isSpeech) {
                 // if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 if (speechStartTime) {
-                    console.log("start time elapsed", Date.now() - speechStartTime);
+                    // console.log("start time elapsed", Date.now() - speechStartTime);
                 }
 
-                if (speechStartTime && Date.now() - speechStartTime >= 100 && mediaRecorder?.state !== "inactive") {
-                    mediaRecorder?.requestData();
-                    console.log("start time elapsed", Date.now() - speechStartTime);
-                }
+                // if (speechStartTime && Date.now() - speechStartTime >= 100 && mediaRecorder?.state !== "inactive") {
+                mediaRecorder?.requestData();
+
+                // console.log("start time elapsed", Date.now() - speechStartTime);
+                // }
 
                 // }
 
@@ -294,6 +272,8 @@ const InPersonOpenAiCont: FC = () => {
         }
 
         setIsSoundOn(false);
+
+        setPreviousMessages("message1");
     }, []);
 
     useEffect(() => {
@@ -305,9 +285,30 @@ const InPersonOpenAiCont: FC = () => {
 
     useEffect(() => {
         if (lastVoiceStopTimeEnd) {
+            console.log("inside");
             setLastVoiceStopTimeEnd(false);
             if (mediaRecorder && mediaRecorder?.state === "inactive") {
                 mediaRecorder?.start();
+            }
+
+            if (!isSoundOn) {
+                return;
+            }
+
+            if (messages) {
+                const lastMessage = messages[messages.length - 2];
+
+                setPreviousMessages(lastMessage.message);
+
+                if (lastMessage && lastMessage.message !== previousMessages) {
+                    if (whichPerson === 1) {
+                        dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonTwo));
+                    }
+
+                    if (whichPerson === 2) {
+                        dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonOne));
+                    }
+                }
             }
         }
     }, [lastVoiceStopTimeEnd, mediaRecorder]);

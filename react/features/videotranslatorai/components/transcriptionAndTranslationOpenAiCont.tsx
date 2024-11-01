@@ -63,9 +63,8 @@ const TranscriptionAndTranslationOpenAiCont = () => {
                     console.log("start time elapsed", Date.now() - speechStartTime);
                 }
 
-                if (speechStartTime && Date.now() - speechStartTime >= 100 && mediaRecorder?.state !== "inactive") {
+                if (speechStartTime && Date.now() - speechStartTime >= 50 && mediaRecorder?.state !== "inactive") {
                     mediaRecorder?.requestData();
-                    console.log("start time elapsed", Date.now() - speechStartTime);
                 }
 
                 // }
