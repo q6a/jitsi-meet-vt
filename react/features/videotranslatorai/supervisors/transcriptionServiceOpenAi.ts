@@ -68,6 +68,7 @@ export const transcribeAndTranslateServiceOpenAi = async (
 
                         if (isMessageCompleted) {
                             translationSent = `${participantName}: ${translationText}(videotranslatoraiservice:::) (completed)`;
+                            console.log("completed statement", transcriptionText);
                         } else {
                             translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;
                         }

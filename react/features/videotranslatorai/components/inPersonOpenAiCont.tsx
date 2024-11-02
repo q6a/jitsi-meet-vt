@@ -19,10 +19,11 @@ import SoundToggleButton from "./buttons/soundToggleButton";
 let whichPerson = 0;
 
 // let audioChunks: any = [];
-let lastVoiceStopTime: number | null = Date.now();
-let lastDispatchTime: number | null = null;
-let speechStartTime: number | null = null;
-
+const lastVoiceStopTime: number | null = Date.now();
+const lastDispatchTime: number | null = null;
+const speechStartTime: number | null = null;
+let isVoiceActive = false; // Tracks current state (on/off)
+let lastStateChangeTime = Date.now(); // Tracks the last time the state changed
 const InPersonOpenAiCont: FC = () => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
@@ -86,50 +87,22 @@ const InPersonOpenAiCont: FC = () => {
     };
 
     function handleVADScore(vadScore) {
-        if (lastVoiceStopTime && Date.now() - lastVoiceStopTime >= 3600) {
-            setLastVoiceStopTimeEnd(true);
-
-            audioChunks.current = [];
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.stop();
-            }
-            lastVoiceStopTime = null;
-        }
+        const currentTime = Date.now();
 
         if (vadScore > 0.85) {
-            if (mediaRecorder && mediaRecorder.state === "inactive") {
-                mediaRecorder.start();
+            // Check if we're switching from "off" to "on"
+            if (!isVoiceActive && currentTime - lastStateChangeTime >= 100) {
+                isVoiceActive = true; // Switch to "on"
+                lastStateChangeTime = currentTime;
+                console.log("Switched to ON state");
             }
-            mediaRecorder.requestData();
-
-            if (speechStartTime) {
-                // console.log("start time elapsed", Date.now() - speechStartTime);
+        } else if (vadScore <= 0.85) {
+            // Check if we're switching from "on" to "off"
+            if (isVoiceActive && currentTime - lastStateChangeTime >= 100) {
+                isVoiceActive = false; // Switch to "off"
+                lastStateChangeTime = currentTime;
+                console.log("Switched to OFF state");
             }
-
-            // console.log("Voice detected with VAD score:", vadScore);
-            lastVoiceStopTime = null;
-            const currentTime = Date.now();
-
-            if (!lastDispatchTime || currentTime - lastDispatchTime >= 500) {
-                setTimeout(() => {
-                    setSendDataWhenReady(true);
-
-                    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                        mediaRecorder.requestData();
-                    }
-                }, 500);
-
-                lastDispatchTime = currentTime;
-            }
-
-            lastVoiceStopTime = null;
-        }
-
-        if (vadScore <= 0.7) {
-            if (lastVoiceStopTime === null) {
-                lastVoiceStopTime = Date.now();
-            }
-            speechStartTime = Date.now();
         }
     }
     useEffect(() => {

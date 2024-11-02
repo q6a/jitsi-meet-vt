@@ -1,5 +1,7 @@
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Subject, Subscription, interval } from "rxjs";
+import { debounceTime, distinctUntilChanged, map } from "rxjs/operators";
 
 import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
@@ -11,12 +13,19 @@ import SoundToggleButton from "./buttons/soundToggleButton";
 import TranscriptionButton from "./buttons/transcriptionButton";
 
 // let audioChunks: any = [];
-let lastVoiceStopTime: number | null = Date.now();
-let lastDispatchTime: number | null = null;
-let speechStartTime: number | null = null;
-let speechEndTime: number | null = null;
+const lastVoiceStopTime: number | null = Date.now();
+const lastDispatchTime: number | null = null;
+const speechStartTime: number | null = null;
+const speechEndTime: number | null = null;
 let audioChunks: Blob[] = [];
 
+type VadScore = number;
+type IsVoiceActive = boolean;
+let offTimeout: NodeJS.Timeout | null = null; // Timeout for the "off" state
+
+const vadScore$ = new Subject<number>(); // Specify Subject<number>
+let isVoiceActive: IsVoiceActive = false;
+let messageIntervalSubscription: Subscription | null = null; // Subscription for the message interval
 const TranscriptionAndTranslationOpenAiCont: FC = () => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
@@ -29,79 +38,118 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
     const [isRecording, setIsRecording] = useState(false);
     const [isSoundOn, setIsSoundOn] = useState(true);
-    const [previousMessages, setPreviousMessages] = useState<string>("");
-    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+    const [previousMessages, setPreviousMessages] = useState(messages);
+
+    // const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
     const [stream, setStream] = useState<MediaStream | undefined>(undefined);
     const [rnnoiseProcessor, setRnnoiseProcessor] = useState<any | null>(null);
     const [sendDataWhenReady, setSendDataWhenReady] = useState<boolean>(false);
     const [lastVoiceStopTimeEnd, setLastVoiceStopTimeEnd] = useState<boolean>(false);
+    const mediaRecorder = useRef<MediaRecorder | null>(null);
 
     // State variables for media recorder, audio context, script processor, and RNNoise processor
     const [scriptProcessor, setScriptProcessor] = useState<ScriptProcessorNode | null>(null);
     const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
-    function handleVADScore(vadScore) {
-        const currentTime = Date.now();
+    useEffect(() => {
+        setIsSoundOn(false);
+    }, []);
 
-        // console.log(" VAD score:", vadScore);
+    const startSendingMessages = () => {
+        // Create an interval that emits every 500 ms
+        console.log("how many runs here");
+        if (mediaRecorder.current && mediaRecorder.current?.state === "inactive") {
+            mediaRecorder.current?.start();
+        }
+        messageIntervalSubscription = interval(600).subscribe(() => {
+            console.log("Sending message while voice is active", mediaRecorder.current);
+            mediaRecorder.current?.requestData();
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
 
-        if (vadScore > 0.85) {
-            // Start of voice activity
-            if (!speechStartTime) {
-                speechStartTime = currentTime;
+            console.log("AUDIO BLOB DATA WHEN READY", audioBlob);
+            if (audioChunks.length > 0) {
+                dispatch(translateOpenAi(audioBlob, false));
             }
+        });
+    };
 
-            // Reset end time because we are detecting continuous speech
-            speechEndTime = null;
-            lastVoiceStopTime = null;
+    const stopSendingMessages = () => {
+        if (messageIntervalSubscription) {
+            messageIntervalSubscription.unsubscribe(); // Unsubscribe to stop sending messages
+            messageIntervalSubscription = null;
+        }
+    };
 
-            // Start the media recorder if it's inactive
-            if (mediaRecorder && mediaRecorder.state === "inactive") {
-                mediaRecorder.start();
-            }
+    const startOffTimeout = () => {
+        // Start a 3-second timeout for actions after "off" state
+        offTimeout = setTimeout(() => {
+            console.log("3 seconds of silence reached - Performing action");
 
-            // Request data periodically during speech
-            if (!lastDispatchTime || currentTime - lastDispatchTime >= 800) {
-                setTimeout(() => {
-                    setSendDataWhenReady(true);
+            setTimeout(() => {
+                const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
 
-                    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                        mediaRecorder.requestData();
-                    }
-                }, 500);
+                mediaRecorder.current?.requestData();
 
-                lastDispatchTime = currentTime;
-            }
-        } else if (vadScore <= 0.85) {
-            // End of voice activity
-            if (!speechEndTime) {
-                speechEndTime = currentTime;
-            }
+                console.log("300 ms off time mediarecorder", mediaRecorder.current);
 
-            // Mark the end of this voice activity and prepare for potential new speech detection
-            if (!lastVoiceStopTime) {
-                lastVoiceStopTime = currentTime;
-            }
+                console.log("3 second audio blob off time", audioBlob);
+                if (audioChunks.length > 0) {
+                    dispatch(translateOpenAi(audioBlob, true));
+                }
 
-            // Check if the voice activity lasted longer than 150 ms
-            if (speechStartTime && speechEndTime - speechStartTime > 100) {
-                // Handle any actions needed when valid speech is detected
-                mediaRecorder.requestData();
+                mediaRecorder.current?.stop();
+            }, 300);
 
-                // Stop recording if it was an extended pause in speech (e.g., 3600 ms)
-                if (lastVoiceStopTime && currentTime - lastVoiceStopTime >= 3600) {
-                    setLastVoiceStopTimeEnd(true);
+            setTimeout(() => {
+                // Your action here
+                audioChunks = [];
+                console.log("1 second off time mediarecorder", mediaRecorder.current);
+                if (mediaRecorder.current && mediaRecorder.current?.state === "inactive") {
+                    mediaRecorder.current?.start();
+                }
+            }, 1000);
+        }, 3000);
+    };
 
-                    // if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                    //     mediaRecorder.stop();
-                    // }
-                    lastVoiceStopTime = null;
+    const clearOffTimeout = () => {
+        // Clear the off timeout if it's active
+        if (offTimeout) {
+            clearTimeout(offTimeout);
+            offTimeout = null;
+        }
+    };
 
-                    // Reset start time after processing this speech segment
-                    speechStartTime = null;
+    // Stream processing
+    vadScore$
+        .pipe(
+            map((vadScore: VadScore) => vadScore > 0.6), // Convert vadScore to boolean
+            distinctUntilChanged(), // Only emit on true/false change
+            debounceTime(200) // Debounce to ensure stability
+        )
+        .subscribe((stateVar: IsVoiceActive) => {
+            if (isVoiceActive !== stateVar) {
+                isVoiceActive = stateVar;
+                console.log(`Switched to ${stateVar ? "ON" : "OFF"} state`);
+
+                if (isVoiceActive) {
+                    // When switching to "on" state
+                    startSendingMessages();
+                    clearOffTimeout(); // Clear off timeout if voice reactivates
+                } else {
+                    // When switching to "off" state
+                    stopSendingMessages();
+                    startOffTimeout(); // Start a 3-second timeout for "off" state
+                }
+
+                if (mediaRecorder.current && mediaRecorder.current.state === "inactive") {
+                    mediaRecorder.current.start();
                 }
             }
-        }
+        });
+
+    // Function to handle VAD score updates
+    function handleVADScore(vadScore: VadScore): void {
+        vadScore$.next(vadScore);
     }
 
     const handleStartVAD = async () => {
@@ -116,13 +164,15 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
         // Collect audio data as chunks when recording is active
         recorder.ondataavailable = (event) => {
+            console.log("event data", event.data);
+
             if (event.data.size > 0) {
                 audioChunks.push(event.data);
             }
         };
 
         recorder.onstop = () => {
-            audioChunks = [];
+            // audioChunks = [];
         };
 
         recorder.onstart = () => {
@@ -130,7 +180,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
         };
 
         recorder.start();
-        setMediaRecorder(recorder);
+        mediaRecorder.current = recorder;
         setIsRecording(true);
 
         const source = audioContextVar.createMediaStreamSource(streamVar);
@@ -146,7 +196,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
     // useEffect to initialize RNNoise processing only after recorder has been set
     useEffect(() => {
-        if (mediaRecorder && stream && scriptProcessor && audioContext) {
+        if (mediaRecorder.current && stream && scriptProcessor && audioContext) {
             const initializeRnnoise = async () => {
                 try {
                     // Initialize RNNoise after mediaRecorder is set
@@ -174,13 +224,13 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
             initializeRnnoise();
         }
-    }, [mediaRecorder, stream, scriptProcessor, audioContext]); // Run useEffect when mediaRecorder or stream changes
+    }, [mediaRecorder.current, stream, scriptProcessor, audioContext]); // Run useEffect when mediaRecorder or stream changes
 
     const handleStopVAD = () => {
         stream?.getTracks().forEach((track) => track.stop());
         setStream(undefined);
         setIsRecording(false);
-        mediaRecorder?.stop();
+        mediaRecorder.current?.stop();
         setIsRecording(false);
 
         // if (rnnoiseProcessor) {
@@ -193,42 +243,24 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
     useEffect(() => {
         if (sendDataWhenReady) {
-            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-
-            if (audioChunks.length > 0) {
-                dispatch(translateOpenAi(audioBlob, false));
-            }
             setSendDataWhenReady(false);
         }
     }, [sendDataWhenReady]);
 
     useEffect(() => {
         if (lastVoiceStopTimeEnd) {
-            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-
-            console.log("LASTVOICE");
-            if (audioChunks.length > 0) {
-                dispatch(translateOpenAi(audioBlob, true));
-            }
-
-            audioChunks = [];
-
-            mediaRecorder?.stop();
-
-            if (mediaRecorder && mediaRecorder.state === "inactive") {
-                mediaRecorder?.start();
-            }
+            setLastVoiceStopTimeEnd(false);
 
             setLastVoiceStopTimeEnd(false);
         }
-    }, [lastVoiceStopTimeEnd, mediaRecorder]);
+    }, [lastVoiceStopTimeEnd, mediaRecorder.current]);
 
     useEffect(() => {
         if (!isSoundOn) {
             return;
         }
         if (messages !== previousMessages) {
-            const lastMessage = messages[messages.length - 1];
+            const lastMessage = messages[messages.length - 2];
 
             if (lastMessage) {
                 const textToSpeechCode = toState(state)["features/videotranslatorai"].textToSpeechCode;
