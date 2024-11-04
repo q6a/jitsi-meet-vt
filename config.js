@@ -84,10 +84,6 @@ var config = {
         // Allows the setting of a custom bandwidth value from the UI.
         // assumeBandwidth: true,
 
-        // Disables the End to End Encryption feature. Useful for debugging
-        // issues related to insertable streams.
-        // disableE2EE: false,
-
         // Enables the use of the codec selection API supported by the browsers .
         // enableCodecSelectionAPI: false,
 
@@ -451,6 +447,10 @@ var config = {
 
     //     // Enables automatic turning on transcribing when recording is started
     //     autoTranscribeOnRecord: false,
+
+    //     // Enables automatic request of subtitles when transcriber is present in the meeting, uses the default
+    //     // language that is set
+    //     autoCaptionOnTranscribe: false,
     // },
 
     // Misc
@@ -758,6 +758,11 @@ var config = {
     //     hideDisplayName: false,
     //     // List of buttons to hide from the extra join options dropdown.
     //     hideExtraJoinButtons: ['no-audio', 'by-phone'],
+    //     // Configuration for pre-call test
+    //     // By setting preCallTestEnabled, you enable the pre-call test in the prejoin page.
+    //     // ICE server credentials need to be provided over the preCallTestICEUrl
+    //     preCallTestEnabled: false,
+    //     preCallTestICEUrl: ''
     // },
 
     // When 'true', the user cannot edit the display name.
@@ -1218,6 +1223,7 @@ var config = {
     //     warning: '',
     //   },
     //   externallyManagedKey: false,
+    //   disabled: false,
     // },
 
     // Options related to end-to-end (participant to participant) ping.

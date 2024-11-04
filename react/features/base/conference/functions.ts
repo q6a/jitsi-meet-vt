@@ -85,6 +85,7 @@ export function commonUserJoinedHandling(
 
     if (!user.isHidden()) {
         const isReplacing = user?.isReplacing();
+        const isPromoted = conference?.getMetadataHandler().getMetadata()?.visitors?.promoted?.[id];
 
         // the identity and avatar come from jwt and never change in the presence
         dispatch(participantJoined({
@@ -95,6 +96,7 @@ export function commonUserJoinedHandling(
             name: displayName,
             presence: user.getStatus(),
             role: user.getRole(),
+            isPromoted,
             isReplacing,
             sources: user.getSources()
         }));
@@ -389,6 +391,19 @@ export function isP2pActive(stateful: IStateful): boolean | null {
     }
 
     return conference.isP2PActive();
+}
+
+/**
+ * Returns whether the current conference has audio recording property which is on.
+ *
+ * @param {IStateful} stateful - The redux store, state, or {@code getState} function.
+ * @returns {boolean|null}
+ */
+export function isConferenceAudioRecordingOn(stateful: IStateful): boolean | null {
+    const state = getConferenceState(toState(stateful));
+
+    // @ts-ignore
+    return state.properties?.['audio-recording-enabled'] === 'true';
 }
 
 /**
