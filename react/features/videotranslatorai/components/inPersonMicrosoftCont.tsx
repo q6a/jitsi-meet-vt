@@ -9,7 +9,7 @@ import {
     inPersonStartRecordingPersonTwo,
     inPersonStopRecordingPersonOne,
     inPersonStopRecordingPersonTwo,
-    inPersonTranslateOpenAi,
+    inPersonTranslateMicrosoftCont,
     startTextToSpeech,
 } from "../action.web";
 
@@ -17,7 +17,7 @@ import InPersonButton from "./buttons/inPersonToggleButton";
 import SoundToggleButton from "./buttons/soundToggleButton";
 let whichPerson = 0;
 
-const InPersonOpenAi: FC = () => {
+const InPersonMicrosoftCont: FC = () => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
     const isModerator = useSelector(isLocalParticipantModerator);
@@ -31,17 +31,17 @@ const InPersonOpenAi: FC = () => {
     const langFromPersonOneTranscription = moderatorData[0].transcriptionDialect.dialectCode;
     const langFromPersonTwoTranscription = participantData[0].transcriptionDialect.dialectCode;
 
-    const langFromPersonOneTranslation = moderatorData[0].translationDialect.dialectCode;
-    const langFromPersonTwoTranslation = participantData[0].translationDialect.dialectCode;
-
-    const toolTipContentPersonOne = moderatorData[0].translationDialect.name;
-    const toolTipContenPersonTwo = participantData[0].translationDialect.name;
-
     const langFromPersonOneTranscriptionId = moderatorData[0].transcriptionDialect.dialectId;
     const langFromPersonTwoTranscriptionId = participantData[0].transcriptionDialect.dialectId;
 
     const langFromPersonOneTranslationId = moderatorData[0].translationDialect.dialectId;
     const langFromPersonTwoTranslationId = participantData[0].translationDialect.dialectId;
+
+    const langFromPersonOneTranslation = moderatorData[0].translationDialect.dialectCode;
+    const langFromPersonTwoTranslation = participantData[0].translationDialect.dialectCode;
+
+    const toolTipContentPersonOne = moderatorData[0].translationDialect.name;
+    const toolTipContenPersonTwo = participantData[0].translationDialect.name;
 
     const isRecordingPersonOne = useSelector(
         (state: IReduxState) => state["features/videotranslatorai"].inPersonIsRecordingPersonOne
@@ -51,7 +51,7 @@ const InPersonOpenAi: FC = () => {
     );
 
     const isAudioMuted = useSelector((state: IReduxState) => state["features/base/media"].audio.muted);
-    const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].messages);
+    const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].completedMessages);
 
     const ttsCodePersonOne = useSelector(
         (state: IReduxState) => state["features/videotranslatorai"].inPersontextToSpeechCodePersonOne
@@ -71,8 +71,6 @@ const InPersonOpenAi: FC = () => {
 
     useEffect(() => {
         if (!isSoundOn) {
-            whichPerson = 0;
-
             return;
         }
         if (messages !== previousMessages) {
@@ -80,101 +78,70 @@ const InPersonOpenAi: FC = () => {
 
             if (lastMessage) {
                 if (whichPerson === 1) {
-                    dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonTwo));
+                    dispatch(startTextToSpeech(lastMessage, ttsCodePersonTwo));
                 }
 
                 if (whichPerson === 2) {
-                    dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonOne));
+                    dispatch(startTextToSpeech(lastMessage, ttsCodePersonOne));
                 }
             }
             setPreviousMessages(messages);
         }
-
-        whichPerson = 0;
     }, [messages, previousMessages]);
 
     const handleStartTranscription = async () => {
         if (!isAudioMuted) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const recorder = new MediaRecorder(stream);
-
-                mediaRecorder.current = recorder;
-
-                recorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) {
-                        audioChunks.current.push(event.data);
-                    }
-                };
-
-                recorder.onstop = () => {
-                    const recordedBlob = new Blob(audioChunks.current, { type: "audio/webm" });
-
-                    if (whichPerson === 1 && !isRecordingPersonTwo) {
-                        dispatch(
-                            inPersonTranslateOpenAi(
-                                recordedBlob,
-                                langFromPersonOneTranscription,
-                                personOneName,
-                                langFromPersonOneTranslation,
-                                langFromPersonOneTranscriptionId,
-                                langFromPersonTwoTranslationId,
-                                false
-                            )
-                        );
-                    }
-
-                    if (whichPerson === 2 && !isRecordingPersonOne) {
-                        dispatch(
-                            inPersonTranslateOpenAi(
-                                recordedBlob,
-                                langFromPersonTwoTranscription,
-                                personTwoName,
-                                langFromPersonTwoTranslation,
-                                langFromPersonOneTranscriptionId,
-                                langFromPersonTwoTranslationId,
-                                false
-                            )
-                        );
-                    }
-                    audioChunks.current = [];
-                };
-
-                recorder.start();
-            } catch (error) {
-                console.error("Error accessing media devices:", error);
+            if (whichPerson === 1 && !isRecordingPersonTwo) {
+                dispatch(
+                    inPersonTranslateMicrosoftCont(
+                        langFromPersonOneTranscription,
+                        langFromPersonTwoTranslation,
+                        personOneName,
+                        langFromPersonOneTranscriptionId,
+                        langFromPersonTwoTranslationId
+                    )
+                );
             }
+
+            if (whichPerson === 2 && !isRecordingPersonOne) {
+                dispatch(
+                    inPersonTranslateMicrosoftCont(
+                        langFromPersonTwoTranscription,
+                        langFromPersonOneTranslation,
+                        personTwoName,
+                        langFromPersonTwoTranscriptionId,
+                        langFromPersonOneTranslationId
+                    )
+                );
+            }
+            audioChunks.current = [];
         }
     };
 
     const handleStartTranscriptionOne = () => {
         if (!isAudioMuted && !isRecordingPersonTwo) {
             dispatch(inPersonStartRecordingPersonOne());
-            handleStartTranscription();
             whichPerson = 1;
+            handleStartTranscription();
         }
     };
 
     const handleStopTranscriptionOne = () => {
-        if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
-            mediaRecorder.current.stop();
-            dispatch(inPersonStopRecordingPersonOne());
-        }
+        dispatch(inPersonStopRecordingPersonOne());
+        whichPerson = 0;
     };
 
     const handleStartTranscriptionTwo = () => {
         if (!isAudioMuted && !isRecordingPersonOne) {
             dispatch(inPersonStartRecordingPersonTwo());
-            handleStartTranscription();
             whichPerson = 2;
+            handleStartTranscription();
         }
     };
 
     const handleStopTranscriptionTwo = () => {
-        if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
-            mediaRecorder.current.stop();
-            dispatch(inPersonStopRecordingPersonTwo());
-        }
+        dispatch(inPersonStopRecordingPersonTwo());
+        whichPerson = 0;
     };
 
     useEffect(() => {
@@ -221,4 +188,4 @@ const InPersonOpenAi: FC = () => {
     );
 };
 
-export default InPersonOpenAi;
+export default InPersonMicrosoftCont;

@@ -206,8 +206,9 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                             }
                         }
                         if (participantId) {
-                            const translationSentRecognized = `${participantName}: ${translationRecognized}(videotranslatoraiservice)`;
+                            const translationSentRecognized = `${participantName}: ${translationRecognized}(videotranslatoraiservice:::) (completed)`;
 
+                            console.log("RECOGNIZED", translationSentRecognized);
                             if (conference) {
                                 await conference.sendPrivateTextMessage(participantId, translationSentRecognized);
                             }

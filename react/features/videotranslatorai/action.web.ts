@@ -3,6 +3,7 @@ import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 import { IReduxState } from "../app/types";
 
 import {
+    ADD_COMPLETED_MESSAGE,
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
     INPERSON_SET_TTS_PARAMS,
@@ -30,16 +31,24 @@ import {
     SET_RECORDING_BLOB_OPENAI,
     SET_ROOM_PARAMS,
     SET_TRANSCRIPTION_RESULT,
+    START_RECORDING_MICROSOFT_MANUAL,
     START_RECORDING_OPENAI,
     START_TEXT_TO_SPEECH,
     START_TRANSCRIPTION,
+    START_TRANSLATE_MICROSOFT_MANUAL,
+    STOP_RECORDING_MICROSOFT_MANUAL,
     STOP_RECORDING_OPENAI,
     STOP_TRANSCRIPTION,
+    STOP_TRANSLATE_MICROSOFT_MANUAL,
+    TRANSLATE_OPENAI,
 } from "./actionTypes";
 import { createDisplayNameAndDialect } from "./services/displayNameAndDialectService";
 import { getMeetingInformation } from "./services/meetingService";
 import { playVoiceFromMessage } from "./services/voiceServiceMicrosoft";
+import { inPersonServiceMicrosoftCont } from "./supervisors/inPersonServiceMicrosoftCont";
+import { inPersonServiceMicrosoftMan } from "./supervisors/inPersonServiceMicrosoftMan";
 import { inPersonServiceOpenAi } from "./supervisors/inPersonServiceOpenAi";
+import { transcribeAndTranslateServiceMicrosoftMan } from "./supervisors/transcribeAndTranslateMicrosoftMan";
 import { stopTranscriptionService, transcribeAndTranslateService } from "./supervisors/transcriptionService";
 import { transcribeAndTranslateServiceOpenAi } from "./supervisors/transcriptionServiceOpenAi";
 import {
@@ -244,23 +253,26 @@ export const fetchMeetingData = (params: IFetchMeetingData) => async (dispatch: 
     }
 };
 
-export const translateOpenAi = (recordedBlobParam: any) => async (dispatch: any, getState: any) => {
-    try {
-        // Dispatch action to stop the recording
-        dispatch(setIsRecording(false));
+export const translateOpenAi =
+    (recordedBlobParam: Blob, isMessageCompleted: boolean) => async (dispatch: any, getState: any) => {
+        dispatch({ type: TRANSLATE_OPENAI });
 
-        // Call the async service and pass the recorded blob
-        await transcribeAndTranslateServiceOpenAi(dispatch, getState, recordedBlobParam);
+        try {
+            // Dispatch action to stop the recording
+            dispatch(setIsRecording(false));
 
-        // Optionally handle results, such as dispatching success actions
-        // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
-    } catch (err) {
-        console.error("Error in OpenAI translate service:", err);
+            // Call the async service and pass the recorded blob
+            await transcribeAndTranslateServiceOpenAi(dispatch, getState, recordedBlobParam, isMessageCompleted);
 
-        // Optionally dispatch a failure action if needed
-        // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
-    }
-};
+            // Optionally handle results, such as dispatching success actions
+            // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
+        } catch (err) {
+            console.error("Error in OpenAI translate service:", err);
+
+            // Optionally dispatch a failure action if needed
+            // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
+        }
+    };
 
 export const startTranscription = () => async (dispatch: any, getState: any) => {
     dispatch({ type: START_TRANSCRIPTION });
@@ -343,7 +355,15 @@ export const inPersonStopTranscription = () => {
 };
 
 export const inPersonTranslateOpenAi =
-    (recordedBlobParam: any, langFrom: any, participantName: any, langFromTranslation: any) =>
+    (
+        recordedBlobParam: any,
+        langFrom: any,
+        participantName: any,
+        langFromTranslation: any,
+        dialectIdFrom: any = "",
+        dialectIdTo: any = "",
+        isMessageCompleted: boolean
+    ) =>
     async (dispatch: any, getState: any) => {
         try {
             // Dispatch action to stop the recording
@@ -356,7 +376,10 @@ export const inPersonTranslateOpenAi =
                 recordedBlobParam,
                 langFrom,
                 langFromTranslation,
-                participantName
+                participantName,
+                dialectIdFrom,
+                dialectIdTo,
+                isMessageCompleted
             );
 
             // Optionally handle results, such as dispatching success actions
@@ -368,3 +391,106 @@ export const inPersonTranslateOpenAi =
             // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
         }
     };
+
+export const inPersonTranslateMicrosoftMan =
+    (
+        recordedBlobParam: any,
+        langFrom: any,
+        participantName: any,
+        langFromTranslation: any,
+        dialectIdFrom: any = "",
+        dialectIdTo: any = "",
+        isMessageCompleted: boolean
+    ) =>
+    async (dispatch: any, getState: any) => {
+        try {
+            // Dispatch action to stop the recording
+
+            // Call the async service and pass the recorded blob
+            await inPersonServiceMicrosoftMan(
+                dispatch,
+                getState,
+                recordedBlobParam,
+                langFrom,
+                langFromTranslation,
+                participantName,
+                dialectIdFrom,
+                dialectIdTo,
+                isMessageCompleted
+            );
+
+            // Optionally handle results, such as dispatching success actions
+            // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
+        } catch (err) {
+            console.error("Error in OpenAI translate service:", err);
+
+            // Optionally dispatch a failure action if needed
+            // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
+        }
+    };
+
+export const inPersonTranslateMicrosoftCont =
+    (langFrom: any, langTo: any, participantName: any, dialectIdFrom: any = "", dialectIdTo: any = "") =>
+    async (dispatch: any, getState: any) => {
+        try {
+            // Call the async service and pass the recorded blob
+            await inPersonServiceMicrosoftCont(
+                dispatch,
+                getState,
+                langFrom,
+                langTo,
+                participantName,
+                dialectIdFrom,
+                dialectIdTo
+            );
+
+            // Optionally handle results, such as dispatching success actions
+            // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
+        } catch (err) {
+            console.error("Error in OpenAI translate service:", err);
+
+            // Optionally dispatch a failure action if needed
+            // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
+        }
+    };
+
+export const startTranslateMicrosoftManual = (recordedBlobParam: any) => async (dispatch: any, getState: any) => {
+    dispatch({ type: START_TRANSLATE_MICROSOFT_MANUAL });
+    try {
+        await transcribeAndTranslateServiceMicrosoftMan(dispatch, getState, recordedBlobParam);
+
+        // Handle success if needed
+    } catch (err) {
+        console.error("Error during transcription:", err);
+        dispatch(setIsTranscribing(false));
+    }
+};
+
+export const stopTranslateMicrosoftManual = () => async (dispatch: any, getState: any) => {
+    dispatch({ type: STOP_TRANSLATE_MICROSOFT_MANUAL });
+    try {
+        // await stopTranscriptionService(dispatch, getState);
+        // dispatch(setIsTranscribing(false));
+    } catch (err) {
+        console.error("Error stopping transcription:", err);
+    }
+};
+
+export const startRecordingMirosoftManual = () => {
+    return {
+        type: START_RECORDING_MICROSOFT_MANUAL,
+    };
+};
+
+export const stopRecordingMirosoftManual = () => {
+    return {
+        type: STOP_RECORDING_MICROSOFT_MANUAL,
+    };
+};
+
+export const addCompletedMessage = (message: string) => {
+    return {
+        type: ADD_COMPLETED_MESSAGE,
+        payload: message,
+    };
+};

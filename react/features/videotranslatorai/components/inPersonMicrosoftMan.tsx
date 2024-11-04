@@ -9,7 +9,7 @@ import {
     inPersonStartRecordingPersonTwo,
     inPersonStopRecordingPersonOne,
     inPersonStopRecordingPersonTwo,
-    inPersonTranslateOpenAi,
+    inPersonTranslateMicrosoftMan,
     startTextToSpeech,
 } from "../action.web";
 
@@ -17,7 +17,7 @@ import InPersonButton from "./buttons/inPersonToggleButton";
 import SoundToggleButton from "./buttons/soundToggleButton";
 let whichPerson = 0;
 
-const InPersonOpenAi: FC = () => {
+const InPersonMicrosoftMan: FC = () => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
     const isModerator = useSelector(isLocalParticipantModerator);
@@ -34,14 +34,14 @@ const InPersonOpenAi: FC = () => {
     const langFromPersonOneTranslation = moderatorData[0].translationDialect.dialectCode;
     const langFromPersonTwoTranslation = participantData[0].translationDialect.dialectCode;
 
-    const toolTipContentPersonOne = moderatorData[0].translationDialect.name;
-    const toolTipContenPersonTwo = participantData[0].translationDialect.name;
-
     const langFromPersonOneTranscriptionId = moderatorData[0].transcriptionDialect.dialectId;
     const langFromPersonTwoTranscriptionId = participantData[0].transcriptionDialect.dialectId;
 
     const langFromPersonOneTranslationId = moderatorData[0].translationDialect.dialectId;
     const langFromPersonTwoTranslationId = participantData[0].translationDialect.dialectId;
+
+    const toolTipContentPersonOne = moderatorData[0].translationDialect.name;
+    const toolTipContenPersonTwo = participantData[0].translationDialect.name;
 
     const isRecordingPersonOne = useSelector(
         (state: IReduxState) => state["features/videotranslatorai"].inPersonIsRecordingPersonOne
@@ -112,7 +112,7 @@ const InPersonOpenAi: FC = () => {
 
                     if (whichPerson === 1 && !isRecordingPersonTwo) {
                         dispatch(
-                            inPersonTranslateOpenAi(
+                            inPersonTranslateMicrosoftMan(
                                 recordedBlob,
                                 langFromPersonOneTranscription,
                                 personOneName,
@@ -126,7 +126,7 @@ const InPersonOpenAi: FC = () => {
 
                     if (whichPerson === 2 && !isRecordingPersonOne) {
                         dispatch(
-                            inPersonTranslateOpenAi(
+                            inPersonTranslateMicrosoftMan(
                                 recordedBlob,
                                 langFromPersonTwoTranscription,
                                 personTwoName,
@@ -221,4 +221,4 @@ const InPersonOpenAi: FC = () => {
     );
 };
 
-export default InPersonOpenAi;
+export default InPersonMicrosoftMan;

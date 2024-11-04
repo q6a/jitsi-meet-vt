@@ -15,9 +15,15 @@ async function transcribeAudioOpenAi(langFrom: any, recordedBlob: any, apiEndpoi
         const lastModifiedDate = new Date();
         const lastModified = lastModifiedDate.getTime();
 
+        // // Create a File object from the Blob with the appropriate properties
+        // const audioFile = new File([recordedBlob], "audio.wav", {
+        //     type: "audio/wav",
+        //     lastModified,
+        // });
+
         // Create a File object from the Blob with the appropriate properties
-        const audioFile = new File([recordedBlob], "audio.wav", {
-            type: "audio/wav",
+        const audioFile = new File([recordedBlob], "audio.webm", {
+            type: "audio/webm",
             lastModified,
         });
 
@@ -26,6 +32,8 @@ async function transcribeAudioOpenAi(langFrom: any, recordedBlob: any, apiEndpoi
 
         formData.append("file", audioFile);
         formData.append("langFrom", langFrom);
+
+        console.log("FINAL MAP");
 
         // Make the API request to transcribe the audio
         const response = await axios.post(apiEndpoint, formData, {

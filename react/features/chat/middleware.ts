@@ -26,7 +26,7 @@ import { pushReactions } from "../reactions/actions.any";
 import { ENDPOINT_REACTION_NAME } from "../reactions/constants";
 import { getReactionMessageFromBuffer, isReactionsEnabled } from "../reactions/functions.any";
 import { showToolbox } from "../toolbox/actions";
-import { addMessageVideoTranslatorAI } from "../videotranslatorai/action.web";
+import { addCompletedMessage, addMessageVideoTranslatorAI } from "../videotranslatorai/action.web";
 
 import {
     ADD_MESSAGE,
@@ -569,9 +569,11 @@ function _handleReceivedMessage(
     if (isGuest) {
         displayNameToShow = `${displayNameToShow} ${i18next.t("visitors.chatIndicator")}`;
     }
-
     // videotranslatorai
-    if (!message.includes("(videotranslatoraiservice)")) {
+    if (
+        !message.includes("(videotranslatoraiservice)") &&
+        !message.includes("(videotranslatoraiservice:::) (completed)")
+    ) {
         dispatch(
             addMessage({
                 displayName: displayNameToShow,
@@ -591,22 +593,49 @@ function _handleReceivedMessage(
 
     if (message.includes("(videotranslatoraiservice)")) {
         message = message.replace("(videotranslatoraiservice)", "");
+        console.log("messages chat:", message);
 
-        dispatch(
-            addMessageVideoTranslatorAI({
-                displayName: displayNameToShow,
-                hasRead,
-                participantId,
-                messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
-                message,
-                privateMessage,
-                lobbyChat,
-                recipient: getParticipantDisplayName(state, localParticipant?.id ?? ""),
-                timestamp: millisecondsTimestamp,
-                messageId,
-                isReaction,
-            })
-        );
+        if (!message.includes("dummy_message_xxyy")) {
+            dispatch(
+                addMessageVideoTranslatorAI({
+                    displayName: displayNameToShow,
+                    hasRead,
+                    participantId,
+                    messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
+                    message,
+                    privateMessage,
+                    lobbyChat,
+                    recipient: getParticipantDisplayName(state, localParticipant?.id ?? ""),
+                    timestamp: millisecondsTimestamp,
+                    messageId,
+                    isReaction,
+                })
+            );
+        }
+    }
+
+    if (message.includes("(videotranslatoraiservice:::) (completed)")) {
+        message = message.replace("(videotranslatoraiservice:::) (completed)", "");
+        console.log("MESSAGE", message);
+        if (!message.includes("dummy_message_xxyy")) {
+            dispatch(addCompletedMessage(message));
+
+            dispatch(
+                addMessageVideoTranslatorAI({
+                    displayName: displayNameToShow,
+                    hasRead,
+                    participantId,
+                    messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
+                    message,
+                    privateMessage,
+                    lobbyChat,
+                    recipient: getParticipantDisplayName(state, localParticipant?.id ?? ""),
+                    timestamp: millisecondsTimestamp,
+                    messageId,
+                    isReaction,
+                })
+            );
+        }
     }
 
     // videotranslatorai

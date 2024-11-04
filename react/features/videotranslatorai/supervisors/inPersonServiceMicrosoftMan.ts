@@ -1,10 +1,12 @@
+import { getWaveBlob } from "webm-to-wav-converter";
+
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
+import fetchAzureToken from "../services/fetchAzureToken"; // Adjust the path as necessary
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
-import transcribeAudioOpenAi from "../services/transcribeAudioOpenAi";
 
-export const inPersonServiceOpenAi = async (
+export const inPersonServiceMicrosoftMan = async (
     dispatch: any,
     getState: any,
     recordedBlobParam: any,
@@ -28,21 +30,49 @@ export const inPersonServiceOpenAi = async (
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const participantAndModeratorData = [...moderatorData, ...participantData];
 
-    const translateApiKey = process.env.REACT_APP_MICROSOFT_TRANSLATE_API_KEY;
-    const translationEndpoint = process.env.REACT_APP_MICROSOFT_TRANSLATION_ENDPOINT;
-    const apiEndpoint = process.env.REACT_APP_OPENAI_TRANSCRIBE_ENDPOINT_VIDEOTRANSLATORAI; // New API endpoint
+    const baseEndpoint = process.env.REACT_APP_MICROSOFT_SPEECH_TO_TEXT_ENDPOINT;
+    const speechRegion = process.env.REACT_APP_SPEECH_REGION_MICROSOFT_SDK;
 
-    if (!translateApiKey || !translationEndpoint || !apiEndpoint) {
-        throw new Error("One or more environment variables are not set.");
+    // Error checking for environment variables
+    if (!speechRegion || !baseEndpoint) {
+        throw new Error("Required environment variables are missing.");
     }
 
     try {
-        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
+        // langFrom = participant.transcriptionDialect.dialectCode;
+        // langFromTranslation = participant.translationDialect.dialectCode;
+        let authToken = "";
 
-        console.log("TRANSCRIPTION TEXT", transcriptionText);
-        if (!transcriptionText) {
-            throw new Error("Transcription failed: No text returned.");
+        authToken = await fetchAzureToken(speechRegion, tokenData);
+        const audioBlobConvert = await getWaveBlob(recordedBlobParam, true);
+
+        // Step 3: Set up the API endpoint and headers
+        const endpoint = `${baseEndpoint}?language=${langFrom}`;
+
+        const headers = {
+            "Content-Type": "audio/wav",
+            Authorization: `Bearer ${authToken}`,
+        };
+
+        // Step 4: Make the API request
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers,
+            body: audioBlobConvert,
+        });
+
+        // Step 5: Parse the response
+        if (!response.ok) {
+            const errorDetails = await response.json();
+
+            throw new Error(`Transcription error: ${errorDetails.error.message}`);
         }
+
+        const data = await response.json();
+
+        console.log("Transcription Text", data.DisplayText);
+
+        const transcriptionText = data.DisplayText;
 
         await Promise.all(
             participantAndModeratorData.map(async (participant) => {

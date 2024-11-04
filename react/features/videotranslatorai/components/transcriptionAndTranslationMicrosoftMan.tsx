@@ -4,16 +4,23 @@ import { useDispatch, useSelector } from "react-redux";
 import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
 import { toState } from "../../base/redux/functions";
-import { startRecordingOpenAi, startTextToSpeech, stopRecordingOpenAi, translateOpenAi } from "../action.web";
+import {
+    startRecordingMirosoftManual,
+    startTextToSpeech,
+    startTranslateMicrosoftManual,
+    stopRecordingMirosoftManual,
+} from "../action.web";
 
 import SoundToggleButton from "./buttons/soundToggleButton";
 import TranscriptionButton from "./buttons/transcriptionButton";
 
-const TranscriptionAndTranslationOpenAi: FC = () => {
+const TranscriptionAndTranslationButtonMicrosoftMan: FC = () => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
 
-    const isRecording = useSelector((state: IReduxState) => state["features/videotranslatorai"].isRecording);
+    const isRecording = useSelector(
+        (state: IReduxState) => state["features/videotranslatorai"].isRecordingMicrosoftMan
+    );
     const isAudioMuted = useSelector((state: IReduxState) => state["features/base/media"].audio.muted);
     const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].messages);
     const isModerator = useSelector(isLocalParticipantModerator);
@@ -27,7 +34,6 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
     // const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
     const mediaRecorder = useRef<MediaRecorder | null>(null);
     const audioChunks = useRef<Blob[]>([]);
-
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
     };
@@ -50,7 +56,7 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
 
     const handleStartTranscription = async () => {
         if (!isAudioMuted) {
-            dispatch(startRecordingOpenAi());
+            dispatch(startRecordingMirosoftManual());
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -67,7 +73,8 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
                 recorder.onstop = () => {
                     const recordedBlob = new Blob(audioChunks.current, { type: "audio/webm" });
 
-                    dispatch(translateOpenAi(recordedBlob));
+                    dispatch(startTranslateMicrosoftManual(recordedBlob));
+
                     audioChunks.current = [];
                 };
 
@@ -81,29 +88,30 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
     const handleStopTranscription = () => {
         if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
             mediaRecorder.current.stop();
-            dispatch(stopRecordingOpenAi());
+            dispatch(stopRecordingMirosoftManual());
         }
     };
 
     useEffect(() => {
-        // Stop any existing recording when component mounts or audio is muted
+        // This will run only once when the component mounts
         if (isRecording) {
-            handleStopTranscription();
+            dispatch(stopRecordingMirosoftManual());
         }
+
         setIsSoundOn(false);
     }, []);
 
     useEffect(() => {
         if (isAudioMuted) {
-            handleStopTranscription();
+            dispatch(stopRecordingMirosoftManual());
         }
     }, [isAudioMuted]);
 
     return (
         <div>
-            {/* Buttons */}
             <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                 <SoundToggleButton isSoundOn={isSoundOn} toggleSound={toggleSound} />
+
                 {(meetingTypeVideoTranslatorAi !== "broadcast" || isModerator) && (
                     <TranscriptionButton
                         handleStart={handleStartTranscription}
@@ -116,4 +124,4 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
     );
 };
 
-export default TranscriptionAndTranslationOpenAi;
+export default TranscriptionAndTranslationButtonMicrosoftMan;
