@@ -9,8 +9,7 @@ import { getLocalParticipant, isLocalParticipantModerator } from "../../../base/
 import ContextMenu from "../../../base/ui/components/web/ContextMenu";
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from "../../../reactions/functions.web";
 import { isTranscribing } from "../../../transcribing/functions";
-import InPersonOpenAi from "../../../videotranslatorai/components/inPersonOpenAi";
-import TranscriptionAndTranslationOpenAi from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAi";
+import TranscriptionAndTranslationOpenAiCont from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAiCont";
 import { setHangupMenuVisible, setOverflowMenuVisible, setToolbarHovered, setToolboxVisible } from "../../actions.web";
 import { getJwtDisabledButtons, getVisibleButtons, isButtonEnabled, isToolboxVisible } from "../../functions.web";
 import { useKeyboardShortcuts, useToolboxButtons } from "../../hooks.web";
@@ -85,6 +84,14 @@ export default function Toolbox({ toolbarButtons }: IProps) {
     const meetingTypeVideoTranslatorAi = useSelector(
         (state: IReduxState) => state["features/videotranslatorai"].meetingType
     );
+    const meetingModeVideoTranslatorAi = useSelector(
+        (state: IReduxState) => state["features/videotranslatorai"].modeContOrMan
+    );
+
+    const meetingProviderVideoTranslatoriAi = useSelector(
+        (state: IReduxState) => state["features/videotranslatorai"].provider
+    );
+
     const buttonsWithNotifyClick = useSelector(
         (state: IReduxState) => state["features/toolbox"].buttonsWithNotifyClick
     );
@@ -271,11 +278,36 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                                 Content !== Separator && <Content {...rest} buttonKey={key} key={key} />
                         )}
                         {/* videotranslatorai */}
-                        {/* {conference && <TranscriptionAndTranslationMicrosoft />} */}
+                        {/* {conference && <TranscriptionAndTranslationButtonMicrosoftMan />} */}
+                        {/* {conference &&
+                            (meetingTypeVideoTranslatorAi === "video_call" ||
+                                meetingTypeVideoTranslatorAi === "broadcast") &&
+                            meetingProviderVideoTranslatoriAi === "microsoft" &&
+                            meetingModeVideoTranslatorAi === "manual" && (
+                                <TranscriptionAndTranslationButtonMicrosoftMan />
+                            )}
+
                         {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
-                                meetingTypeVideoTranslatorAi === "broadcast") && <TranscriptionAndTranslationOpenAi />}
-                        {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonOpenAi />}
+                                meetingTypeVideoTranslatorAi === "broadcast") &&
+                            meetingProviderVideoTranslatoriAi === "microsoft" &&
+                            meetingModeVideoTranslatorAi === "continuous" && (
+                                <TranscriptionAndTranslationButtonMicrosoftMan />
+                            )}
+
+                        {conference &&
+                            (meetingTypeVideoTranslatorAi === "video_call" ||
+                                meetingTypeVideoTranslatorAi === "broadcast") &&
+                            meetingProviderVideoTranslatoriAi === "openai" &&
+                            meetingModeVideoTranslatorAi === "manual" && <TranscriptionAndTranslationOpenAi />}
+
+                        {conference &&
+                            (meetingTypeVideoTranslatorAi === "video_call" ||
+                                meetingTypeVideoTranslatorAi === "broadcast") &&
+                            meetingProviderVideoTranslatoriAi === "openai" &&
+                            meetingModeVideoTranslatorAi === "continuous" && <TranscriptionAndTranslationOpenAiCont />} */}
+                        {/* {conference && <TranscriptionAndTranslationOpenAi />} */}
+                        {conference && <TranscriptionAndTranslationOpenAiCont />}
 
                         {Boolean(overflowMenuButtons.length) && (
                             <OverflowMenuButton

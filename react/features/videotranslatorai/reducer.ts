@@ -53,6 +53,7 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     meetingId: "",
     clientId: "",
     textToSpeechCode: "",
+    provider: "",
     inPersontextToSpeechCodePersonOne: "",
     inPersontextToSpeechCodePersonTwo: "",
     participantData: [],
@@ -133,6 +134,7 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                     textToSpeechCode: action.payload.textToSpeechCode || state.textToSpeechCode,
                     meetingType: action.payload.meetingType || state.meetingType,
                     modeContOrMan: action.payload.modeContOrMan || state.modeContOrMan,
+                    provider: action.payload.provider || state.provider,
                 };
 
             // Room slice reducers
