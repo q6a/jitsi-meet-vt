@@ -116,3 +116,27 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
         throw error;
     }
 };
+
+export const endMeetingForAllParticipants = async (meetingId: string, token: string) => {
+    try {
+        // Load the backend URL from environment variables
+        const backendUrl = process.env.REACT_APP_GET_MEETING_NAME_BACKEND_API_URL;
+
+        if (!backendUrl) {
+            throw new Error("Backend API URL is not set in environment variables.");
+        }
+        const data = { active: false };
+        const response = await axios.put(`${backendUrl}/${encodeURIComponent(meetingId)}`, data, {
+            headers: {
+                authorization: `Bearer ${token}`,
+                "x-jitsi": "true",
+            },
+        });
+
+        return response.data.success;
+    } catch (error) {
+        console.error("Error while fetching meeting information:", error);
+
+        return false;
+    }
+};
