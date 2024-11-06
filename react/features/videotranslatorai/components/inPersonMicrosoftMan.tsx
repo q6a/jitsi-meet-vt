@@ -117,7 +117,9 @@ const InPersonMicrosoftMan: FC = () => {
                 };
 
                 recorder.onstop = () => {
-                    const recordedBlob = new Blob(audioChunks.current, { type: "audio/webm" });
+                    const blobOptions: BlobOptions = { type: "audio/webm", lastModified: Date.now() };
+
+                    const recordedBlob = new Blob(audioChunks.current, blobOptions);
 
                     if (whichPerson === 1 && !isRecordingPersonTwo) {
                         dispatch(

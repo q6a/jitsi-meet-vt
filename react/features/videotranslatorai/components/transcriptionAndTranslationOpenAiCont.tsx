@@ -183,7 +183,9 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
                             return;
                         }
 
-                        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                        const blobOptions: BlobOptions = { type: "audio/webm", lastModified: Date.now() };
+
+                        const audioBlob = new Blob(audioChunks, blobOptions);
 
                         dispatch(translateOpenAi(audioBlob, true));
                     }
@@ -192,8 +194,9 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
                         if (mediaRecorder.current && mediaRecorder.current.state === "recording") {
                             if (audioChunks.length > 1) {
                                 mediaRecorder.current.requestData();
+                                const blobOptions: BlobOptions = { type: "audio/webm", lastModified: Date.now() };
 
-                                const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                                const audioBlob = new Blob(audioChunks, blobOptions);
 
                                 dispatch(translateOpenAi(audioBlob, true));
                             }

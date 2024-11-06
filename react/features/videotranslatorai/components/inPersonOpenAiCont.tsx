@@ -212,7 +212,10 @@ const InPersonOpenAiCont: FC = () => {
                         if (audioChunks.current.length % 9 !== 0 || audioChunks.current.length === 0) {
                             return;
                         }
-                        const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
+
+                        const blobOptions: BlobOptions = { type: "audio/webm", lastModified: Date.now() };
+
+                        const audioBlob = new Blob(audioChunks.current, blobOptions);
 
                         if (whichPerson === 1 && !isRecordingPersonTwo) {
                             dispatch(
@@ -243,8 +246,6 @@ const InPersonOpenAiCont: FC = () => {
                                 )
                             );
                         }
-
-                        // const transcriptionText = await transcribeAudioOpenAi("en", audioBlob, apiEndpoint, tokenData);
                     }
                 } else {
                     offTimeout = setTimeout(() => {
@@ -252,7 +253,9 @@ const InPersonOpenAiCont: FC = () => {
                             if (audioChunks.current.length > 1) {
                                 mediaRecorder.current?.requestData();
 
-                                const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
+                                const blobOptions: BlobOptions = { type: "audio/webm", lastModified: Date.now() };
+
+                                const audioBlob = new Blob(audioChunks.current, blobOptions);
 
                                 if (whichPerson === 1 && !isRecordingPersonTwo) {
                                     dispatch(

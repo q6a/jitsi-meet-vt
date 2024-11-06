@@ -80,7 +80,9 @@ const TranscriptionAndTranslationButtonMicrosoftMan: FC = () => {
                 };
 
                 recorder.onstop = () => {
-                    const recordedBlob = new Blob(audioChunks.current, { type: "audio/webm" });
+                    const blobOptions: BlobOptions = { type: "audio/webm", lastModified: Date.now() };
+
+                    const recordedBlob = new Blob(audioChunks.current, blobOptions);
 
                     dispatch(startTranslateMicrosoftManual(recordedBlob));
 
