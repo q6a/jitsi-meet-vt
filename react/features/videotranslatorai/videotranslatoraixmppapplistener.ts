@@ -55,6 +55,7 @@ export function onCustomIq(stanza: any, store: IStore) {
         const textToSpeechCode = "";
         const meetingType = "";
         const modeContOrMan = "";
+        const provider = "";
 
         console.log("Extracted Meeting Name:", meetingName);
         console.log("Extracted Participant Name:", participantName);
@@ -73,6 +74,7 @@ export function onCustomIq(stanza: any, store: IStore) {
                     textToSpeechCode,
                     meetingType,
                     modeContOrMan,
+                    provider,
                 })
             );
 

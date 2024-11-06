@@ -25,10 +25,12 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
 
-    const isAudioMuted = useSelector((state) => state["features/base/media"].audio.muted);
+    const isAudioMuted: any = useSelector((state: IReduxState) => state["features/base/media"].audio.muted);
     const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].completedMessages);
     const isModerator = useSelector(isLocalParticipantModerator);
-    const meetingTypeVideoTranslatorAi = useSelector((state) => state["features/videotranslatorai"].meetingType);
+    const meetingTypeVideoTranslatorAi = useSelector(
+        (state: IReduxState) => state["features/videotranslatorai"].meetingType
+    );
     const transcriptionButtonRef = useRef<HTMLDivElement>(null);
 
     // const [isRecording, setIsRecording] = useState(false);
