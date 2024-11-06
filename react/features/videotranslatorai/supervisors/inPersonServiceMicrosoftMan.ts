@@ -43,8 +43,6 @@ export const inPersonServiceMicrosoftMan = async (
         // langFromTranslation = participant.translationDialect.dialectCode;
         let authToken = "";
 
-        console.log("LANG FROM", langFrom);
-
         authToken = await fetchAzureToken(speechRegion, tokenData);
         const audioBlobConvert = await getWaveBlob(recordedBlobParam, true);
 
@@ -66,10 +64,7 @@ export const inPersonServiceMicrosoftMan = async (
         if (!response.ok) {
             let errorDetails;
 
-            console.log("RESPONSE", response);
-            console.log("RESPONSE", response);
             errorDetails = await response.json();
-            console.log("errorDetails", errorDetails);
 
             try {
                 errorDetails = await response.json();

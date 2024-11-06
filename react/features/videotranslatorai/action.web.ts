@@ -437,8 +437,6 @@ export const inPersonTranslateMicrosoftCont =
     (langFrom: any, langTo: any, participantName: any, dialectIdFrom: any = "", dialectIdTo: any = "") =>
     async (dispatch: any, getState: any) => {
         try {
-            console.log("ACTION.WeB");
-
             // Call the async service and pass the recorded blob
             await inPersonServiceMicrosoftCont(
                 dispatch,

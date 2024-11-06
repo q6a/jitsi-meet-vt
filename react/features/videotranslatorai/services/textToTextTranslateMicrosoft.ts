@@ -32,8 +32,6 @@ async function translateTextMicrosoft(
 
         const translatedText = response.data.data.translatedText;
 
-        console.log("TRANSLATED TEXTS", translatedText);
-
         return translatedText;
     } catch (error) {
         console.error("Error translating text:", error);

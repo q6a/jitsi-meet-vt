@@ -72,7 +72,6 @@ export const transcribeAndTranslateServiceOpenAi = async (
 
                         if (isMessageCompleted) {
                             translationSent = `${participantName}: ${translationText}(videotranslatoraiservice:::) (completed)`;
-                            console.log("translationSent TEXT: Completed", translationSent);
                         } else {
                             translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;
                         }
@@ -100,7 +99,6 @@ export const transcribeAndTranslateServiceOpenAi = async (
                             messageData.moderator_id = entityData.moderatorId;
                         } else if (entityData.type === "PARTICIPANT") {
                             messageData.participant_id = entityData.participantId;
-                            console.log("participantid");
                         }
 
                         await createMessageStorageSendTranslationToDatabase(messageData, tokenData);

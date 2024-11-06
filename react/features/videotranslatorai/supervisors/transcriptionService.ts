@@ -126,7 +126,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                         if (participantId) {
                             const translationSentRecognizing = `${participantName}: ${translationRecognizing}(videotranslatoraiservice)`;
 
-                            console.log("TRANSLATION", translationSentRecognizing);
                             if (conference) {
                                 await conference.sendPrivateTextMessage(participantId, translationSentRecognizing);
                             }
@@ -176,8 +175,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                         if (participantId) {
                             const translationSentRecognized = `${participantName}: ${translationRecognized}(videotranslatoraiservice:::) (completed)`;
 
-                            console.log("TRANSLATION COMPLETED", translationSentRecognized);
-
                             if (conference) {
                                 await conference.sendPrivateTextMessage(participantId, translationSentRecognized);
                             }
@@ -222,8 +219,6 @@ export const stopTranscriptionService = (dispatch: any, getState: any) =>
     new Promise<void>((resolve, reject) => {
         const state: IReduxState = getState();
         const recognizerSdk = state["features/videotranslatorai"].microsoftRecognizerSDK;
-
-        console.log("stop transcription");
 
         if (!recognizerSdk) {
             console.error("SDK recognizer not set");

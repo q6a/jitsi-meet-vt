@@ -33,8 +33,6 @@ async function transcribeAudioOpenAi(langFrom: any, recordedBlob: any, apiEndpoi
         formData.append("file", audioFile);
         formData.append("langFrom", langFrom);
 
-        console.log("FINAL MAP");
-
         // Make the API request to transcribe the audio
         const response = await axios.post(apiEndpoint, formData, {
             headers: {

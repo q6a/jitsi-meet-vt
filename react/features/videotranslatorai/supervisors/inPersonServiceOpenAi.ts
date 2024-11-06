@@ -43,7 +43,6 @@ export const inPersonServiceOpenAi = async (
         const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
 
         if (transcriptionText === previousTranscription && countTheAmountSameString < 2 && isContMode) {
-            console.log("same string");
             countTheAmountSameString++;
 
             return;

@@ -51,8 +51,6 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
                 };
             });
 
-            console.log("participants fetch meeting data", participants);
-
             const moderators = data.moderator_meetings.map((mm: IModeratorMeeting) => {
                 return {
                     moderatorId: mm.moderator.user_id,
@@ -79,8 +77,6 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
                     type: "MODERATOR",
                 };
             });
-
-            console.log("participants fetch meeting data", moderators);
 
             const linguists = data.linguist_meetings.map((lm: ILinguistMeeting) => {
                 return {
