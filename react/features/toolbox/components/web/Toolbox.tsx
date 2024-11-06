@@ -312,22 +312,22 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                             meetingModeVideoTranslatorAi === "continuous" && <TranscriptionAndTranslationOpenAiCont />}
 
                         {conference &&
-                            meetingTypeVideoTranslatorAi === "inperson" &&
+                            meetingTypeVideoTranslatorAi === "in_person" &&
                             meetingProviderVideoTranslatoriAi === "openai" &&
                             meetingModeVideoTranslatorAi === "manual" && <InPersonOpenAi />}
 
                         {conference &&
-                            meetingTypeVideoTranslatorAi === "video_call" &&
+                            meetingTypeVideoTranslatorAi === "in_person" &&
                             meetingProviderVideoTranslatoriAi === "openai" &&
                             meetingModeVideoTranslatorAi === "continuous" && <InPersonOpenAiCont />}
 
                         {conference &&
-                            meetingTypeVideoTranslatorAi === "inperson" &&
+                            meetingTypeVideoTranslatorAi === "in_person" &&
                             meetingProviderVideoTranslatoriAi === "microsoft" &&
                             meetingModeVideoTranslatorAi === "manual" && <InPersonMicrosoftMan />}
 
                         {conference &&
-                            meetingTypeVideoTranslatorAi === "video_call" &&
+                            meetingTypeVideoTranslatorAi === "in_person" &&
                             meetingProviderVideoTranslatoriAi === "microsoft" &&
                             meetingModeVideoTranslatorAi === "continuous" && <InPersonMicrosoftCont />}
 

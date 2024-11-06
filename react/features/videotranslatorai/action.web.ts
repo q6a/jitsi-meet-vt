@@ -364,7 +364,8 @@ export const inPersonTranslateOpenAi =
         langFromTranslation: any,
         dialectIdFrom: any = "",
         dialectIdTo: any = "",
-        isMessageCompleted: boolean
+        isMessageCompleted: boolean,
+        isContMode: boolean
     ) =>
     async (dispatch: any, getState: any) => {
         try {
@@ -381,7 +382,8 @@ export const inPersonTranslateOpenAi =
                 participantName,
                 dialectIdFrom,
                 dialectIdTo,
-                isMessageCompleted
+                isMessageCompleted,
+                isContMode
             );
 
             // Optionally handle results, such as dispatching success actions

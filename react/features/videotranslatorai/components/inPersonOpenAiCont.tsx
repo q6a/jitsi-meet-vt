@@ -127,7 +127,6 @@ const InPersonOpenAiCont: FC = () => {
 
         source.connect(scriptProcessorVar);
         scriptProcessorVar.connect(audioContextVar.destination);
-
         setScriptProcessor(scriptProcessorVar);
 
         // Initialize RNNoise after mediaRecorder is set
@@ -170,6 +169,9 @@ const InPersonOpenAiCont: FC = () => {
         //     setRnnoiseProcessor(null);
         // }
 
+        setScriptProcessor(null);
+        setRnnoiseProcessor(null);
+
         whichPerson = 0;
         audioChunks.current = [];
     };
@@ -207,7 +209,7 @@ const InPersonOpenAiCont: FC = () => {
 
                     if (mediaRecorder.current && mediaRecorder.current.state === "recording") {
                         mediaRecorder.current?.requestData();
-                        if (audioChunks.current.length % 3 !== 0 || audioChunks.current.length === 0) {
+                        if (audioChunks.current.length % 9 !== 0 || audioChunks.current.length === 0) {
                             return;
                         }
                         const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
@@ -221,7 +223,8 @@ const InPersonOpenAiCont: FC = () => {
                                     langFromPersonOneTranslation,
                                     langFromPersonOneTranscriptionId,
                                     langFromPersonTwoTranslationId,
-                                    false
+                                    false,
+                                    true
                                 )
                             );
                         }
@@ -235,7 +238,8 @@ const InPersonOpenAiCont: FC = () => {
                                     langFromPersonTwoTranslation,
                                     langFromPersonTwoTranscriptionId,
                                     langFromPersonOneTranslationId,
-                                    false
+                                    false,
+                                    true
                                 )
                             );
                         }
@@ -259,6 +263,7 @@ const InPersonOpenAiCont: FC = () => {
                                             langFromPersonOneTranslation,
                                             langFromPersonOneTranscriptionId,
                                             langFromPersonTwoTranslationId,
+                                            true,
                                             true
                                         )
                                     );
@@ -273,6 +278,7 @@ const InPersonOpenAiCont: FC = () => {
                                             langFromPersonTwoTranslation,
                                             langFromPersonTwoTranscriptionId,
                                             langFromPersonOneTranslationId,
+                                            true,
                                             true
                                         )
                                     );

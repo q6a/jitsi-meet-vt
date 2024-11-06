@@ -3,6 +3,8 @@ import { toState } from "../../base/redux/functions";
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioOpenAi from "../services/transcribeAudioOpenAi";
+let previousTranscription = " ";
+let countTheAmountSameString = 0;
 
 export const inPersonServiceOpenAi = async (
     dispatch: any,
@@ -13,7 +15,8 @@ export const inPersonServiceOpenAi = async (
     participantName: any = "",
     dialectIdFrom: any = "",
     dialectIdTo: any = "",
-    isMessageCompleted = false
+    isMessageCompleted = false,
+    isContMode = false
 ) => {
     const state: IReduxState = getState();
 
@@ -38,6 +41,17 @@ export const inPersonServiceOpenAi = async (
 
     try {
         const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
+
+        if (transcriptionText === previousTranscription && countTheAmountSameString < 2 && isContMode) {
+            console.log("same string");
+            countTheAmountSameString++;
+
+            return;
+        }
+
+        countTheAmountSameString = 0;
+
+        previousTranscription = transcriptionText;
 
         console.log("TRANSCRIPTION TEXT", transcriptionText);
         if (!transcriptionText) {

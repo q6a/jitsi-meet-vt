@@ -177,7 +177,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
                     if (mediaRecorder.current && mediaRecorder.current.state === "recording") {
                         mediaRecorder.current.requestData();
-                        if (audioChunks.length % 3 !== 0 || audioChunks.length === 0) {
+                        if (audioChunks.length % 8 !== 0 || audioChunks.length === 0) {
                             return;
                         }
 
