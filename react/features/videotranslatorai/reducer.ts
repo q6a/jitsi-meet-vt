@@ -24,7 +24,6 @@ import {
     SET_IS_PLAYING_TTS,
     SET_IS_RECORDING,
     SET_IS_TRANSCRIBING,
-    SET_LATEST_PRIVATE_MESSAGE,
     SET_LINGUIST_DATA,
     SET_MEETING_DATA,
     SET_MICROSOFT_RECOGNIZERSDK,
@@ -111,7 +110,6 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     displayName: "",
     displayDialect: "",
     microsoftRecognizerSDK: null as unknown as speechsdk.TranslationRecognizer,
-    latestPrivateMessage: "",
     privateMessages: [],
     messageNotification: false,
     messages: [],
@@ -145,12 +143,6 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                         action.payload.inPersontextToSpeechCodePersonOne || state.inPersontextToSpeechCodePersonOne,
                     inPersontextToSpeechCodePersonTwo:
                         action.payload.inPersontextToSpeechCodePersonTwo || state.inPersontextToSpeechCodePersonTwo,
-                };
-
-            case SET_LATEST_PRIVATE_MESSAGE:
-                return {
-                    ...state,
-                    latestPrivateMessage: action.payload,
                 };
 
             case MESSAGE_NOTIFICATION:

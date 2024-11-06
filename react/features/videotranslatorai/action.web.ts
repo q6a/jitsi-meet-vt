@@ -20,10 +20,8 @@ import {
     SET_IS_PLAYING_TTS,
     SET_IS_RECORDING,
     SET_IS_TRANSCRIBING,
-    SET_LATEST_PRIVATE_MESSAGE,
     SET_LINGUIST_DATA,
     SET_MEETING_DATA,
-    SET_MESSAGES,
     SET_MICROSOFT_RECOGNIZERSDK,
     SET_MODERATOR_DATA,
     SET_PARTICIPANT_DATA,
@@ -200,19 +198,6 @@ export const setMeetingData = (meetingData: IMeetingData) => {
     return {
         type: SET_MEETING_DATA,
         payload: meetingData,
-    };
-};
-
-export const setLatestPrivateMessage = (latestPrivateMessage: string) => {
-    return {
-        type: SET_LATEST_PRIVATE_MESSAGE,
-        payload: latestPrivateMessage,
-    };
-};
-
-export const setMessages = () => {
-    return {
-        type: SET_MESSAGES,
     };
 };
 

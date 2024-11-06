@@ -126,7 +126,6 @@ interface IProps {
 }
 
 // videotranslatorai
-import { setMessages } from "../../videotranslatorai/action.web";
 import PrivateMessageDisplay from "../../videotranslatorai/components/displayTranslationOnScreen";
 import { IMessage } from "../../videotranslatorai/types";
 
@@ -200,7 +199,6 @@ class LargeVideo extends Component<IProps> {
 
         // videotranslatorai
         if (prevProps._messages !== _messages) {
-            dispatch(setMessages());
             const participantName: string = toState(_state)["features/videotranslatorai"].participantName;
 
             const privateMessages = _messages.filter(

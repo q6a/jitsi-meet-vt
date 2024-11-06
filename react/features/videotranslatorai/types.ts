@@ -32,8 +32,8 @@ export interface IRoomParams {
     meetingType: string;
     modeContOrMan: string;
     participantName: string;
-    textToSpeechCode: string;
     provider: string;
+    textToSpeechCode: string;
 }
 
 // Define interface for Room Parameters
@@ -131,7 +131,6 @@ export interface IVideoTranslatorAiState {
     completedMessages: string[];
     displayDialect: string;
     displayName: string;
-    provider: string;
     inPersonIsRecordingPersonOne: boolean;
     inPersonIsRecordingPersonTwo: boolean;
     inPersonStartTranscription: boolean;
@@ -142,8 +141,8 @@ export interface IVideoTranslatorAiState {
     isRecording: boolean;
     isRecordingMicrosoftMan: boolean;
     isTranscribing: boolean;
+    provider: string;
     jwtToken: string;
-    latestPrivateMessage: string;
     linguistData: Array<ILinguist>;
     meetingData: IMessage;
     meetingId: string;
