@@ -9,13 +9,6 @@ const sdk = require("microsoft-cognitiveservices-speech-sdk");
 let isPlaying = false;
 
 export async function playVoiceFromMessage(text: any, state: IReduxState, textToSpeechCode: string) {
-    if (isPlaying) {
-        console.log("Audio is already playing. Skipping...");
-
-        return;
-    }
-    isPlaying = true;
-
     const region = "australiaeast"; // Your Azure region
     const authToken = toState(state)["features/videotranslatorai"].jwtToken;
 
@@ -66,6 +59,5 @@ export async function playVoiceFromMessage(text: any, state: IReduxState, textTo
         );
     } catch (error: any) {
         console.error("Error generating speech:", error.message);
-        isPlaying = false; // Reset isPlaying on error
     }
 }

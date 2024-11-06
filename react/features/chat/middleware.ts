@@ -569,6 +569,7 @@ function _handleReceivedMessage(
     if (isGuest) {
         displayNameToShow = `${displayNameToShow} ${i18next.t("visitors.chatIndicator")}`;
     }
+
     // videotranslatorai
     if (
         !message.includes("(videotranslatoraiservice)") &&
@@ -593,7 +594,6 @@ function _handleReceivedMessage(
 
     if (message.includes("(videotranslatoraiservice)")) {
         message = message.replace("(videotranslatoraiservice)", "");
-        console.log("messages chat:", message);
 
         if (!message.includes("dummy_message_xxyy")) {
             dispatch(
@@ -616,7 +616,6 @@ function _handleReceivedMessage(
 
     if (message.includes("(videotranslatoraiservice:::) (completed)")) {
         message = message.replace("(videotranslatoraiservice:::) (completed)", "");
-        console.log("MESSAGE", message);
         if (!message.includes("dummy_message_xxyy")) {
             dispatch(addCompletedMessage(message));
 

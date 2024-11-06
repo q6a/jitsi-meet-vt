@@ -116,34 +116,6 @@ export const inPersonServiceOpenAi = async (
             })
         );
 
-        // TODO: this is not the viable solution to send two at the same time, it's a temporary fix
-        // TODO: try to work out another way of solving this problem
-        // TODO: the issue is that when a single message is being sent, it only sends on pressing the button a second time
-
-        await Promise.all(
-            participantAndModeratorData.map(async (participant) => {
-                if (
-                    participant.translationDialect.dialectCode &&
-                    participant.transcriptionDialect.dialectCode !== langFrom
-                ) {
-                    try {
-                        const translationSent = "dummy_message_xxyy (videotranslatoraiservice)";
-                        let participantId = "";
-
-                        if (conference) {
-                            participantId = conference.myUserId();
-                        }
-
-                        if (participantId && conference) {
-                            await conference.sendPrivateTextMessage(participantId, translationSent);
-                        }
-                    } catch (error) {
-                        console.error(`Error during translation for participant ${participant.name}:`, error);
-                    }
-                }
-            })
-        );
-
         // Await all translation promises
     } catch (err) {
         console.error("Error during transcription and translation:", err);

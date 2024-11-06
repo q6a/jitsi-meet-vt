@@ -53,6 +53,8 @@ export const inPersonServiceMicrosoftCont = async (
             throw new Error("No target languages were added.");
         }
 
+        console.log("FIRST BASE");
+
         const audioConfig = speechsdk.AudioConfig.fromDefaultMicrophoneInput();
         const transcriberRecognizer = new speechsdk.TranslationRecognizer(translationConfig, audioConfig);
 
@@ -89,11 +91,13 @@ export const inPersonServiceMicrosoftCont = async (
                 if (translationMap) {
                     languagesRecognizing = translationMap.languages;
                 }
+                console.log("transcription", transcription);
 
                 for (const shortLangCode of languagesRecognizing) {
                     let translationRecognizing = "";
 
                     translationRecognizing = translationMap.get(shortLangCode);
+                    console.log("translationRecognizing", translationRecognizing);
 
                     let participantId = null;
 
@@ -101,6 +105,7 @@ export const inPersonServiceMicrosoftCont = async (
                         participantId = conference.myUserId();
                     }
 
+                    console.log("participantId", participantId);
                     if (participantId) {
                         const translationSentRecognizing = `${participantName}: ${translationRecognizing}(videotranslatoraiservice)`;
 

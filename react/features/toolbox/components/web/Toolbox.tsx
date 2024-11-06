@@ -9,6 +9,13 @@ import { getLocalParticipant, isLocalParticipantModerator } from "../../../base/
 import ContextMenu from "../../../base/ui/components/web/ContextMenu";
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from "../../../reactions/functions.web";
 import { isTranscribing } from "../../../transcribing/functions";
+import InPersonMicrosoftCont from "../../../videotranslatorai/components/inPersonMicrosoftCont";
+import InPersonMicrosoftMan from "../../../videotranslatorai/components/inPersonMicrosoftMan";
+import InPersonOpenAi from "../../../videotranslatorai/components/inPersonOpenAi";
+import InPersonOpenAiCont from "../../../videotranslatorai/components/inPersonOpenAiCont";
+import TranscriptionAndTranslationButton from "../../../videotranslatorai/components/transcriptionAndTranslationMicrosoft";
+import TranscriptionAndTranslationButtonMicrosoftMan from "../../../videotranslatorai/components/transcriptionAndTranslationMicrosoftMan";
+import TranscriptionAndTranslationOpenAi from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAi";
 import TranscriptionAndTranslationOpenAiCont from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAiCont";
 import { setHangupMenuVisible, setOverflowMenuVisible, setToolbarHovered, setToolboxVisible } from "../../actions.web";
 import { getJwtDisabledButtons, getVisibleButtons, isButtonEnabled, isToolboxVisible } from "../../functions.web";
@@ -278,8 +285,7 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                                 Content !== Separator && <Content {...rest} buttonKey={key} key={key} />
                         )}
                         {/* videotranslatorai */}
-                        {/* {conference && <TranscriptionAndTranslationButtonMicrosoftMan />} */}
-                        {/* {conference &&
+                        {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
                                 meetingTypeVideoTranslatorAi === "broadcast") &&
                             meetingProviderVideoTranslatoriAi === "microsoft" &&
@@ -291,9 +297,7 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                             (meetingTypeVideoTranslatorAi === "video_call" ||
                                 meetingTypeVideoTranslatorAi === "broadcast") &&
                             meetingProviderVideoTranslatoriAi === "microsoft" &&
-                            meetingModeVideoTranslatorAi === "continuous" && (
-                                <TranscriptionAndTranslationButtonMicrosoftMan />
-                            )}
+                            meetingModeVideoTranslatorAi === "continuous" && <TranscriptionAndTranslationButton />}
 
                         {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
@@ -305,10 +309,35 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                             (meetingTypeVideoTranslatorAi === "video_call" ||
                                 meetingTypeVideoTranslatorAi === "broadcast") &&
                             meetingProviderVideoTranslatoriAi === "openai" &&
-                            meetingModeVideoTranslatorAi === "continuous" && <TranscriptionAndTranslationOpenAiCont />} */}
-                        {/* {conference && <TranscriptionAndTranslationOpenAi />} */}
-                        {conference && <TranscriptionAndTranslationOpenAiCont />}
+                            meetingModeVideoTranslatorAi === "continuous" && <TranscriptionAndTranslationOpenAiCont />}
 
+                        {conference &&
+                            meetingTypeVideoTranslatorAi === "inperson" &&
+                            meetingProviderVideoTranslatoriAi === "openai" &&
+                            meetingModeVideoTranslatorAi === "manual" && <InPersonOpenAi />}
+
+                        {conference &&
+                            meetingTypeVideoTranslatorAi === "video_call" &&
+                            meetingProviderVideoTranslatoriAi === "openai" &&
+                            meetingModeVideoTranslatorAi === "continuous" && <InPersonOpenAiCont />}
+
+                        {conference &&
+                            meetingTypeVideoTranslatorAi === "inperson" &&
+                            meetingProviderVideoTranslatoriAi === "microsoft" &&
+                            meetingModeVideoTranslatorAi === "manual" && <InPersonMicrosoftMan />}
+
+                        {conference &&
+                            meetingTypeVideoTranslatorAi === "video_call" &&
+                            meetingProviderVideoTranslatoriAi === "microsoft" &&
+                            meetingModeVideoTranslatorAi === "continuous" && <InPersonMicrosoftCont />}
+
+                        {/* {conference && <InPersonMicrosoftCont />} */}
+                        {/* {conference && <InPersonOpenAi />} */}
+                        {/* {conference && <InPersonOpenAiCont />} */}
+                        {/* {conference && <TranscriptionAndTranslationButton />} */}
+                        {/* {conference && <TranscriptionAndTranslationButtonMicrosoftMan />} */}
+                        {/* {conference && <TranscriptionAndTranslationOpenAi />} */}
+                        {/* {conference && <TranscriptionAndTranslationOpenAiCont />} */}
                         {Boolean(overflowMenuButtons.length) && (
                             <OverflowMenuButton
                                 ariaControls="overflow-menu"
@@ -344,7 +373,6 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                                 showReactionsMenu={showReactionsInOverflowMenu}
                             />
                         )}
-
                         {isButtonEnabled("hangup", toolbarButtonsToUse) &&
                             (endConferenceSupported ? (
                                 <HangupMenuButton

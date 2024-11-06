@@ -69,6 +69,28 @@ const InPersonMicrosoftCont: FC = () => {
         setIsSoundOn((prev) => !prev);
     };
 
+    const endTranscriptionRecognizer = () => {
+        new Promise<void>((resolve, reject) => {
+            const recognizerSdk = state["features/videotranslatorai"].microsoftRecognizerSDK;
+
+            if (!recognizerSdk) {
+                console.error("SDK recognizer not set");
+                reject(new Error("SDK recognizer not set"));
+
+                return;
+            }
+            recognizerSdk.stopContinuousRecognitionAsync(
+                () => {
+                    resolve();
+                },
+                (err: any) => {
+                    console.error("Error stopping transcription:", err);
+                    reject(err);
+                }
+            );
+        });
+    };
+
     useEffect(() => {
         if (!isSoundOn) {
             return;
@@ -127,6 +149,7 @@ const InPersonMicrosoftCont: FC = () => {
     };
 
     const handleStopTranscriptionOne = () => {
+        endTranscriptionRecognizer();
         dispatch(inPersonStopRecordingPersonOne());
         whichPerson = 0;
     };
@@ -141,6 +164,7 @@ const InPersonMicrosoftCont: FC = () => {
 
     const handleStopTranscriptionTwo = () => {
         dispatch(inPersonStopRecordingPersonTwo());
+        endTranscriptionRecognizer();
         whichPerson = 0;
     };
 

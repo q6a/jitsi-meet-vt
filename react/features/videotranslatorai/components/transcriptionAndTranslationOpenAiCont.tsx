@@ -31,7 +31,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     const meetingTypeVideoTranslatorAi = useSelector((state) => state["features/videotranslatorai"].meetingType);
     const transcriptionButtonRef = useRef<HTMLDivElement>(null);
 
-    const [isRecording, setIsRecording] = useState(false);
+    // const [isRecording, setIsRecording] = useState(false);
     const [isSoundOn, setIsSoundOn] = useState(true);
     const [previousMessages, setPreviousMessages] = useState(messages);
 
@@ -41,14 +41,26 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     const [sendDataWhenReady, setSendDataWhenReady] = useState<boolean>(false);
     const [lastVoiceStopTimeEnd, setLastVoiceStopTimeEnd] = useState<boolean>(false);
     const mediaRecorder = useRef<MediaRecorder | null>(null);
+    const isRecording = useRef<boolean>(false);
 
     // State variables for media recorder, audio context, script processor, and RNNoise processor
     const [scriptProcessor, setScriptProcessor] = useState<ScriptProcessorNode | null>(null);
     const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
     const intializeStream = async () => {
+        if (!isRecording.current) {
+            return;
+        }
+
         const streamVar = await navigator.mediaDevices.getUserMedia({
-            audio: true,
+            audio: {
+                sampleRate: 48000, // Sets the sample rate to 48 kHz (high quality)
+                channelCount: 2, // Sets stereo recording
+                sampleSize: 16, // Specifies 16-bit samples
+                echoCancellation: false, // Disables echo cancellation for cleaner input
+                noiseSuppression: false, // Disables noise suppression
+                autoGainControl: false, // Disables auto gain control
+            },
         });
 
         stream.current = streamVar;
@@ -65,19 +77,11 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
             if (event.data.size > 0) {
                 audioChunks.push(event.data);
             }
-
-            if (audioChunks.length > 0) {
-                const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-
-                dispatch(translateOpenAi(audioBlob, false));
-
-                // const transcriptionText = await transcribeAudioOpenAi("en", audioBlob, apiEndpoint, tokenData);
-            }
         };
 
         recorder.onstop = () => {};
 
-        recorder.start(1000); // Start recording with 1-second intervals
+        recorder.start(); // Start recording with 1-second intervals
         mediaRecorder.current = recorder;
 
         source.connect(scriptProcessorVar);
@@ -110,7 +114,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     }, []);
 
     const handleStartVAD = async () => {
-        setIsRecording(true);
+        isRecording.current = true;
         intializeStream();
     };
 
@@ -129,7 +133,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
         // Clear audio chunks immediately to prevent any further processing
         audioChunks = [];
 
-        setIsRecording(false);
+        isRecording.current = false;
 
         // if (rnnoiseProcessor) {
         //     rnnoiseProcessor.destroy();
@@ -143,11 +147,14 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     vadScore$
         .pipe(
             throttleTime(100),
-            map((vadScore: VadScore) => vadScore > 0.6), // Convert vadScore to boolean
+            map((vadScore: VadScore) => vadScore > 0.95), // Convert vadScore to boolean
             distinctUntilChanged(), // Only emit on true/false change
-            debounceTime(200) // Debounce to ensure stability
+            debounceTime(100) // Debounce to ensure stability
         )
         .subscribe((stateVar: IsVoiceActive) => {
+            if (!isRecording.current) {
+                return;
+            }
             if (isVoiceActive !== stateVar) {
                 isVoiceActive = stateVar;
 
@@ -159,12 +166,31 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
                     if (mediaRecorder.current === null) {
                         audioChunks = [];
 
-                        handleStartVAD();
+                        intializeStream();
+
+                        if (!isRecording.current) {
+                            handleStopVAD();
+
+                            return;
+                        }
+                    }
+
+                    if (mediaRecorder.current && mediaRecorder.current.state === "recording") {
+                        mediaRecorder.current.requestData();
+                        if (audioChunks.length % 3 !== 0 || audioChunks.length === 0) {
+                            return;
+                        }
+
+                        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+
+                        dispatch(translateOpenAi(audioBlob, true));
                     }
                 } else {
                     offTimeout = setTimeout(() => {
-                        if (mediaRecorder.current && mediaRecorder.current.state == "recording") {
-                            if (audioChunks.length > 0) {
+                        if (mediaRecorder.current && mediaRecorder.current.state === "recording") {
+                            if (audioChunks.length > 1) {
+                                mediaRecorder.current.requestData();
+
                                 const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
 
                                 dispatch(translateOpenAi(audioBlob, true));
@@ -186,20 +212,6 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     function handleVADScore(vadScore: VadScore): void {
         vadScore$.next(vadScore);
     }
-
-    useEffect(() => {
-        if (sendDataWhenReady) {
-            setSendDataWhenReady(false);
-        }
-    }, [sendDataWhenReady]);
-
-    useEffect(() => {
-        if (lastVoiceStopTimeEnd) {
-            setLastVoiceStopTimeEnd(false);
-
-            setLastVoiceStopTimeEnd(false);
-        }
-    }, [lastVoiceStopTimeEnd, mediaRecorder.current]);
 
     useEffect(() => {
         if (!isSoundOn) {
@@ -225,7 +237,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
                     <TranscriptionButton
                         handleStart={handleStartVAD}
                         handleStop={handleStopVAD}
-                        isRecording={isRecording}
+                        isRecording={isRecording.current}
                     />
                 )}
             </div>

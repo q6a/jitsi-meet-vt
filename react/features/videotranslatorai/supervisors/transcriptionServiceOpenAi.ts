@@ -46,6 +46,10 @@ export const transcribeAndTranslateServiceOpenAi = async (
 
         const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
 
+        if (transcriptionText === "" || transcriptionText === " ") {
+            return;
+        }
+
         console.log("TRANSCRIPTION TEXT", transcriptionText);
 
         await Promise.all(
@@ -68,6 +72,7 @@ export const transcribeAndTranslateServiceOpenAi = async (
 
                         if (isMessageCompleted) {
                             translationSent = `${participantName}: ${translationText}(videotranslatoraiservice:::) (completed)`;
+                            console.log("translationSent TEXT: Completed", translationSent);
                         } else {
                             translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;
                         }
@@ -95,56 +100,10 @@ export const transcribeAndTranslateServiceOpenAi = async (
                             messageData.moderator_id = entityData.moderatorId;
                         } else if (entityData.type === "PARTICIPANT") {
                             messageData.participant_id = entityData.participantId;
+                            console.log("participantid");
                         }
 
                         await createMessageStorageSendTranslationToDatabase(messageData, tokenData);
-
-                        // dispatch(
-                        //     addMessageVideoTranslatorAI({
-                        //         displayName: participantName,
-                        //         hasRead: true,
-                        //         participantId,
-                        //         messageType: "local",
-                        //         message: translationSent,
-                        //         privateMessage: true,
-                        //         timestamp: Date.now(),
-                        //         isReaction: false,
-                        //         recipient: participant.name,
-                        //         error: null,
-                        //         messageId: null,
-                        //         lobbyChat: null,
-                        //     })
-                        // );
-                    } catch (error) {
-                        console.error(`Error during translation for participant ${participant.name}:`, error);
-                    }
-                }
-            })
-        );
-
-        // TODO: this is not the viable solution to send two at the same time, it's a temporary fix
-        // TODO: try to work out another way of solving this problem
-        // TODO: the issue is that when a single message is being sent, it only sends on pressing the button a second time
-
-        await Promise.all(
-            participantAndModeratorData.map(async (participant) => {
-                if (
-                    participant.translationDialect.dialectCode &&
-                    participant.transcriptionDialect?.dialectCode !== langFrom
-                ) {
-                    try {
-                        const translationSent = "dummy_message_xxyy (videotranslatoraiservice)";
-                        let participantId = "";
-
-                        for (const [key, value] of participantState.remote.entries()) {
-                            if (value.name === participant.name) {
-                                participantId = key;
-                            }
-                        }
-
-                        if (participantId && conference) {
-                            await conference.sendPrivateTextMessage(participantId, translationSent);
-                        }
                     } catch (error) {
                         console.error(`Error during translation for participant ${participant.name}:`, error);
                     }

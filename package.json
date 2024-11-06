@@ -118,6 +118,7 @@
     "react-youtube": "10.1.0",
     "redux": "4.0.4",
     "redux-thunk": "2.4.1",
+    "rxjs": "^7.8.1",
     "seamless-scroll-polyfill": "2.1.8",
     "semver": "7.5.4",
     "text-encoding": "0.7.0",
@@ -126,6 +127,7 @@
     "uuid": "8.3.2",
     "wasm-check": "2.0.1",
     "webm-duration-fix": "1.0.4",
+    "webm-to-wav-converter": "^1.1.0",
     "windows-iana": "3.1.0",
     "zxcvbn": "4.4.2"
   },

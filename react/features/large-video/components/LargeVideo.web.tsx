@@ -7,7 +7,7 @@ import { IReduxState, IStore } from "../../app/types";
 import { VIDEO_TYPE } from "../../base/media/constants";
 import { getLocalParticipant } from "../../base/participants/functions";
 import Watermarks from "../../base/react/components/web/Watermarks";
-import { toState } from "../../base/redux/functions"; // videotranslatorai
+import { toState } from "../../base/redux/functions";
 import { getHideSelfView } from "../../base/settings/functions.any";
 import { getVideoTrackByParticipant } from "../../base/tracks/functions.web";
 import { setColorAlpha } from "../../base/util/helpers";
@@ -73,7 +73,7 @@ interface IProps {
      */
     _localParticipantId: string;
 
-    _messages: Array<Object>;
+    _messages: Array<IMessage>;
 
     /**
      * Used to determine the value of the autoplay attribute of the underlying
@@ -128,6 +128,7 @@ interface IProps {
 // videotranslatorai
 import { setMessages } from "../../videotranslatorai/action.web";
 import PrivateMessageDisplay from "../../videotranslatorai/components/displayTranslationOnScreen";
+import { IMessage } from "../../videotranslatorai/types";
 
 let messageToDisplay = "";
 
@@ -200,7 +201,16 @@ class LargeVideo extends Component<IProps> {
         // videotranslatorai
         if (prevProps._messages !== _messages) {
             dispatch(setMessages());
-            messageToDisplay = toState(_state)["features/videotranslatorai"].latestPrivateMessage;
+            const participantName: string = toState(_state)["features/videotranslatorai"].participantName;
+
+            const privateMessages = _messages.filter(
+                (message) => message.privateMessage && message.recipient === participantName
+            );
+
+            if (privateMessages.length > 0) {
+                messageToDisplay = privateMessages[privateMessages.length - 1].message;
+            }
+
             this.lastMessageTimestamp = Date.now();
 
             // Clear any existing timeout before setting a new one
@@ -386,7 +396,7 @@ function _mapStateToProps(state: IReduxState) {
     const isLocalScreenshareOnLargeVideo =
         largeVideoParticipant?.id?.includes(localParticipantId ?? "") && videoTrack?.videoType === VIDEO_TYPE.DESKTOP;
     const isOnSpot = defaultLocalDisplayName === SPOT_DISPLAY_NAME;
-    const messages = state["features/videotranslatorai"].messages; // videotranslatorai
+    const messages: IMessage[] = state["features/videotranslatorai"].messages; // videotranslatorai
 
     return {
         _backgroundAlpha: state["features/base/config"].backgroundAlpha,

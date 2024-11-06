@@ -43,6 +43,8 @@ export const inPersonServiceMicrosoftMan = async (
         // langFromTranslation = participant.translationDialect.dialectCode;
         let authToken = "";
 
+        console.log("LANG FROM", langFrom);
+
         authToken = await fetchAzureToken(speechRegion, tokenData);
         const audioBlobConvert = await getWaveBlob(recordedBlobParam, true);
 
@@ -61,11 +63,22 @@ export const inPersonServiceMicrosoftMan = async (
             body: audioBlobConvert,
         });
 
-        // Step 5: Parse the response
         if (!response.ok) {
-            const errorDetails = await response.json();
+            let errorDetails;
 
-            throw new Error(`Transcription error: ${errorDetails.error.message}`);
+            console.log("RESPONSE", response);
+            console.log("RESPONSE", response);
+            errorDetails = await response.json();
+            console.log("errorDetails", errorDetails);
+
+            try {
+                errorDetails = await response.json();
+                throw new Error(`Transcription error: ${errorDetails.error.message}`);
+            } catch (jsonError) {
+                const errorText = await response.text();
+
+                throw new Error(`Transcription error: ${errorText}`);
+            }
         }
 
         const data = await response.json();
@@ -122,51 +135,6 @@ export const inPersonServiceMicrosoftMan = async (
                         }
 
                         await createMessageStorageSendTranslationToDatabase(messageData, tokenData);
-
-                        // dispatch(
-                        //     addMessageVideoTranslatorAI({
-                        //         displayName: participantName,
-                        //         hasRead: true,
-                        //         participantId,
-                        //         messageType: "local",
-                        //         message: translationSent,
-                        //         privateMessage: true,
-                        //         timestamp: Date.now(),
-                        //         isReaction: false,
-                        //         recipient: participant.name,
-                        //         error: null,
-                        //         messageId: null,
-                        //         lobbyChat: null,
-                        //     })
-                        // );
-                    } catch (error) {
-                        console.error(`Error during translation for participant ${participant.name}:`, error);
-                    }
-                }
-            })
-        );
-
-        // TODO: this is not the viable solution to send two at the same time, it's a temporary fix
-        // TODO: try to work out another way of solving this problem
-        // TODO: the issue is that when a single message is being sent, it only sends on pressing the button a second time
-
-        await Promise.all(
-            participantAndModeratorData.map(async (participant) => {
-                if (
-                    participant.translationDialect.dialectCode &&
-                    participant.transcriptionDialect.dialectCode !== langFrom
-                ) {
-                    try {
-                        const translationSent = "dummy_message_xxyy (videotranslatoraiservice)";
-                        let participantId = "";
-
-                        if (conference) {
-                            participantId = conference.myUserId();
-                        }
-
-                        if (participantId && conference) {
-                            await conference.sendPrivateTextMessage(participantId, translationSent);
-                        }
                     } catch (error) {
                         console.error(`Error during translation for participant ${participant.name}:`, error);
                     }

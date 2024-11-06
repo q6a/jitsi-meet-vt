@@ -47,6 +47,7 @@ MiddlewareRegistry.register((store) => (next) => (action) => {
 
                 if (privateMessages.length > 0) {
                     latestPrivateMessage = privateMessages[privateMessages.length - 1].message;
+
                     store.dispatch(setLatestPrivateMessage(latestPrivateMessage));
                 }
 

@@ -216,12 +216,12 @@ export const setMessages = () => {
     };
 };
 
-export function addMessageVideoTranslatorAI(messageDetails: Object) {
+export const addMessageVideoTranslatorAI = (messageDetails: Object) => {
     return {
         type: ADD_MESSAGE_VIDEOTRANSLATORAI,
         ...messageDetails,
     };
-}
+};
 
 export const fetchMeetingData = (params: IFetchMeetingData) => async (dispatch: any, getState: any) => {
     // Dispatch an action to store the parameters in the state
@@ -337,6 +337,8 @@ export const inPersonStartRecordingPersonTwo = () => {
 };
 
 export const inPersonStopRecordingPersonTwo = () => {
+    stopTranscription();
+
     return {
         type: INPERSON_STOP_RECORDING_PERSONTWO,
     };
@@ -433,6 +435,8 @@ export const inPersonTranslateMicrosoftCont =
     (langFrom: any, langTo: any, participantName: any, dialectIdFrom: any = "", dialectIdTo: any = "") =>
     async (dispatch: any, getState: any) => {
         try {
+            console.log("ACTION.WeB");
+
             // Call the async service and pass the recorded blob
             await inPersonServiceMicrosoftCont(
                 dispatch,

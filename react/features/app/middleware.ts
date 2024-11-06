@@ -192,6 +192,8 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
         const meetingType: any = JSON.parse(atob(payload)).context.user.meetingType;
         const modeContOrMan: any = JSON.parse(atob(payload)).context.user.mode;
         const provider = "microsoft";
+
+        console.log("meeting id", meetingId);
         if (initialMeetingName && initialParticipantName) {
             store.dispatch(
                 setRoomParams({

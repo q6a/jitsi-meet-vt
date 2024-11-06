@@ -142,36 +142,6 @@ export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, g
                 }
             })
         );
-
-        // TODO: this is not the viable solution to send two at the same time, it's a temporary fix
-        // TODO: try to work out another way of solving this problem
-        // TODO: the issue is that when a single message is being sent, it only sends on pressing the button a second time
-
-        await Promise.all(
-            participantAndModeratorData.map(async (participant) => {
-                if (
-                    participant.translationDialect.dialectCode &&
-                    participant.transcriptionDialect?.dialectCode !== langFrom
-                ) {
-                    try {
-                        const translationSent = " (videotranslatoraiservice)";
-                        let participantId = "";
-
-                        for (const [key, value] of participantState.remote.entries()) {
-                            if (value.name === participant.name) {
-                                participantId = key;
-                            }
-                        }
-
-                        if (participantId && conference) {
-                            await conference.sendPrivateTextMessage(participantId, translationSent);
-                        }
-                    } catch (error) {
-                        console.error(`Error during translation for participant ${participant.name}:`, error);
-                    }
-                }
-            })
-        );
     } catch (err) {
         console.error("Error during transcription:", err);
     }

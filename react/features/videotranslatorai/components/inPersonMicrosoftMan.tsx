@@ -96,7 +96,16 @@ const InPersonMicrosoftMan: FC = () => {
     const handleStartTranscription = async () => {
         if (!isAudioMuted) {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        sampleRate: 48000, // Sets the sample rate to 48 kHz (high quality)
+                        channelCount: 2, // Sets stereo recording
+                        sampleSize: 16, // Specifies 16-bit samples
+                        echoCancellation: false, // Disables echo cancellation for cleaner input
+                        noiseSuppression: false, // Disables noise suppression
+                        autoGainControl: false, // Disables auto gain control
+                    },
+                });
                 const recorder = new MediaRecorder(stream);
 
                 mediaRecorder.current = recorder;
