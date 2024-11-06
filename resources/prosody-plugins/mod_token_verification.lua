@@ -143,8 +143,36 @@ local function verify_user(session, stanza, event)
             if  claims.context.user.meetingName and claims.context.user.participantName then
                 local meetingName = claims.context.user.meetingName;
                 local participantName = claims.context.user.participantName;
+                local meetingId = claims.context.user.meetingId;
                 local jwtToken = session.auth_token;
-                module:log("error", "EXTRACTED meetingName: %s, participantName: %s", tostring(meetingName), tostring(participantName));
+                module:log("error", "EXTRACTED meetingName: %s, meetingId: %s , participantName: %s", tostring(meetingName), tostring(meetingId), tostring(participantName));
+
+                local http = require("socket.http")
+                local ltn12 = require("ltn12")
+                local cjson = require("cjson")
+                local response_body = {}
+                local res, code, response_headers, status = http.request{
+                    url =  "https://api.stg.qbl-media.com/v1/meetingprojects/" .. meetingId,
+                    method = "GET",
+                    headers = {
+                        ["Content-Type"] = "application/json",
+                        ["Authorization"] = "Bearer " .. jwtToken,
+                        ["x-jitsi"] = "true"
+                    },
+                    sink = ltn12.sink.table(response_body)
+                }
+
+                if code == 200 then
+                    local response_str = table.concat(response_body)
+                    local response_json = cjson.decode(response_str)
+                    if response_json.success == false or response_json.data.active == false then
+                        module:log("error", "Cannot fetch meeting or meeting is not active")
+                        return false
+                    end
+                else
+                    module:log("error", "Meeting cannot fetch or is not active %s", status)
+                    return false
+                end
                 -- Send the IQ message to the user
 
                 -- timer.add_task(1, function()
