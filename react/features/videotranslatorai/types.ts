@@ -141,7 +141,6 @@ export interface IVideoTranslatorAiState {
     isRecording: boolean;
     isRecordingMicrosoftMan: boolean;
     isTranscribing: boolean;
-    provider: string;
     jwtToken: string;
     linguistData: Array<ILinguist>;
     meetingData: IMessage;
@@ -157,6 +156,7 @@ export interface IVideoTranslatorAiState {
     participantData: Array<IParticipant>;
     participantName: string;
     privateMessages: IMessage[];
+    provider: string;
     textToSpeechCode: string;
     thisEntityData: IEntityData;
     toEmail: string;

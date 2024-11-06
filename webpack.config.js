@@ -296,7 +296,7 @@ module.exports = (_env, argv) => {
                 }),
             ],
 
-            performance: getPerformanceHints(perfHintOptions, 5 * 1024 * 1024),
+            performance: getPerformanceHints(perfHintOptions, 10 * 1024 * 1024),
         }),
         Object.assign({}, config, {
             entry: {
