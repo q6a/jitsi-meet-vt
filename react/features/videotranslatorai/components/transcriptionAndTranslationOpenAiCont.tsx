@@ -148,7 +148,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     // Stream processing
     vadScore$
         .pipe(
-            throttleTime(225),
+            throttleTime(270),
             map((vadScore: VadScore) => vadScore >= 0.998), // Convert vadScore to boolean
             distinctUntilChanged(), // Only emit on true/false change
             debounceTime(20) // Debounce to ensure stability
@@ -212,7 +212,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
                         setTimeout(() => {
                             intializeStream();
                         }, 200);
-                    }, 2000);
+                    }, 2300);
                 }
             }
         });
