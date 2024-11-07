@@ -179,7 +179,7 @@ const InPersonOpenAiCont: FC = () => {
     // Stream processing
     vadScore$
         .pipe(
-            throttleTime(40),
+            throttleTime(65),
             map((vadScore: VadScore) => vadScore >= 0.998), // Convert vadScore to boolean
             distinctUntilChanged(), // Only emit on true/false change
             debounceTime(50) // Debounce to ensure stability
