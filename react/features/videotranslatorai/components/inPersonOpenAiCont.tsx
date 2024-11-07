@@ -179,10 +179,10 @@ const InPersonOpenAiCont: FC = () => {
     // Stream processing
     vadScore$
         .pipe(
-            throttleTime(100),
+            throttleTime(50),
             map((vadScore: VadScore) => vadScore > 0.9), // Convert vadScore to boolean
             distinctUntilChanged(), // Only emit on true/false change
-            debounceTime(100) // Debounce to ensure stability
+            debounceTime(50) // Debounce to ensure stability
         )
         .subscribe((stateVar: IsVoiceActive) => {
             if (whichPerson === 0) {
@@ -209,7 +209,7 @@ const InPersonOpenAiCont: FC = () => {
 
                     if (mediaRecorder.current && mediaRecorder.current.state === "recording") {
                         mediaRecorder.current?.requestData();
-                        if (audioChunks.current.length % 9 !== 0 || audioChunks.current.length === 0) {
+                        if (audioChunks.current.length % 6 !== 0 || audioChunks.current.length === 0) {
                             return;
                         }
 
