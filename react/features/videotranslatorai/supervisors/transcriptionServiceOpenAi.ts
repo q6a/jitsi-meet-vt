@@ -46,10 +46,9 @@ export const transcribeAndTranslateServiceOpenAi = async (
 
         const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
 
-        if (transcriptionText === "" || transcriptionText === " ") {
+        if (!transcriptionText || transcriptionText.trim() === "") {
             return;
         }
-
         console.log("TRANSCRIPTION TEXT", transcriptionText);
 
         await Promise.all(
