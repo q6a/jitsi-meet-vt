@@ -179,15 +179,18 @@ const InPersonOpenAiCont: FC = () => {
     // Stream processing
     vadScore$
         .pipe(
-            throttleTime(40),
+            throttleTime(50),
             map((vadScore: VadScore) => vadScore >= 0.998), // Convert vadScore to boolean
             distinctUntilChanged(), // Only emit on true/false change
-            debounceTime(50) // Debounce to ensure stability
+            debounceTime(20) // Debounce to ensure stability
         )
         .subscribe((stateVar: IsVoiceActive) => {
             if (whichPerson === 0) {
                 return;
             }
+
+            console.log("state var", stateVar);
+
             if (isVoiceActive !== stateVar) {
                 isVoiceActive = stateVar;
 
@@ -295,6 +298,10 @@ const InPersonOpenAiCont: FC = () => {
 
                             audioChunks.current = [];
                         }
+
+                        setTimeout(() => {
+                            intializeStream();
+                        }, 200);
                     }, 2000);
                 }
             }

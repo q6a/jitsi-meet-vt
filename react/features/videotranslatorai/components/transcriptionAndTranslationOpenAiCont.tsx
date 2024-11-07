@@ -148,10 +148,10 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     // Stream processing
     vadScore$
         .pipe(
-            throttleTime(40),
+            throttleTime(50),
             map((vadScore: VadScore) => vadScore >= 0.998), // Convert vadScore to boolean
             distinctUntilChanged(), // Only emit on true/false change
-            debounceTime(50) // Debounce to ensure stability
+            debounceTime(20) // Debounce to ensure stability
         )
         .subscribe((stateVar: IsVoiceActive) => {
             if (!isRecording.current) {
@@ -208,6 +208,10 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
                             audioChunks = [];
                         }
+
+                        setTimeout(() => {
+                            intializeStream();
+                        }, 200);
                     }, 2000);
                 }
             }
