@@ -148,7 +148,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     // Stream processing
     vadScore$
         .pipe(
-            throttleTime(50),
+            throttleTime(40),
             map((vadScore: VadScore) => vadScore >= 0.998), // Convert vadScore to boolean
             distinctUntilChanged(), // Only emit on true/false change
             debounceTime(50) // Debounce to ensure stability
