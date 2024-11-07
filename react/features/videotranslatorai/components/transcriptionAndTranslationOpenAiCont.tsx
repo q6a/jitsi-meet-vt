@@ -148,7 +148,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     // Stream processing
     vadScore$
         .pipe(
-            throttleTime(50),
+            throttleTime(225),
             map((vadScore: VadScore) => vadScore >= 0.998), // Convert vadScore to boolean
             distinctUntilChanged(), // Only emit on true/false change
             debounceTime(20) // Debounce to ensure stability
@@ -179,7 +179,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
                     if (mediaRecorder.current && mediaRecorder.current.state === "recording") {
                         mediaRecorder.current.requestData();
-                        if (audioChunks.length % 2 !== 0 || audioChunks.length === 0) {
+                        if (audioChunks.length % 1 !== 0 || audioChunks.length === 0) {
                             return;
                         }
 
