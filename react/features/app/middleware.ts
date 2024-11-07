@@ -191,7 +191,7 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
         const textToSpeechCode: any = JSON.parse(atob(payload)).context.user.textToSpeechCode;
         const meetingType: any = JSON.parse(atob(payload)).context.user.meetingType;
         const modeContOrMan: any = JSON.parse(atob(payload)).context.user.mode;
-        const provider = "openai";
+        const provider = JSON.parse(atob(payload)).context.user.provider;
 
         if (initialMeetingName && initialParticipantName) {
             store.dispatch(

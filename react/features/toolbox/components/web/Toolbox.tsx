@@ -288,7 +288,7 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                         {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
                                 meetingTypeVideoTranslatorAi === "broadcast") &&
-                            meetingProviderVideoTranslatoriAi === "microsoft" &&
+                            meetingProviderVideoTranslatoriAi === "Microsoft" &&
                             meetingModeVideoTranslatorAi === "manual" && (
                                 <TranscriptionAndTranslationButtonMicrosoftMan />
                             )}
@@ -296,39 +296,39 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                         {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
                                 meetingTypeVideoTranslatorAi === "broadcast") &&
-                            meetingProviderVideoTranslatoriAi === "microsoft" &&
+                            meetingProviderVideoTranslatoriAi === "Microsoft" &&
                             meetingModeVideoTranslatorAi === "continuous" && <TranscriptionAndTranslationButton />}
 
                         {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
                                 meetingTypeVideoTranslatorAi === "broadcast") &&
-                            meetingProviderVideoTranslatoriAi === "openai" &&
+                            meetingProviderVideoTranslatoriAi === "OpenAi" &&
                             meetingModeVideoTranslatorAi === "manual" && <TranscriptionAndTranslationOpenAi />}
 
                         {conference &&
                             (meetingTypeVideoTranslatorAi === "video_call" ||
                                 meetingTypeVideoTranslatorAi === "broadcast") &&
-                            meetingProviderVideoTranslatoriAi === "openai" &&
+                            meetingProviderVideoTranslatoriAi === "OpenAi" &&
                             meetingModeVideoTranslatorAi === "continuous" && <TranscriptionAndTranslationOpenAiCont />}
 
                         {conference &&
                             meetingTypeVideoTranslatorAi === "in_person" &&
-                            meetingProviderVideoTranslatoriAi === "openai" &&
+                            meetingProviderVideoTranslatoriAi === "OpenAi" &&
                             meetingModeVideoTranslatorAi === "manual" && <InPersonOpenAi />}
 
                         {conference &&
                             meetingTypeVideoTranslatorAi === "in_person" &&
-                            meetingProviderVideoTranslatoriAi === "openai" &&
+                            meetingProviderVideoTranslatoriAi === "OpenAi" &&
                             meetingModeVideoTranslatorAi === "continuous" && <InPersonOpenAiCont />}
 
                         {conference &&
                             meetingTypeVideoTranslatorAi === "in_person" &&
-                            meetingProviderVideoTranslatoriAi === "microsoft" &&
+                            meetingProviderVideoTranslatoriAi === "Microsoft" &&
                             meetingModeVideoTranslatorAi === "manual" && <InPersonMicrosoftMan />}
 
                         {conference &&
                             meetingTypeVideoTranslatorAi === "in_person" &&
-                            meetingProviderVideoTranslatoriAi === "microsoft" &&
+                            meetingProviderVideoTranslatoriAi === "Microsoft" &&
                             meetingModeVideoTranslatorAi === "continuous" && <InPersonMicrosoftCont />}
 
                         {/* {conference && <InPersonMicrosoftCont />} */}
