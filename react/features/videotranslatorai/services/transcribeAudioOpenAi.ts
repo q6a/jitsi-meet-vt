@@ -9,7 +9,7 @@ import axios from "axios";
  * @param {string} tokenData - The authorization token for the API.
  * @returns {Promise<string>} - A promise that resolves to the transcription text.
  */
-async function transcribeAudioOpenAi(langFrom: any, recordedBlob: any, apiEndpoint: any, tokenData: any) {
+async function transcribeAudioOpenAi(langFrom: any, recordedBlob: any, apiEndpoint: any, tokenData: any, meetingId: string, clientId: string) {
     try {
         // Get the current timestamp for lastModified
         const lastModifiedDate = new Date();
@@ -32,6 +32,8 @@ async function transcribeAudioOpenAi(langFrom: any, recordedBlob: any, apiEndpoi
 
         formData.append("file", audioFile);
         formData.append("langFrom", langFrom);
+        formData.append("meeting_id", meetingId);
+        formData.append("client_id", clientId);
 
         // Make the API request to transcribe the audio
         const response = await axios.post(apiEndpoint, formData, {
