@@ -10,9 +10,9 @@ async function translateTextMicrosoft(
     clientId: string
 ): Promise<string> {
     try {
-        
-        const backendEndpoint = process.env.REACT_APP_TRANSLATE_API_ENDPOINT;
 
+        const backendEndpoint = process.env.REACT_APP_TRANSLATE_API_ENDPOINT;
+        
         if (!backendEndpoint) {
             throw new Error("Envrionment variable not set");
         }
