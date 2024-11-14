@@ -48,7 +48,7 @@ function handle_get_room_census(event)
     total_occupants = 0;
     module:log("error", "handle get room event");
     --local host_session = prosody.hosts[muc_domain_prefix .. "." .. tostring(module.host)]
-    local host_session = prosody.hosts["conference.meet.stg.qbl-media.com"]
+    local host_session = prosody.hosts["conference.meet.stg.videotranslator.ai"]
     -- module:log("error", "INSIDE FUNCTON MUC DOMAIN PREFIX: %s, MODULE HOST %s", tostring(muc_domain_prefix), tostring(module.host) );	
 
     if not host_session or not host_session.modules.muc then
