@@ -9,7 +9,7 @@
  * @param {string} clientId - The client ID for authorization.
  * @returns {Promise<string>} - A promise that resolves to the transcription text.
  */
-async function transcribeAudioMicrosoft(langFrom, recordedBlob, apiEndpoint, tokenData, meetingId, clientId) {
+async function transcribeAudioMicrosoft(langFrom: any, recordedBlob: any, apiEndpoint:any, tokenData: any, meetingId:any, clientId: any) {
     try {
         const headers = {
             Authorization: `Bearer ${tokenData}`,
@@ -35,7 +35,7 @@ async function transcribeAudioMicrosoft(langFrom, recordedBlob, apiEndpoint, tok
         const data = await response.json();
 
         return data.data.transcription;
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error transcribing audio:", error);
         throw new Error("Failed to transcribe audio");
     }
