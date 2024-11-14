@@ -40,7 +40,7 @@ export const inPersonServiceOpenAi = async (
     }
 
     try {
-        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
+        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData, meetingId, clientId);
 
         if (transcriptionText === previousTranscription && countTheAmountSameString < 2 && isContMode) {
             countTheAmountSameString++;

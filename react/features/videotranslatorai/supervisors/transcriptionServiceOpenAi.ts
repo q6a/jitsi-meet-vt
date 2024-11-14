@@ -44,7 +44,7 @@ export const transcribeAndTranslateServiceOpenAi = async (
             }
         }
 
-        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
+        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData, meetingId, clientId);
 
         if (!transcriptionText || transcriptionText.trim() === "") {
             return;
