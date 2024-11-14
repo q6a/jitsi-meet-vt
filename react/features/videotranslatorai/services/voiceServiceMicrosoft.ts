@@ -38,7 +38,7 @@ export async function playVoiceFromMessage(text: any, state: IReduxState, textTo
         );
 
         await playAudioFromArrayBuffer(response.data);
-    } catch (error) {
+    } catch (error: any) {
         if (error.response) {
             console.error("Error generating speech:", error.response.status, error.response.statusText);
             console.error("Response data:", error.response.data);
