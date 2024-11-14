@@ -40,7 +40,14 @@ export const inPersonServiceOpenAi = async (
     }
 
     try {
-        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
+        const transcriptionText = await transcribeAudioOpenAi(
+            langFrom,
+            recordedBlobParam,
+            apiEndpoint,
+            tokenData,
+            meetingId,
+            clientId
+        );
 
         if (transcriptionText === previousTranscription && countTheAmountSameString < 2 && isContMode) {
             countTheAmountSameString++;
@@ -70,7 +77,9 @@ export const inPersonServiceOpenAi = async (
                             tokenData,
                             participant.translationDialect.dialectCode,
                             langFromTranslation,
-                            "australiaeast"
+                            "australiaeast",
+                            meetingId,
+                            clientId
                         );
 
                         let translationSent = "";

@@ -5,7 +5,9 @@ async function translateTextMicrosoft(
     authToken: string,
     targetDialectCodeParam: string,
     langFromParam = "",
-    regionParam = "australiaeast"
+    regionParam = "australiaeast",
+    meetingId,
+    clientId
 ): Promise<string> {
     try {
         const backendEndpoint = process.env.REACT_APP_TRANSLATE_API_ENDPOINT;
@@ -19,8 +21,10 @@ async function translateTextMicrosoft(
             {
                 transcriptionText: transcriptionTextParam,
                 targetDialectCode: targetDialectCodeParam,
-                langFrom: langFromParam, // Explicitly assigning langFrom to langFrom
-                region: regionParam, // Explicitly assigning region to region
+                langFrom: langFromParam,
+                region: regionParam,
+                meeting_id: meetingId,
+                client_id: clientId,
             },
             {
                 headers: {

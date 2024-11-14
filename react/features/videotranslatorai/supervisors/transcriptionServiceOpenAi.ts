@@ -34,7 +34,6 @@ export const transcribeAndTranslateServiceOpenAi = async (
         let langFrom = "en";
         let langFromTranslation = "en-AU";
 
-        // Find the local participant's language name
         for (const participant of participantAndModeratorData) {
             if (participant.name === participantName) {
                 langFrom = participant.transcriptionDialect?.dialectCode || langFrom;
@@ -44,7 +43,14 @@ export const transcribeAndTranslateServiceOpenAi = async (
             }
         }
 
-        const transcriptionText = await transcribeAudioOpenAi(langFrom, recordedBlobParam, apiEndpoint, tokenData);
+        const transcriptionText = await transcribeAudioOpenAi(
+            langFrom,
+            recordedBlobParam,
+            apiEndpoint,
+            tokenData,
+            meetingId,
+            clientId
+        );
 
         if (!transcriptionText || transcriptionText.trim() === "") {
             return;
@@ -64,7 +70,9 @@ export const transcribeAndTranslateServiceOpenAi = async (
                             tokenData,
                             participant.translationDialect.dialectCode,
                             langFromTranslation,
-                            "australiaeast"
+                            "australiaeast",
+                            meetingId,
+                            clientId
                         );
 
                         let translationSent = "";
@@ -83,7 +91,6 @@ export const transcribeAndTranslateServiceOpenAi = async (
                             }
                         }
 
-                        // arrayPromises.push(await conference.sendPrivateTextMessage(participantId, translationSent));
                         await conference.sendPrivateTextMessage(participantId, translationSent);
                         const messageData: any = {
                             meeting_project_id: meetingId,
@@ -107,8 +114,6 @@ export const transcribeAndTranslateServiceOpenAi = async (
                 }
             })
         );
-
-        // Await all translation promises
     } catch (err) {
         console.error("Error during transcription and translation:", err);
     }

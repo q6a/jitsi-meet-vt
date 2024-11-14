@@ -5,6 +5,7 @@ import { toState } from "../../base/redux/functions";
 import { setMicrosoftRecognizerSDK } from "../action.web";
 import fetchAzureToken from "../services/fetchAzureToken"; // Adjust the path as necessary
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
+import genericUsageIntake from "../services/usageService";
 
 export const inPersonServiceMicrosoftCont = async (
     dispatch: any,
@@ -86,6 +87,15 @@ export const inPersonServiceMicrosoftCont = async (
                 const translationMap = e.result.translations;
                 let languagesRecognizing: any[] = [];
 
+                await genericUsageIntake(
+                    transcription,
+                    "transcription-microsoft",
+                    "microsoft",
+                    meetingId,
+                    clientId,
+                    tokenData
+                );
+
                 if (translationMap) {
                     languagesRecognizing = translationMap.languages;
                 }
@@ -101,6 +111,15 @@ export const inPersonServiceMicrosoftCont = async (
                     if (conference) {
                         participantId = conference.myUserId();
                     }
+
+                    await genericUsageIntake(
+                        translationRecognizing,
+                        "translation-microsoft",
+                        "microsoft",
+                        meetingId,
+                        clientId,
+                        tokenData
+                    );
 
                     if (participantId) {
                         const translationSentRecognizing = `${participantName}: ${translationRecognizing}(videotranslatoraiservice)`;
@@ -119,6 +138,15 @@ export const inPersonServiceMicrosoftCont = async (
                 const translationMap = e.result.translations;
                 let languagesRecognized: any[] = [];
 
+                await genericUsageIntake(
+                    transcription,
+                    "transcription-microsoft",
+                    "microsoft",
+                    meetingId,
+                    clientId,
+                    tokenData
+                );
+
                 if (translationMap) {
                     languagesRecognized = translationMap.languages;
                 }
@@ -133,6 +161,15 @@ export const inPersonServiceMicrosoftCont = async (
                     if (conference) {
                         participantId = conference.myUserId();
                     }
+
+                    await genericUsageIntake(
+                        translationRecognized,
+                        "translation-microsoft",
+                        "microsoft",
+                        meetingId,
+                        clientId,
+                        tokenData
+                    );
 
                     if (participantId) {
                         const translationSentRecognized = `${participantName}: ${translationRecognized}(videotranslatoraiservice:::) (completed)`;

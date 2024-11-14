@@ -4,7 +4,6 @@ import { ILinguistMeeting, IModeratorMeeting, IParticipantMeeting } from "../typ
 
 export const getMeetingInformation = async (meetingId: string, token: string, initialName: string) => {
     try {
-        // Load the backend URL from environment variables
         const backendUrl = process.env.REACT_APP_GET_MEETING_NAME_BACKEND_API_URL;
 
         if (!backendUrl) {
@@ -115,7 +114,6 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
 
 export const endMeetingForAllParticipants = async (meetingId: string, token: string) => {
     try {
-        // Load the backend URL from environment variables
         const backendUrl = process.env.REACT_APP_GET_MEETING_NAME_BACKEND_API_URL;
 
         if (!backendUrl) {

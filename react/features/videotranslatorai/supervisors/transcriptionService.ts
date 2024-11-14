@@ -5,6 +5,7 @@ import { toState } from "../../base/redux/functions";
 import { setIsTranscribing, setMicrosoftRecognizerSDK } from "../action.web";
 import fetchAzureToken from "../services/fetchAzureToken"; // Adjust the path as necessary
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
+import genericUsageIntake from "../services/usageService";
 
 export const transcribeAndTranslateService = async (dispatch: any, getState: any) => {
     const state: IReduxState = getState();
@@ -84,12 +85,21 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
         transcriberRecognizer.startContinuousRecognitionAsync();
         dispatch(setIsTranscribing(true));
 
-        // Add recognizing, recognized, and canceled events as in your initial code...
         transcriberRecognizer.recognizing = async (s, e) => {
             if (e.result.reason === 7) {
                 const transcription = e.result.text;
 
                 console.log("TRANSCRIPTION TEXT", transcription);
+
+                await genericUsageIntake(
+                    transcription,
+                    "transcription-microsoft",
+                    "microsoft",
+                    meetingId,
+                    clientId,
+                    tokenData
+                );
+
                 const translationMap = e.result.translations;
                 let languagesRecognizing: any[] = [];
 
@@ -97,7 +107,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                     languagesRecognizing = translationMap.languages;
                 }
 
-                // Create a Map of participant IDs to names
                 let participantMapRecognizing = new Map();
 
                 if (participantState && participantState.remote) {
@@ -113,7 +122,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                     );
 
                     for (const participant of participants) {
-                        // Get participant ID from participantMap
                         let participantId = null;
 
                         for (const [key, value] of participantMapRecognizing.entries()) {
@@ -122,6 +130,15 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                                 break;
                             }
                         }
+
+                        await genericUsageIntake(
+                            translationRecognizing,
+                            "translation-microsoft",
+                            "microsoft",
+                            meetingId,
+                            clientId,
+                            tokenData
+                        );
 
                         if (participantId) {
                             const translationSentRecognizing = `${participantName}: ${translationRecognizing}(videotranslatoraiservice)`;
@@ -142,12 +159,19 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                 let languagesRecognized: any[] = [];
 
                 console.log("TRANSCRIPTION TEXT COMPLETED", transcription);
+                await genericUsageIntake(
+                    transcription,
+                    "transcription-microsoft",
+                    "microsoft",
+                    meetingId,
+                    clientId,
+                    tokenData
+                );
 
                 if (translationMap) {
                     languagesRecognized = translationMap.languages;
                 }
 
-                // Create a Map of participant IDs to names
                 let participantMapRecognized = new Map();
 
                 if (participantState && participantState.remote) {
@@ -163,7 +187,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                     );
 
                     for (const participant of participants) {
-                        // Get participant ID from participantMap
                         let participantId = null;
 
                         for (const [key, value] of participantMapRecognized.entries()) {
@@ -172,6 +195,16 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                                 break;
                             }
                         }
+
+                        await genericUsageIntake(
+                            translationRecognized,
+                            "translation-microsoft",
+                            "microsoft",
+                            meetingId,
+                            clientId,
+                            tokenData
+                        );
+
                         if (participantId) {
                             const translationSentRecognized = `${participantName}: ${translationRecognized}(videotranslatoraiservice:::) (completed)`;
 

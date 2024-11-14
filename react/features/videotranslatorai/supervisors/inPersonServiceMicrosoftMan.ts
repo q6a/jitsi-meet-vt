@@ -2,9 +2,9 @@ import { getWaveBlob } from "webm-to-wav-converter";
 
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
-import fetchAzureToken from "../services/fetchAzureToken"; // Adjust the path as necessary
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
+import transcribeAudioMicrosoft from "../services/transcribeAudioMicrosoft";
 
 export const inPersonServiceMicrosoftMan = async (
     dispatch: any,
@@ -39,48 +39,16 @@ export const inPersonServiceMicrosoftMan = async (
     }
 
     try {
-        // langFrom = participant.transcriptionDialect.dialectCode;
-        // langFromTranslation = participant.translationDialect.dialectCode;
-        let authToken = "";
-
-        authToken = await fetchAzureToken(speechRegion, tokenData);
         const audioBlobConvert = await getWaveBlob(recordedBlobParam, true);
 
-        // Step 3: Set up the API endpoint and headers
-        const endpoint = `${baseEndpoint}?language=${langFrom}`;
-
-        const headers = {
-            "Content-Type": "audio/wav",
-            Authorization: `Bearer ${authToken}`,
-        };
-
-        // Step 4: Make the API request
-        const response = await fetch(endpoint, {
-            method: "POST",
-            headers,
-            body: audioBlobConvert,
-        });
-
-        if (!response.ok) {
-            let errorDetails;
-
-            errorDetails = await response.json();
-
-            try {
-                errorDetails = await response.json();
-                throw new Error(`Transcription error: ${errorDetails.error.message}`);
-            } catch (jsonError) {
-                const errorText = await response.text();
-
-                throw new Error(`Transcription error: ${errorText}`);
-            }
-        }
-
-        const data = await response.json();
-
-        console.log("Transcription Text", data.DisplayText);
-
-        const transcriptionText = data.DisplayText;
+        const transcriptionText = await transcribeAudioMicrosoft(
+            langFrom,
+            audioBlobConvert,
+            baseEndpoint,
+            tokenData,
+            meetingId,
+            clientId
+        );
 
         await Promise.all(
             participantAndModeratorData.map(async (participant) => {
@@ -95,7 +63,9 @@ export const inPersonServiceMicrosoftMan = async (
                             tokenData,
                             participant.translationDialect.dialectCode,
                             langFromTranslation,
-                            "australiaeast"
+                            "australiaeast",
+                            meetingId,
+                            clientId
                         );
 
                         let translationSent = "";

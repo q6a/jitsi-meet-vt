@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// Export as default with token and region as parameters
 export default async function fetchAzureToken(region: string, token: string): Promise<string> {
     try {
         const endpoint = process.env.REACT_APP_AZURE_TTS_TOKEN_ENDPOINT;

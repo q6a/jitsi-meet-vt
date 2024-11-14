@@ -1,5 +1,3 @@
-// displayNameAndDialectService.ts
-
 export const createDisplayNameAndDialect = (
     nameToDisplay: string,
     moderators: any[],
