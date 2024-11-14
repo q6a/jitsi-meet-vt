@@ -4,12 +4,13 @@ async function translateTextMicrosoft(
     transcriptionTextParam: string,
     authToken: string,
     targetDialectCodeParam: string,
-    langFromParam = "",
-    regionParam = "australiaeast",
-    meetingId,
-    clientId
+    langFromParam: any = "",
+    regionParam: any = "australiaeast",
+    meetingId: string,
+    clientId: string
 ): Promise<string> {
     try {
+        
         const backendEndpoint = process.env.REACT_APP_TRANSLATE_API_ENDPOINT;
 
         if (!backendEndpoint) {
@@ -37,7 +38,7 @@ async function translateTextMicrosoft(
         const translatedText = response.data.data.translatedText;
 
         return translatedText;
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error translating text:", error);
         throw new Error("Failed to translate text");
     }
