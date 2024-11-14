@@ -3,17 +3,17 @@ import axios from "axios";
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
 
-const apiEndpoint = process.env.REACT_APP_TTS_MICROSOFT_API_ENDPOINT;
 
 export async function playVoiceFromMessage(text: any, state: IReduxState, textToSpeechCode: string) {
     const region = "australiaeast"; // Your Azure region
     const authToken = toState(state)["features/videotranslatorai"].jwtToken;
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const clientId = toState(state)["features/videotranslatorai"].clientId;
+    const apiEndpoint = process.env.REACT_APP_TTS_MICROSOFT_API_ENDPOINT;
 
     textToSpeechCode = textToSpeechCode.split(" ")[0];
 
-    if (!region || !authToken || !meetingId || !clientId) {
+    if (!region || !authToken || !meetingId || !clientId || !apiEndpoint) {
         throw new Error("One or more required variables are not set.");
     }
 
@@ -48,7 +48,7 @@ export async function playVoiceFromMessage(text: any, state: IReduxState, textTo
     }
 }
 
-function playAudioFromArrayBuffer(arrayBuffer) {
+function playAudioFromArrayBuffer(arrayBuffer: any) {
     const audioBlob = new Blob([arrayBuffer], { type: "audio/mp3" });
     const audioUrl = URL.createObjectURL(audioBlob);
 
@@ -61,7 +61,7 @@ function playAudioFromArrayBuffer(arrayBuffer) {
         console.log("Audio playback finished.");
     };
 
-    audio.onerror = (error) => {
+    audio.onerror = (error: any) => {
         console.error("Error playing audio:", error);
     };
 }
