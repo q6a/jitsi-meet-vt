@@ -84,12 +84,12 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
         timestamp: 0,
     },
     thisEntityData: {
-        participant_id: 0,
+        participant_id: "",
         name: "",
         email: "",
         transcriptionDialect: {
             dialectCode: "",
-            dialectId: 0,
+            dialectId: "",
             name: "",
             language: {
                 name: "",
@@ -98,7 +98,7 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
         },
         translationDialect: {
             dialectCode: "",
-            dialectId: 0,
+            dialectId: "",
             name: "",
             language: {
                 name: "",
