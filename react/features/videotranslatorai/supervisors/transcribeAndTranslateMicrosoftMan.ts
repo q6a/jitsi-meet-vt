@@ -39,7 +39,7 @@ export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, g
         for (const participant of participantAndModeratorData) {
             if (participant.name === participantName) {
                 langFrom = participant.transcriptionDialect?.dialectCode || langFrom;
-                langFromId = participant.transcriptionDialect?.dialectId || langFrom;
+                langFromId = participant.translationDialect?.dialectId || langFrom;
 
                 break;
             }
