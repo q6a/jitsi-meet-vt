@@ -86,7 +86,6 @@ export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, g
                             }
                         }
 
-                        // arrayPromises.push(await conference.sendPrivateTextMessage(participantId, translationSent));
                         await conference.sendPrivateTextMessage(participantId, translationSent);
                         const messageData: any = {
                             meeting_project_id: meetingId,
