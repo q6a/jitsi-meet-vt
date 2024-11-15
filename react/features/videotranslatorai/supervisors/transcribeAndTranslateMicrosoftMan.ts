@@ -33,11 +33,13 @@ export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, g
             throw new Error("Required environment variables are missing.");
         }
         let langFrom = "en-AU";
+        let langFromId = "";
 
         // Find the local participant's language name
         for (const participant of participantAndModeratorData) {
             if (participant.name === participantName) {
                 langFrom = participant.transcriptionDialect?.dialectCode || langFrom;
+                langFromId = participant.transcriptionDialect?.dialectId || langFrom;
 
                 break;
             }
@@ -67,8 +69,8 @@ export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, g
                         const translationText = await translateTextMicrosoft(
                             transcriptionText,
                             tokenData,
-                            participant.translationDialect.dialectCode,
-                            langFrom,
+                            participant.translationDialect.dialectId,
+                            langFromId,
                             "australiaeast",
                             meetingId,
                             clientId

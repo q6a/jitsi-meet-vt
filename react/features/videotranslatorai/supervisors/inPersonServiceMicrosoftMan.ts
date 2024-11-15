@@ -15,6 +15,7 @@ export const inPersonServiceMicrosoftMan = async (
     participantName: any = "",
     dialectIdFrom: any = "",
     dialectIdTo: any = "",
+    langFromTranslationId: any = "",
     isMessageCompleted = false
 ) => {
     const state: IReduxState = getState();
@@ -61,8 +62,8 @@ export const inPersonServiceMicrosoftMan = async (
                         const translationText = await translateTextMicrosoft(
                             transcriptionText,
                             tokenData,
-                            participant.translationDialect.dialectCode,
-                            langFromTranslation,
+                            participant.translationDialect.dialectId,
+                            langFromTranslationId,
                             "australiaeast",
                             meetingId,
                             clientId

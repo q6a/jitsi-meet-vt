@@ -15,6 +15,7 @@ export const inPersonServiceOpenAi = async (
     participantName: any = "",
     dialectIdFrom: any = "",
     dialectIdTo: any = "",
+    langFromTranslationId: any = "",
     isMessageCompleted = false,
     isContMode = false
 ) => {
@@ -75,8 +76,8 @@ export const inPersonServiceOpenAi = async (
                         const translationText = await translateTextMicrosoft(
                             transcriptionText,
                             tokenData,
-                            participant.translationDialect.dialectCode,
-                            langFromTranslation,
+                            participant.translationDialect.dialectId,
+                            langFromTranslationId,
                             "australiaeast",
                             meetingId,
                             clientId

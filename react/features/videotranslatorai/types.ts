@@ -16,7 +16,7 @@ export interface IMessage {
 
 export interface IRecognitionResultPayload {
     // Assuming translationMap is an object with key-value pairs
-    participantId: number;
+    participantId: string;
     transcription: string;
 
     // or another appropriate type
@@ -68,7 +68,7 @@ export interface IMessage {
 export interface IParticipant {
     email: string;
     name: string;
-    participant_id: number;
+    participant_id: string;
     transcriptionDialect: IDialect;
     translationDialect: IDialect;
     type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
@@ -76,7 +76,7 @@ export interface IParticipant {
 
 export interface IModerator {
     email: string;
-    moderator_id: number;
+    moderator_id: string;
     name: string;
     transcriptionDialect: IDialect;
     translationDialect: IDialect;
@@ -85,7 +85,7 @@ export interface IModerator {
 
 export interface ILinguist {
     email: string;
-    linguist_id: number;
+    linguist_id: string;
     name: string;
     type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
 }
@@ -93,7 +93,7 @@ export interface ILinguist {
 export interface IUserCreated {
     email: string;
     name: string;
-    user_created_id: number;
+    user_created_id: string;
 }
 
 export interface IClient {
@@ -120,7 +120,7 @@ export interface IMeetingData {
 export interface IEntityData {
     email: string;
     name: string;
-    participant_id: number;
+    participant_id: string;
     transcriptionDialect: IDialect;
     translationDialect: IDialect;
     type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could be other values as well
@@ -165,7 +165,7 @@ export interface IVideoTranslatorAiState {
 
 export interface IDialect {
     dialectCode: string;
-    dialectId: number;
+    dialectId: string;
     language: {
         languageId: string;
         name: string;
@@ -176,7 +176,7 @@ export interface IDialect {
 
 export interface IDialectMeeting {
     dialect_code: string;
-    dialect_id: number;
+    dialect_id: string;
     language: {
         language_id: string;
         name: string;
@@ -189,7 +189,7 @@ export interface IParticipantMeeting {
     participant: {
         email: string;
         name: string;
-        participant_id: number;
+        participant_id: string;
         transcription_dialect: IDialectMeeting;
         translation_dialect: IDialectMeeting;
     };
@@ -200,7 +200,7 @@ export interface IModeratorMeeting {
         dialects: IDialect[];
         email: string;
         name: string;
-        user_id: number;
+        user_id: string;
     };
 
     transcription_dialect: IDialectMeeting;
@@ -210,7 +210,7 @@ export interface IModeratorMeeting {
 export interface ILinguistMeeting {
     linguist: {
         email: string;
-        linguist_id: number;
+        linguist_id: string;
         name: string;
     };
 }

@@ -130,6 +130,7 @@ const InPersonOpenAi: FC = () => {
                                 langFromPersonOneTranslation,
                                 langFromPersonOneTranscriptionId,
                                 langFromPersonTwoTranslationId,
+                                langFromPersonOneTranslationId,
                                 false,
                                 false
                             )
@@ -143,7 +144,8 @@ const InPersonOpenAi: FC = () => {
                                 langFromPersonTwoTranscription,
                                 personTwoName,
                                 langFromPersonTwoTranslation,
-                                langFromPersonOneTranscriptionId,
+                                langFromPersonTwoTranscriptionId,
+                                langFromPersonOneTranslationId,
                                 langFromPersonTwoTranslationId,
                                 false,
                                 false

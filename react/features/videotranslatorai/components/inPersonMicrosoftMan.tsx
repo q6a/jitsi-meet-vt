@@ -130,6 +130,7 @@ const InPersonMicrosoftMan: FC = () => {
                                 langFromPersonOneTranslation,
                                 langFromPersonOneTranscriptionId,
                                 langFromPersonTwoTranslationId,
+                                langFromPersonOneTranslationId,
                                 false
                             )
                         );
@@ -142,7 +143,8 @@ const InPersonMicrosoftMan: FC = () => {
                                 langFromPersonTwoTranscription,
                                 personTwoName,
                                 langFromPersonTwoTranslation,
-                                langFromPersonOneTranscriptionId,
+                                langFromPersonTwoTranscriptionId,
+                                langFromPersonOneTranslationId,
                                 langFromPersonTwoTranslationId,
                                 false
                             )

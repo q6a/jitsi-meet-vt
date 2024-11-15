@@ -349,6 +349,7 @@ export const inPersonTranslateOpenAi =
         langFromTranslation: any,
         dialectIdFrom: any = "",
         dialectIdTo: any = "",
+        langFromTranslationId: any = "",
         isMessageCompleted: boolean,
         isContMode: boolean
     ) =>
@@ -367,6 +368,7 @@ export const inPersonTranslateOpenAi =
                 participantName,
                 dialectIdFrom,
                 dialectIdTo,
+                langFromTranslationId,
                 isMessageCompleted,
                 isContMode
             );
@@ -389,6 +391,7 @@ export const inPersonTranslateMicrosoftMan =
         langFromTranslation: any,
         dialectIdFrom: any = "",
         dialectIdTo: any = "",
+        langFromTranslationId: any = "",
         isMessageCompleted: boolean
     ) =>
     async (dispatch: any, getState: any) => {
@@ -405,6 +408,7 @@ export const inPersonTranslateMicrosoftMan =
                 participantName,
                 dialectIdFrom,
                 dialectIdTo,
+                langFromTranslationId,
                 isMessageCompleted
             );
 

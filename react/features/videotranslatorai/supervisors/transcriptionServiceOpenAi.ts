@@ -37,8 +37,7 @@ export const transcribeAndTranslateServiceOpenAi = async (
         for (const participant of participantAndModeratorData) {
             if (participant.name === participantName) {
                 langFrom = participant.transcriptionDialect?.dialectCode || langFrom;
-
-                langFromTranslation = participant.translationDialect.dialectCode;
+                langFromTranslation = participant.translationDialect.dialectId || langFromTranslation;
                 break;
             }
         }
@@ -68,7 +67,7 @@ export const transcribeAndTranslateServiceOpenAi = async (
                         const translationText = await translateTextMicrosoft(
                             transcriptionText,
                             tokenData,
-                            participant.translationDialect.dialectCode,
+                            participant.translationDialect.dialectId,
                             langFromTranslation,
                             "australiaeast",
                             meetingId,

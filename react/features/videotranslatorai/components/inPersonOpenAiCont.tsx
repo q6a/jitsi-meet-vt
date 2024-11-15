@@ -229,6 +229,7 @@ const InPersonOpenAiCont: FC = () => {
                                     langFromPersonOneTranslation,
                                     langFromPersonOneTranscriptionId,
                                     langFromPersonTwoTranslationId,
+                                    langFromPersonOneTranslationId,
                                     false,
                                     true
                                 )
@@ -244,6 +245,7 @@ const InPersonOpenAiCont: FC = () => {
                                     langFromPersonTwoTranslation,
                                     langFromPersonTwoTranscriptionId,
                                     langFromPersonOneTranslationId,
+                                    langFromPersonTwoTranslationId,
                                     false,
                                     true
                                 )
@@ -269,6 +271,7 @@ const InPersonOpenAiCont: FC = () => {
                                             langFromPersonOneTranslation,
                                             langFromPersonOneTranscriptionId,
                                             langFromPersonTwoTranslationId,
+                                            langFromPersonOneTranslationId,
                                             true,
                                             true
                                         )
@@ -284,6 +287,7 @@ const InPersonOpenAiCont: FC = () => {
                                             langFromPersonTwoTranslation,
                                             langFromPersonTwoTranscriptionId,
                                             langFromPersonOneTranslationId,
+                                            langFromPersonTwoTranslationId,
                                             true,
                                             true
                                         )
