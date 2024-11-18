@@ -9,7 +9,7 @@ export default async function genericUsageIntake(
     authToken: string
 ): Promise<boolean> {
     try {
-        const endpoint = process.env.REACT_APP_GENERIC_USAGE_ENDPOINT;
+        const endpoint = process.env.REACT_APP_GENERIC_USAGE_INTAKE_API_ENDPOINT;
 
         if (!endpoint) {
             throw new Error("Generic usage endpoint is not set in the environment variables.");
