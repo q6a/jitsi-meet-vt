@@ -31,7 +31,7 @@ export const inPersonServiceMicrosoftMan = async (
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const participantAndModeratorData = [...moderatorData, ...participantData];
 
-    const baseEndpoint = process.env.REACT_APP_MICROSOFT_SPEECH_TO_TEXT_ENDPOINT;
+    const baseEndpoint = process.env.REACT_APP_TRANSCRIBE_MICROSOFT_API_ENDPOINT;
     const speechRegion = process.env.REACT_APP_SPEECH_REGION_MICROSOFT_SDK;
 
     // Error checking for environment variables
