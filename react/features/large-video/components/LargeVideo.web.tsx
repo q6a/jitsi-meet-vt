@@ -207,6 +207,7 @@ class LargeVideo extends Component<IProps> {
 
             if (privateMessages.length > 0) {
                 messageToDisplay = privateMessages[privateMessages.length - 1].message;
+                this.forceUpdate(); // Trigger re-render to update the UI
             }
 
             this.lastMessageTimestamp = Date.now();
