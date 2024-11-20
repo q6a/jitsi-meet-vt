@@ -2,6 +2,7 @@ import clsx from "clsx";
 import React from "react";
 import { useSelector } from "react-redux";
 import { makeStyles } from "tss-react/mui";
+import { IReduxState } from "../../../app/types";
 
 import { withPixelLineHeight } from "../../../base/styles/functions.web";
 import Tooltip from "../../../base/tooltip/components/Tooltip";
@@ -39,7 +40,7 @@ const useStyles = makeStyles()((theme) => {
 const SubjectText = () => {
     // videotranslatorai
     // const subject = useSelector(getConferenceName);
-    const subject = useSelector((state) => state["features/videotranslatorai"]?.meetingName);
+    const subject = useSelector((state: IReduxState) => state["features/videotranslatorai"]?.meetingName);
 
     const { classes } = useStyles();
 
