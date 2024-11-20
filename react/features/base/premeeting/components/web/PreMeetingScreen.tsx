@@ -8,11 +8,11 @@ import DeviceStatus from '../../../../prejoin/components/web/preview/DeviceStatu
 import { isRoomNameEnabled } from '../../../../prejoin/functions';
 import Toolbox from '../../../../toolbox/components/web/Toolbox';
 import { isButtonEnabled } from '../../../../toolbox/functions.web';
-import { getConferenceName } from '../../../conference/functions';
 import { PREMEETING_BUTTONS, THIRD_PARTY_PREJOIN_BUTTONS } from '../../../config/constants';
 import { withPixelLineHeight } from '../../../styles/functions.web';
 import { isPreCallTestEnabled } from '../../functions';
 
+import { toState } from '../../../redux/functions';
 import ConnectionStatus from './ConnectionStatus';
 import Preview from './Preview';
 import RecordingWarning from './RecordingWarning';
@@ -243,6 +243,8 @@ function mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
 
     const { premeetingBackground } = state['features/dynamic-branding'];
 
+    //videotranslatorai
+    const meetingName = toState(state)["features/videotranslatorai"].meetingName;
     return {
         // For keeping backwards compat.: if we pass an empty hiddenPremeetingButtons
         // array through external api, we have all prejoin buttons present on premeeting
@@ -254,7 +256,10 @@ function mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
             : premeetingButtons.filter(b => isButtonEnabled(b, toolbarButtons)),
         _isPreCallTestEnabled: isPreCallTestEnabled(state),
         _premeetingBackground: premeetingBackground,
-        _roomName: isRoomNameEnabled(state) ? getConferenceName(state) : ''
+
+        //videotranslatorai
+        // _roomName: isRoomNameEnabled(state) ? getConferenceName(state) : ''
+        _roomName: isRoomNameEnabled(state) ? meetingName : ''
     };
 }
 
