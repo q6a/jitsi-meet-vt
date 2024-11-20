@@ -234,7 +234,6 @@ function mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
     );
 
     // videotranslatorai
-
     const meetingName = toState(state)["features/videotranslatorai"].meetingName;
 
     const { premeetingBackground } = state["features/dynamic-branding"];
