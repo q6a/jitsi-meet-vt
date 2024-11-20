@@ -95,9 +95,9 @@ const InPersonOpenAiCont: FC = () => {
     const intializeStream = async () => {
         const streamVar = await navigator.mediaDevices.getUserMedia({
             audio: {
-                sampleRate: 48000, // Sets the sample rate to 48 kHz (high quality)
+                sampleRate: 192000, // Sets the sample rate to 48 kHz (high quality)
                 channelCount: 2, // Sets stereo recording
-                sampleSize: 16, // Specifies 16-bit samples
+                sampleSize: 32, // Specifies 16-bit samples
                 echoCancellation: false, // Disables echo cancellation for cleaner input
                 noiseSuppression: false, // Disables noise suppression
                 autoGainControl: false, // Disables auto gain control
@@ -180,7 +180,7 @@ const InPersonOpenAiCont: FC = () => {
     vadScore$
         .pipe(
             throttleTime(270),
-            map((vadScore: VadScore) => vadScore >= 0.998), // Convert vadScore to boolean
+            map((vadScore: VadScore) => vadScore >= 0.99), // Convert vadScore to boolean
             distinctUntilChanged(), // Only emit on true/false change
             debounceTime(20) // Debounce to ensure stability
         )
