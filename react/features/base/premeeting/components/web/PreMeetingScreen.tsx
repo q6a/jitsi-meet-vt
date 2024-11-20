@@ -1,25 +1,24 @@
-import clsx from 'clsx';
-import React, { ReactNode } from 'react';
-import { connect } from 'react-redux';
-import { makeStyles } from 'tss-react/mui';
+import clsx from "clsx";
+import React, { ReactNode } from "react";
+import { connect } from "react-redux";
+import { makeStyles } from "tss-react/mui";
 
-import { IReduxState } from '../../../../app/types';
-import DeviceStatus from '../../../../prejoin/components/web/preview/DeviceStatus';
-import { isRoomNameEnabled } from '../../../../prejoin/functions';
-import Toolbox from '../../../../toolbox/components/web/Toolbox';
-import { isButtonEnabled } from '../../../../toolbox/functions.web';
-import { getConferenceName } from '../../../conference/functions';
-import { PREMEETING_BUTTONS, THIRD_PARTY_PREJOIN_BUTTONS } from '../../../config/constants';
-import { withPixelLineHeight } from '../../../styles/functions.web';
-import { isPreCallTestEnabled } from '../../functions';
+import { IReduxState } from "../../../../app/types";
+import DeviceStatus from "../../../../prejoin/components/web/preview/DeviceStatus";
+import { isRoomNameEnabled } from "../../../../prejoin/functions";
+import Toolbox from "../../../../toolbox/components/web/Toolbox";
+import { isButtonEnabled } from "../../../../toolbox/functions.web";
+import { PREMEETING_BUTTONS, THIRD_PARTY_PREJOIN_BUTTONS } from "../../../config/constants";
+import { toState } from "../../../redux/functions";
+import { withPixelLineHeight } from "../../../styles/functions.web";
+import { isPreCallTestEnabled } from "../../functions";
 
-import ConnectionStatus from './ConnectionStatus';
-import Preview from './Preview';
-import RecordingWarning from './RecordingWarning';
-import UnsafeRoomWarning from './UnsafeRoomWarning';
+import ConnectionStatus from "./ConnectionStatus";
+import Preview from "./Preview";
+import RecordingWarning from "./RecordingWarning";
+import UnsafeRoomWarning from "./UnsafeRoomWarning";
 
 interface IProps {
-
     /**
      * The list of toolbar buttons to render.
      */
@@ -101,75 +100,75 @@ interface IProps {
     videoTrack?: Object;
 }
 
-const useStyles = makeStyles()(theme => {
+const useStyles = makeStyles()((theme) => {
     return {
         container: {
-            height: '100%',
-            position: 'absolute',
-            inset: '0 0 0 0',
-            display: 'flex',
+            height: "100%",
+            position: "absolute",
+            inset: "0 0 0 0",
+            display: "flex",
             backgroundColor: theme.palette.ui01,
             zIndex: 252,
 
-            '@media (max-width: 720px)': {
-                flexDirection: 'column-reverse'
-            }
+            "@media (max-width: 720px)": {
+                flexDirection: "column-reverse",
+            },
         },
         content: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
             flexShrink: 0,
-            boxSizing: 'border-box',
-            margin: '0 48px',
-            padding: '24px 0 16px',
-            position: 'relative',
-            width: '300px',
-            height: '100%',
+            boxSizing: "border-box",
+            margin: "0 48px",
+            padding: "24px 0 16px",
+            position: "relative",
+            width: "300px",
+            height: "100%",
             zIndex: 252,
 
-            '@media (max-width: 720px)': {
-                height: 'auto',
-                margin: '0 auto'
+            "@media (max-width: 720px)": {
+                height: "auto",
+                margin: "0 auto",
             },
 
             // mobile phone landscape
-            '@media (max-width: 420px)': {
-                padding: '16px 16px 0 16px',
-                width: '100%'
+            "@media (max-width: 420px)": {
+                padding: "16px 16px 0 16px",
+                width: "100%",
             },
 
-            '@media (max-width: 400px)': {
-                padding: '16px'
-            }
+            "@media (max-width: 400px)": {
+                padding: "16px",
+            },
         },
         contentControls: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            margin: 'auto',
-            width: '100%'
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            margin: "auto",
+            width: "100%",
         },
         title: {
             ...withPixelLineHeight(theme.typography.heading4),
             color: `${theme.palette.text01}!important`,
             marginBottom: theme.spacing(3),
-            textAlign: 'center',
+            textAlign: "center",
 
-            '@media (max-width: 400px)': {
-                display: 'none'
-            }
+            "@media (max-width: 400px)": {
+                display: "none",
+            },
         },
         roomName: {
             ...withPixelLineHeight(theme.typography.heading5),
             color: theme.palette.text01,
             marginBottom: theme.spacing(4),
-            overflow: 'hidden',
-            textAlign: 'center',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            width: '100%'
-        }
+            overflow: "hidden",
+            textAlign: "center",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            width: "100%",
+        },
     };
 });
 
@@ -186,32 +185,28 @@ const PreMeetingScreen = ({
     skipPrejoinButton,
     title,
     videoMuted,
-    videoTrack
+    videoTrack,
 }: IProps) => {
     const { classes } = useStyles();
-    const style = _premeetingBackground ? {
-        background: _premeetingBackground,
-        backgroundPosition: 'center',
-        backgroundSize: 'cover'
-    } : {};
+    const style = _premeetingBackground
+        ? {
+              background: _premeetingBackground,
+              backgroundPosition: "center",
+              backgroundSize: "cover",
+          }
+        : {};
 
     return (
-        <div className = { clsx('premeeting-screen', classes.container, className) }>
-            <div style = { style }>
-                <div className = { classes.content }>
+        <div className={clsx("premeeting-screen", classes.container, className)}>
+            <div style={style}>
+                <div className={classes.content}>
                     {_isPreCallTestEnabled && <ConnectionStatus />}
 
-                    <div className = { classes.contentControls }>
-                        <h1 className = { classes.title }>
-                            {title}
-                        </h1>
-                        {_roomName && (
-                            <span className = { classes.roomName }>
-                                {_roomName}
-                            </span>
-                        )}
+                    <div className={classes.contentControls}>
+                        <h1 className={classes.title}>{title}</h1>
+                        {_roomName && <span className={classes.roomName}>{_roomName}</span>}
                         {children}
-                        {_buttons.length && <Toolbox toolbarButtons = { _buttons } />}
+                        {_buttons.length && <Toolbox toolbarButtons={_buttons} />}
                         {skipPrejoinButton}
                         {showUnsafeRoomWarning && <UnsafeRoomWarning />}
                         {showDeviceStatus && <DeviceStatus />}
@@ -219,13 +214,10 @@ const PreMeetingScreen = ({
                     </div>
                 </div>
             </div>
-            <Preview
-                videoMuted = { videoMuted }
-                videoTrack = { videoTrack } />
+            <Preview videoMuted={videoMuted} videoTrack={videoTrack} />
         </div>
     );
 };
-
 
 /**
  * Maps (parts of) the redux state to the React {@code Component} props.
@@ -235,13 +227,17 @@ const PreMeetingScreen = ({
  * @returns {Object}
  */
 function mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
-    const { hiddenPremeetingButtons } = state['features/base/config'];
-    const { toolbarButtons } = state['features/toolbox'];
-    const premeetingButtons = (ownProps.thirdParty
-        ? THIRD_PARTY_PREJOIN_BUTTONS
-        : PREMEETING_BUTTONS).filter((b: any) => !(hiddenPremeetingButtons || []).includes(b));
+    const { hiddenPremeetingButtons } = state["features/base/config"];
+    const { toolbarButtons } = state["features/toolbox"];
+    const premeetingButtons = (ownProps.thirdParty ? THIRD_PARTY_PREJOIN_BUTTONS : PREMEETING_BUTTONS).filter(
+        (b: any) => !(hiddenPremeetingButtons || []).includes(b)
+    );
 
-    const { premeetingBackground } = state['features/dynamic-branding'];
+    // videotranslatorai
+
+    const meetingName = toState(state)["features/videotranslatorai"].meetingName;
+
+    const { premeetingBackground } = state["features/dynamic-branding"];
 
     return {
         // For keeping backwards compat.: if we pass an empty hiddenPremeetingButtons
@@ -251,10 +247,14 @@ function mapStateToProps(state: IReduxState, ownProps: Partial<IProps>) {
         // toolbarButtons config overwrite.
         _buttons: hiddenPremeetingButtons
             ? premeetingButtons
-            : premeetingButtons.filter(b => isButtonEnabled(b, toolbarButtons)),
+            : premeetingButtons.filter((b) => isButtonEnabled(b, toolbarButtons)),
         _isPreCallTestEnabled: isPreCallTestEnabled(state),
         _premeetingBackground: premeetingBackground,
-        _roomName: isRoomNameEnabled(state) ? getConferenceName(state) : ''
+
+        // videotranslatorai
+        // _roomName: isRoomNameEnabled(state) ? getConferenceName(state) : ''
+
+        _roomName: isRoomNameEnabled(state) ? meetingName : "",
     };
 }
 
