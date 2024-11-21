@@ -187,7 +187,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
                         const audioBlob = new Blob(audioChunks, blobOptions);
 
-                        dispatch(translateOpenAi(audioBlob, true));
+                        dispatch(translateOpenAi(audioBlob, false));
                     }
                 } else {
                     offTimeout = setTimeout(() => {
