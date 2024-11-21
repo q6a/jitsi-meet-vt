@@ -49,8 +49,10 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
         translationConfig.speechRecognitionLanguage = langFrom || "en-US";
 
+        console.log("PARTICIPANT", participantAndModeratorData);
+
         for (const participant of participantAndModeratorData) {
-            if (participant.transcriptionDialect.dialectCode) {
+            if (participant.translationDialect.dialectCode) {
                 translationConfig.addTargetLanguage(participant.translationDialect.dialectCode);
             } else {
                 console.error(`No dialect code found for participant: ${participant.name}`);
