@@ -116,6 +116,11 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     }, []);
 
     const handleStartVAD = async () => {
+        if(isAudioMuted)
+        {
+            return;
+        }
+
         isRecording.current = true;
         intializeStream();
     };
