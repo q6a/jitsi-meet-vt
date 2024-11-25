@@ -320,7 +320,7 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
             </div>
         </Tooltip>
     );
-    a;
+
 };
 
 export default InPersonToggleButtonOpenAiCont;

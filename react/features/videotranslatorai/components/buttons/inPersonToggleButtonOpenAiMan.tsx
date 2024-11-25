@@ -148,7 +148,7 @@ const InPersonToggleButtonOpenAiMan: FC<InPersonButtonOpenAiManProps> = ({
             </div>
         </Tooltip>
     );
-    a;
+    
 };
 
 export default InPersonToggleButtonOpenAiMan;
