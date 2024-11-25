@@ -43,7 +43,7 @@ const InPersonToggleButtonMicrosoftMan: FC<InPersonButtonMicrosoftManProps> = ({
     const audioChunks = useRef<Blob[]>([]);
 
     const handleStartRecording = async () => {
-        if (isRecordingOther) {
+        if (isRecordingOther || isAudioMuted) {
             return;
         }
 
