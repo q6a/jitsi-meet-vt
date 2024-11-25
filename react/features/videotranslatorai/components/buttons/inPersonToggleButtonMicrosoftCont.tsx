@@ -77,7 +77,7 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
     }, [ttsVoiceoverActive]);
 
     const handleStartRecording = async () => {
-        if (isAudioMuted) {
+        if (isAudioMuted || isRecordingOther) {
             return;
         }
 
