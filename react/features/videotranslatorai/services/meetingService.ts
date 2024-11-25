@@ -20,6 +20,7 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
         if (response.data) {
             const data = response.data.data;
 
+            console.log("data.participant_meetings", data.participant_meetings);
             const participants = data.participant_meetings.map((pm: IParticipantMeeting) => {
                 return {
                     participantId: pm.participant.participant_id,
@@ -30,6 +31,7 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
                               name: pm.participant.transcription_dialect.name,
                               dialectCode: pm.participant.transcription_dialect.dialect_code,
                               dialectId: pm.participant.transcription_dialect.dialect_id,
+                              provider: pm.participant.transcription_dialect.provider,
                               language: {
                                   name: pm.participant.transcription_dialect.language.name,
                                   languageId: pm.participant.transcription_dialect.language.language_id,
@@ -40,6 +42,7 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
                         name: pm.participant.translation_dialect.name,
                         dialectCode: pm.participant.translation_dialect.dialect_code,
                         dialectId: pm.participant.translation_dialect.dialect_id,
+                        provider: pm.participant.transcription_dialect.provider,
                         language: {
                             name: pm.participant.translation_dialect.language.name,
                             languageId: pm.participant.translation_dialect.language.language_id,
@@ -59,6 +62,8 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
                         name: mm.transcription_dialect.name,
                         dialectCode: mm.transcription_dialect.dialect_code,
                         dialectId: mm.transcription_dialect.dialect_id,
+                        provider: mm.transcription_dialect.provider,
+
                         language: {
                             name: mm.transcription_dialect.language.name,
                             languageId: mm.transcription_dialect.language.language_id,
@@ -67,6 +72,7 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
                     translationDialect: {
                         name: mm.translation_dialect.name,
                         dialectCode: mm.translation_dialect.dialect_code,
+                        provider: mm.transcription_dialect.provider,
                         dialectId: mm.translation_dialect.dialect_id,
                         language: {
                             name: mm.translation_dialect.language.name,

@@ -1,23 +1,22 @@
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IReduxState } from "../../app/types";
-import { isLocalParticipantModerator } from "../../base/participants/functions";
-import { toState } from "../../base/redux/functions";
+import { IReduxState } from "../../../app/types";
+import { isLocalParticipantModerator } from "../../../base/participants/functions";
+import { toState } from "../../../base/redux/functions";
 import {
     inPersonStartRecordingPersonOne,
     inPersonStartRecordingPersonTwo,
     inPersonStopRecordingPersonOne,
     inPersonStopRecordingPersonTwo,
-    inPersonTranslateMicrosoftCont,
+    inPersonTranslateMicrosoftMan,
     startTextToSpeech,
-} from "../action.web";
-
-import InPersonButton from "./buttons/inPersonToggleButton";
-import SoundToggleButton from "./buttons/soundToggleButton";
+} from "../../action.web";
+import InPersonButton from "../buttons/inPersonToggleButton";
+import SoundToggleButton from "../buttons/soundToggleButton";
 let whichPerson = 0;
 
-const InPersonMicrosoftCont: FC = () => {
+const InPersonMicrosoftMan: FC = () => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
     const isModerator = useSelector(isLocalParticipantModerator);
@@ -31,14 +30,14 @@ const InPersonMicrosoftCont: FC = () => {
     const langFromPersonOneTranscription = moderatorData[0].transcriptionDialect.dialectCode;
     const langFromPersonTwoTranscription = participantData[0].transcriptionDialect.dialectCode;
 
+    const langFromPersonOneTranslation = moderatorData[0].translationDialect.dialectCode;
+    const langFromPersonTwoTranslation = participantData[0].translationDialect.dialectCode;
+
     const langFromPersonOneTranscriptionId = moderatorData[0].transcriptionDialect.dialectId;
     const langFromPersonTwoTranscriptionId = participantData[0].transcriptionDialect.dialectId;
 
     const langFromPersonOneTranslationId = moderatorData[0].translationDialect.dialectId;
     const langFromPersonTwoTranslationId = participantData[0].translationDialect.dialectId;
-
-    const langFromPersonOneTranslation = moderatorData[0].translationDialect.dialectCode;
-    const langFromPersonTwoTranslation = participantData[0].translationDialect.dialectCode;
 
     const toolTipContentPersonOne = moderatorData[0].translationDialect.name;
     const toolTipContenPersonTwo = participantData[0].translationDialect.name;
@@ -51,7 +50,7 @@ const InPersonMicrosoftCont: FC = () => {
     );
 
     const isAudioMuted = useSelector((state: IReduxState) => state["features/base/media"].audio.muted);
-    const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].completedMessages);
+    const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].messages);
 
     const ttsCodePersonOne = useSelector(
         (state: IReduxState) => state["features/videotranslatorai"].inPersontextToSpeechCodePersonOne
@@ -69,30 +68,10 @@ const InPersonMicrosoftCont: FC = () => {
         setIsSoundOn((prev) => !prev);
     };
 
-    const endTranscriptionRecognizer = () => {
-        new Promise<void>((resolve, reject) => {
-            const recognizerSdk = state["features/videotranslatorai"].microsoftRecognizerSDK;
-
-            if (!recognizerSdk) {
-                console.error("SDK recognizer not set");
-                reject(new Error("SDK recognizer not set"));
-
-                return;
-            }
-            recognizerSdk.stopContinuousRecognitionAsync(
-                () => {
-                    resolve();
-                },
-                (err: any) => {
-                    console.error("Error stopping transcription:", err);
-                    reject(err);
-                }
-            );
-        });
-    };
-
     useEffect(() => {
         if (!isSoundOn) {
+            whichPerson = 0;
+
             return;
         }
         if (messages !== previousMessages) {
@@ -100,72 +79,114 @@ const InPersonMicrosoftCont: FC = () => {
 
             if (lastMessage) {
                 if (whichPerson === 1) {
-                    dispatch(startTextToSpeech(lastMessage, ttsCodePersonTwo));
+                    dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonTwo));
                 }
 
                 if (whichPerson === 2) {
-                    dispatch(startTextToSpeech(lastMessage, ttsCodePersonOne));
+                    dispatch(startTextToSpeech(lastMessage.message, ttsCodePersonOne));
                 }
             }
             setPreviousMessages(messages);
         }
+
+        whichPerson = 0;
     }, [messages, previousMessages]);
 
     const handleStartTranscription = async () => {
         if (!isAudioMuted) {
-            if (whichPerson === 1 && !isRecordingPersonTwo) {
-                dispatch(
-                    inPersonTranslateMicrosoftCont(
-                        langFromPersonOneTranscription,
-                        langFromPersonTwoTranslation,
-                        personOneName,
-                        langFromPersonOneTranscriptionId,
-                        langFromPersonTwoTranslationId
-                    )
-                );
-            }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        sampleRate: 48000, // Sets the sample rate to 48 kHz (high quality)
+                        channelCount: 2, // Sets stereo recording
+                        sampleSize: 16, // Specifies 16-bit samples
+                        echoCancellation: false, // Disables echo cancellation for cleaner input
+                        noiseSuppression: false, // Disables noise suppression
+                        autoGainControl: false, // Disables auto gain control
+                    },
+                });
+                const recorder = new MediaRecorder(stream);
 
-            if (whichPerson === 2 && !isRecordingPersonOne) {
-                dispatch(
-                    inPersonTranslateMicrosoftCont(
-                        langFromPersonTwoTranscription,
-                        langFromPersonOneTranslation,
-                        personTwoName,
-                        langFromPersonTwoTranscriptionId,
-                        langFromPersonOneTranslationId
-                    )
-                );
+                mediaRecorder.current = recorder;
+
+                recorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.current.push(event.data);
+                    }
+                };
+
+                recorder.onstop = () => {
+                    const blobOptions: BlobOptions = { type: "audio/webm", lastModified: Date.now() };
+
+                    const recordedBlob = new Blob(audioChunks.current, blobOptions);
+
+                    if (whichPerson === 1 && !isRecordingPersonTwo) {
+                        dispatch(
+                            inPersonTranslateMicrosoftMan(
+                                recordedBlob,
+                                langFromPersonOneTranscription,
+                                personOneName,
+                                langFromPersonOneTranslation,
+                                langFromPersonOneTranscriptionId,
+                                langFromPersonTwoTranslationId,
+                                langFromPersonOneTranslationId,
+                                false
+                            )
+                        );
+                    }
+
+                    if (whichPerson === 2 && !isRecordingPersonOne) {
+                        dispatch(
+                            inPersonTranslateMicrosoftMan(
+                                recordedBlob,
+                                langFromPersonTwoTranscription,
+                                personTwoName,
+                                langFromPersonTwoTranslation,
+                                langFromPersonTwoTranscriptionId,
+                                langFromPersonOneTranslationId,
+                                langFromPersonTwoTranslationId,
+                                false
+                            )
+                        );
+                    }
+                    audioChunks.current = [];
+                };
+
+                recorder.start();
+            } catch (error) {
+                console.error("Error accessing media devices:", error);
             }
-            audioChunks.current = [];
         }
     };
 
     const handleStartTranscriptionOne = () => {
         if (!isAudioMuted && !isRecordingPersonTwo) {
             dispatch(inPersonStartRecordingPersonOne());
-            whichPerson = 1;
             handleStartTranscription();
+            whichPerson = 1;
         }
     };
 
     const handleStopTranscriptionOne = () => {
-        endTranscriptionRecognizer();
-        dispatch(inPersonStopRecordingPersonOne());
-        whichPerson = 0;
+        if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
+            mediaRecorder.current.stop();
+            dispatch(inPersonStopRecordingPersonOne());
+        }
     };
 
     const handleStartTranscriptionTwo = () => {
         if (!isAudioMuted && !isRecordingPersonOne) {
             dispatch(inPersonStartRecordingPersonTwo());
-            whichPerson = 2;
             handleStartTranscription();
+            whichPerson = 2;
         }
     };
 
     const handleStopTranscriptionTwo = () => {
-        dispatch(inPersonStopRecordingPersonTwo());
-        endTranscriptionRecognizer();
-        whichPerson = 0;
+        if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
+            mediaRecorder.current.stop();
+            dispatch(inPersonStopRecordingPersonTwo());
+        }
     };
 
     useEffect(() => {
@@ -212,4 +233,4 @@ const InPersonMicrosoftCont: FC = () => {
     );
 };
 
-export default InPersonMicrosoftCont;
+export default InPersonMicrosoftMan;

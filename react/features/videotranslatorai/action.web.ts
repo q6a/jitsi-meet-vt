@@ -291,15 +291,12 @@ export const startTextToSpeech = (text: string, textToSpeechCode: string) => asy
         const state: IReduxState = getState();
 
         // Call the playVoiceFromMessage function with the text and state
-        await playVoiceFromMessage(text, state, textToSpeechCode);
+        await playVoiceFromMessage(text, state, textToSpeechCode, dispatch);
 
         // Handle success if needed
     } catch (err) {
         console.error("Error during text-to-speech:", err);
-
-        dispatch(setIsPlayingTTS(false));
     } finally {
-        dispatch(setIsPlayingTTS(false)); // Ensure isPlaying is reset after completion
     }
 };
 

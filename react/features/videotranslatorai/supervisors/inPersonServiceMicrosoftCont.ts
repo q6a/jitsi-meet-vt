@@ -2,7 +2,7 @@ import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
-import { setMicrosoftRecognizerSDK } from "../action.web";
+import { setIsTranscribing, setMicrosoftRecognizerSDK } from "../action.web";
 import fetchAzureToken from "../services/fetchAzureToken"; // Adjust the path as necessary
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import genericUsageIntake from "../services/usageService";
@@ -212,3 +212,25 @@ export const inPersonServiceMicrosoftCont = async (
         console.error("Error during transcription and translation:", err);
     }
 };
+
+export const stopTranscriptionService = (dispatch: any, state: any) =>
+    new Promise<void>((resolve, reject) => {
+        const recognizerSdk = state["features/videotranslatorai"].microsoftRecognizerSDK;
+
+        if (!recognizerSdk) {
+            console.error("SDK recognizer not set");
+            reject(new Error("SDK recognizer not set"));
+
+            return;
+        }
+        recognizerSdk.stopContinuousRecognitionAsync(
+            () => {
+                dispatch(setIsTranscribing(false));
+                resolve();
+            },
+            (err: any) => {
+                console.error("Error stopping transcription:", err);
+                reject(err);
+            }
+        );
+    });

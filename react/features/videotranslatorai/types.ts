@@ -170,8 +170,9 @@ export interface IDialect {
         languageId: string;
         name: string;
     };
-
     name: string;
+
+    provider: string;
 }
 
 export interface IDialectMeeting {
@@ -181,8 +182,8 @@ export interface IDialectMeeting {
         language_id: string;
         name: string;
     };
-
     name: string;
+    provider: string;
 }
 
 export interface IParticipantMeeting {

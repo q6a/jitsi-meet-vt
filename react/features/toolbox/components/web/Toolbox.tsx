@@ -9,10 +9,7 @@ import { getLocalParticipant, isLocalParticipantModerator } from "../../../base/
 import ContextMenu from "../../../base/ui/components/web/ContextMenu";
 import { isReactionsButtonEnabled, shouldDisplayReactionsButtons } from "../../../reactions/functions.web";
 import { isTranscribing } from "../../../transcribing/functions";
-import InPersonMicrosoftCont from "../../../videotranslatorai/components/inPersonMicrosoftCont";
-import InPersonMicrosoftMan from "../../../videotranslatorai/components/inPersonMicrosoftMan";
-import InPersonOpenAi from "../../../videotranslatorai/components/inPersonOpenAi";
-import InPersonOpenAiCont from "../../../videotranslatorai/components/inPersonOpenAiCont";
+import InPersonModular from "../../../videotranslatorai/components/inPersonModular";
 import TranscriptionAndTranslationButton from "../../../videotranslatorai/components/transcriptionAndTranslationMicrosoft";
 import TranscriptionAndTranslationButtonMicrosoftMan from "../../../videotranslatorai/components/transcriptionAndTranslationMicrosoftMan";
 import TranscriptionAndTranslationOpenAi from "../../../videotranslatorai/components/transcriptionAndTranslationOpenAi";
@@ -311,25 +308,7 @@ export default function Toolbox({ toolbarButtons }: IProps) {
                             meetingProviderVideoTranslatoriAi === "OpenAI" &&
                             meetingModeVideoTranslatorAi === "continuous" && <TranscriptionAndTranslationOpenAiCont />}
 
-                        {conference &&
-                            meetingTypeVideoTranslatorAi === "in_person" &&
-                            meetingProviderVideoTranslatoriAi === "OpenAI" &&
-                            meetingModeVideoTranslatorAi === "manual" && <InPersonOpenAi />}
-
-                        {conference &&
-                            meetingTypeVideoTranslatorAi === "in_person" &&
-                            meetingProviderVideoTranslatoriAi === "OpenAI" &&
-                            meetingModeVideoTranslatorAi === "continuous" && <InPersonOpenAiCont />}
-
-                        {conference &&
-                            meetingTypeVideoTranslatorAi === "in_person" &&
-                            meetingProviderVideoTranslatoriAi === "Microsoft" &&
-                            meetingModeVideoTranslatorAi === "manual" && <InPersonMicrosoftMan />}
-
-                        {conference &&
-                            meetingTypeVideoTranslatorAi === "in_person" &&
-                            meetingProviderVideoTranslatoriAi === "Microsoft" &&
-                            meetingModeVideoTranslatorAi === "continuous" && <InPersonMicrosoftCont />}
+                        {conference && meetingTypeVideoTranslatorAi === "in_person" && <InPersonModular />}
 
                         {/* {conference && <InPersonMicrosoftCont />} */}
                         {/* {conference && <InPersonOpenAi />} */}

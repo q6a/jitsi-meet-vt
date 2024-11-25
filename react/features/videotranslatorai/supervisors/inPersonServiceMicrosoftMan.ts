@@ -51,6 +51,8 @@ export const inPersonServiceMicrosoftMan = async (
             clientId
         );
 
+        console.log("Transcription Text", transcriptionText);
+
         await Promise.all(
             participantAndModeratorData.map(async (participant) => {
                 if (

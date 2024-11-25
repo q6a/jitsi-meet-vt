@@ -3,10 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { Subject } from "rxjs";
 import { debounceTime, distinctUntilChanged, map, throttleTime } from "rxjs/operators";
 
-import { IReduxState } from "../../app/types";
-import { isLocalParticipantModerator } from "../../base/participants/functions";
-import { toState } from "../../base/redux/functions";
-import { createRnnoiseProcessor } from "../../stream-effects/rnnoise"; // Import the create function
+import { IReduxState } from "../../../app/types";
+import { isLocalParticipantModerator } from "../../../base/participants/functions";
+import { toState } from "../../../base/redux/functions";
+import { createRnnoiseProcessor } from "../../../stream-effects/rnnoise"; // Import the create function
 import {
     inPersonStartRecordingPersonOne,
     inPersonStartRecordingPersonTwo,
@@ -14,10 +14,9 @@ import {
     inPersonStopRecordingPersonTwo,
     inPersonTranslateOpenAi,
     startTextToSpeech,
-} from "../action.web";
-
-import InPersonButton from "./buttons/inPersonToggleButton";
-import SoundToggleButton from "./buttons/soundToggleButton";
+} from "../../action.web";
+import InPersonButton from "../buttons/inPersonToggleButton";
+import SoundToggleButton from "../buttons/soundToggleButton";
 let whichPerson = 0;
 
 type VadScore = number;
