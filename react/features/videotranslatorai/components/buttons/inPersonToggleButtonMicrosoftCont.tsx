@@ -77,6 +77,10 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
     }, [ttsVoiceoverActive]);
 
     const handleStartRecording = async () => {
+        if (isAudioMuted) {
+            return;
+        }
+
         dispatch(
             inPersonTranslateMicrosoftCont(
                 langFromTranscription,
