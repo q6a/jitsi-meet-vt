@@ -91,6 +91,7 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
             dialectCode: "",
             dialectId: "",
             name: "",
+            provider: "",
             language: {
                 name: "",
                 languageId: "",
@@ -100,6 +101,7 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
             dialectCode: "",
             dialectId: "",
             name: "",
+            provider: "",
             language: {
                 name: "",
                 languageId: "",

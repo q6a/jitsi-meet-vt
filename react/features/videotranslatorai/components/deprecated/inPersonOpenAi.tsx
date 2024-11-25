@@ -1,9 +1,9 @@
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { IReduxState } from "../../app/types";
-import { isLocalParticipantModerator } from "../../base/participants/functions";
-import { toState } from "../../base/redux/functions";
+import { IReduxState } from "../../../app/types";
+import { isLocalParticipantModerator } from "../../../base/participants/functions";
+import { toState } from "../../../base/redux/functions";
 import {
     inPersonStartRecordingPersonOne,
     inPersonStartRecordingPersonTwo,
@@ -11,10 +11,10 @@ import {
     inPersonStopRecordingPersonTwo,
     inPersonTranslateOpenAi,
     startTextToSpeech,
-} from "../action.web";
+} from "../../action.web";
 
-import InPersonButton from "./buttons/inPersonToggleButton";
-import SoundToggleButton from "./buttons/soundToggleButton";
+import InPersonButton from "../buttons/inPersonToggleButton";
+import SoundToggleButton from "../buttons/soundToggleButton";
 let whichPerson = 0;
 
 const InPersonOpenAi: FC = () => {
