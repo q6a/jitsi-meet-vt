@@ -160,7 +160,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
             if (isVoiceActive !== stateVar) {
                 isVoiceActive = stateVar;
 
-                if (isVoiceActive) {
+                if (isVoiceActive && !isAudioMuted) {
                     if (offTimeout) {
                         clearTimeout(offTimeout);
                     }
@@ -221,6 +221,12 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     function handleVADScore(vadScore: VadScore): void {
         vadScore$.next(vadScore);
     }
+
+    useEffect(() => {
+        if (isAudioMuted) {
+            handleStopVAD();
+        }
+    }, [isAudioMuted]);
 
     useEffect(() => {
         if (!isSoundOn) {
