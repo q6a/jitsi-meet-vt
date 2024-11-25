@@ -44,7 +44,7 @@ const InPersonToggleButtonOpenAiMan: FC<InPersonButtonOpenAiManProps> = ({
     const audioChunks = useRef<Blob[]>([]);
 
     const handleStartRecording = async () => {
-        if (isAudioMuted || isRecordingOther) {
+        if (isAudioMuted || isRecordingOther || !isRecording) {
             onStopRecording();
 
             return;
@@ -148,7 +148,6 @@ const InPersonToggleButtonOpenAiMan: FC<InPersonButtonOpenAiManProps> = ({
             </div>
         </Tooltip>
     );
-    
 };
 
 export default InPersonToggleButtonOpenAiMan;
