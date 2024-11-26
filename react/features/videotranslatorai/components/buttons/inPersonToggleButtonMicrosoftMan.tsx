@@ -1,4 +1,4 @@
-import React, { FC, useRef } from "react";
+import React, { FC, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 
 import Tooltip from "../../../base/tooltip/components/Tooltip";
@@ -89,7 +89,6 @@ const InPersonToggleButtonMicrosoftMan: FC<InPersonButtonMicrosoftManProps> = ({
             };
 
             recorder.start();
-            onStartRecording();
         } catch (error) {
             console.error("Error accessing media devices:", error);
         }
@@ -98,16 +97,30 @@ const InPersonToggleButtonMicrosoftMan: FC<InPersonButtonMicrosoftManProps> = ({
     const handleStopRecording = () => {
         if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
             mediaRecorder.current.stop();
-            onStopRecording();
         }
     };
+
+    useEffect(() => {
+        if (isRecording && !isAudioMuted && !isRecordingOther) {
+            console.log("Starting recording via effect");
+            handleStartRecording();
+        } else {
+            handleStopRecording();
+        }
+    }, [isRecording, isAudioMuted, isRecordingOther]);
 
     return (
         <Tooltip containerClassName="transcription-tooltip" content={tooltipContent} position="top">
             <div className="toolbox-icon">
                 <div
                     className="circle-region"
-                    onClick={isRecording ? handleStopRecording : handleStartRecording}
+                    onClick={() => {
+                        if (isRecording) {
+                            onStopRecording();
+                        } else {
+                            onStartRecording();
+                        }
+                    }}
                     style={{
                         backgroundColor: isRecording ? "green" : "transparent",
                         cursor: "pointer",

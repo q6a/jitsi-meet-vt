@@ -100,17 +100,10 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
         audioChunks.current = [];
 
         isRecordingLocal.current = false;
-        onStopRecording();
     };
 
-    useEffect(() => {
-        if (isAudioMuted) {
-            handleStopRecording();
-        }
-    }, [isAudioMuted]);
-
     const handleStartRecordingInternal = async () => {
-        if (isRecordingOther || isAudioMuted || !isRecordingLocal.current) {
+        if (isRecordingOther || isAudioMuted) {
             return;
         }
 
@@ -168,7 +161,6 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
 
     const handleStartRecording = async () => {
         isRecordingLocal.current = true;
-        onStartRecording();
         handleStartRecordingInternal();
     };
 
@@ -278,12 +270,27 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
             }
         });
 
+    useEffect(() => {
+        if (isRecording && !isAudioMuted && !isRecordingOther) {
+            console.log("Starting recording via effect");
+            handleStartRecording();
+        } else {
+            handleStopRecording();
+        }
+    }, [isRecording, isAudioMuted, isRecordingOther]);
+
     return (
         <Tooltip containerClassName="transcription-tooltip" content={tooltipContent} position="top">
             <div className="toolbox-icon">
                 <div
                     className="circle-region"
-                    onClick={isRecording ? handleStopRecording : handleStartRecording}
+                    onClick={() => {
+                        if (isRecording) {
+                            onStopRecording();
+                        } else {
+                            onStartRecording();
+                        }
+                    }}
                     style={{
                         backgroundColor: isRecording ? "green" : "transparent",
                         cursor: "pointer",
@@ -320,7 +327,6 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
             </div>
         </Tooltip>
     );
-
 };
 
 export default InPersonToggleButtonOpenAiCont;

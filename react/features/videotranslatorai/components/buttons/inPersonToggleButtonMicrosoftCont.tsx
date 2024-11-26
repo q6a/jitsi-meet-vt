@@ -77,6 +77,7 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
     }, [ttsVoiceoverActive]);
 
     const handleStartRecording = async () => {
+        console.log("isRecording", isRecording);
         if (isAudioMuted || isRecordingOther || !isRecording) {
             return;
         }
@@ -90,21 +91,34 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
                 langFromOtherPersonTranslationId
             )
         );
-        onStartRecording();
     };
 
     const handleStopRecording = () => {
         dispatch(stopTranscription());
         stopTranscriptionService(dispatch, state);
-        onStopRecording();
     };
+
+    useEffect(() => {
+        if (isRecording && !isAudioMuted && !isRecordingOther) {
+            console.log("Starting recording via effect");
+            handleStartRecording();
+        } else {
+            handleStopRecording();
+        }
+    }, [isRecording, isAudioMuted, isRecordingOther]);
 
     return (
         <Tooltip containerClassName="transcription-tooltip" content={tooltipContent} position="top">
             <div className="toolbox-icon">
                 <div
                     className="circle-region"
-                    onClick={isRecording ? handleStopRecording : handleStartRecording}
+                    onClick={() => {
+                        if (isRecording) {
+                            onStopRecording();
+                        } else {
+                            onStartRecording();
+                        }
+                    }}
                     style={{
                         backgroundColor: isRecording ? "green" : "transparent",
                         cursor: "pointer",
