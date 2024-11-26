@@ -66,6 +66,8 @@ function playAudioFromArrayBuffer(arrayBuffer: any, dispatch: any) {
     };
 
     audio.onerror = (error: any) => {
+        dispatch(setIsPlayingTTS(false));
+
         console.error("Error playing audio:", error);
     };
 }

@@ -4,10 +4,12 @@ import { useDispatch } from "react-redux";
 import Tooltip from "../../../base/tooltip/components/Tooltip";
 import { inPersonTranslateOpenAi } from "../../action.web";
 import "./transcriptionButton.css";
+const debounceTimeout: NodeJS.Timeout | null = null;
 
 interface InPersonButtonOpenAiManProps {
     buttonTextValue: string;
 
+    handleDebouncedClick: (callback: () => void) => void;
     isAudioMuted: boolean;
     isRecording: boolean;
     isRecordingOther: boolean;
@@ -15,6 +17,7 @@ interface InPersonButtonOpenAiManProps {
     langFromTranscription: string;
     langFromTranscriptionId: string;
     langFromTranslation: string;
+
     langFromTranslationId: string;
     onStartRecording: () => void;
 
@@ -38,6 +41,7 @@ const InPersonToggleButtonOpenAiMan: FC<InPersonButtonOpenAiManProps> = ({
     buttonTextValue,
     onStartRecording,
     onStopRecording,
+    handleDebouncedClick,
 }) => {
     const dispatch = useDispatch();
     const mediaRecorder = useRef<MediaRecorder | null>(null);
@@ -106,25 +110,28 @@ const InPersonToggleButtonOpenAiMan: FC<InPersonButtonOpenAiManProps> = ({
 
     useEffect(() => {
         if (isRecording && !isAudioMuted && !isRecordingOther) {
-            console.log("Starting recording via effect");
             handleStartRecording();
         } else {
             handleStopRecording();
         }
     }, [isRecording, isAudioMuted, isRecordingOther]);
 
+    const handleButtonClick = () => {
+        handleDebouncedClick(() => {
+            if (isRecording) {
+                onStopRecording();
+            } else if (!isRecording && !isRecordingOther && !isAudioMuted) {
+                onStartRecording();
+            }
+        });
+    };
+
     return (
         <Tooltip containerClassName="transcription-tooltip" content={tooltipContent} position="top">
             <div className="toolbox-icon">
                 <div
                     className="circle-region"
-                    onClick={() => {
-                        if (isRecording) {
-                            onStopRecording();
-                        } else {
-                            onStartRecording();
-                        }
-                    }}
+                    onClick={handleButtonClick}
                     style={{
                         backgroundColor: isRecording ? "green" : "transparent",
                         cursor: "pointer",

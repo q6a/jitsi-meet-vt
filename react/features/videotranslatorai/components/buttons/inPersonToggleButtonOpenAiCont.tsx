@@ -16,9 +16,12 @@ const vadScore$ = new Subject<number>(); // Specify Subject<number>
 let offTimeout: any = 0;
 let isVoiceActive = false; // Tracks current state (on/off)
 
+const debounceTimeout: NodeJS.Timeout | null = null;
+
 interface InPersonButtonOpenAiContProps {
     buttonTextValue: string;
 
+    handleDebouncedClick: (callback: () => void) => void;
     isAudioMuted: boolean;
     isRecording: boolean;
     isRecordingOther: boolean;
@@ -49,6 +52,7 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
     buttonTextValue,
     onStartRecording,
     onStopRecording,
+    handleDebouncedClick,
 }) => {
     const dispatch = useDispatch();
     const mediaRecorder = useRef<MediaRecorder | null>(null);
@@ -279,18 +283,22 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
         }
     }, [isRecording, isAudioMuted, isRecordingOther]);
 
+    const handleButtonClick = () => {
+        handleDebouncedClick(() => {
+            if (isRecording) {
+                onStopRecording();
+            } else if (!isRecording && !isRecordingOther && !isAudioMuted) {
+                onStartRecording();
+            }
+        });
+    };
+
     return (
         <Tooltip containerClassName="transcription-tooltip" content={tooltipContent} position="top">
             <div className="toolbox-icon">
                 <div
                     className="circle-region"
-                    onClick={() => {
-                        if (isRecording) {
-                            onStopRecording();
-                        } else {
-                            onStartRecording();
-                        }
-                    }}
+                    onClick={handleButtonClick}
                     style={{
                         backgroundColor: isRecording ? "green" : "transparent",
                         cursor: "pointer",

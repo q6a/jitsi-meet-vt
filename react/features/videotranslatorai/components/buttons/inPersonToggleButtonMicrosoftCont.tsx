@@ -3,13 +3,16 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../../app/types";
 import Tooltip from "../../../base/tooltip/components/Tooltip";
-import { inPersonTranslateMicrosoftCont, stopTranscription } from "../../action.web";
+import { inPersonTranslateMicrosoftCont } from "../../action.web";
 import { stopTranscriptionService } from "../../supervisors/inPersonServiceMicrosoftCont";
 import "./transcriptionButton.css";
+
+const debounceTimeout: NodeJS.Timeout | null = null;
 
 interface InPersonButtonMicrosoftContProps {
     // Add this prop
     buttonTextValue: string;
+    handleDebouncedClick: (callback: () => void) => void;
     isAudioMuted: boolean;
     isRecording: boolean;
     isRecordingOther: boolean;
@@ -40,45 +43,20 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
     langFromOtherPersonTranslation,
     onStartRecording,
     onStopRecording,
+    handleDebouncedClick,
 }) => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state); // Access getState-like functionality
 
     // Use useSelector to get the latest ttsVoiceoverActive value
     const ttsVoiceoverActive = useSelector((state: IReduxState) => state["features/videotranslatorai"].isPlayingTTS);
+    const isInActiveState = useRef<number>(0);
 
     // Use a ref to store ttsVoiceoverActive so it's accessible in the RxJS subscription
     const ttsVoiceoverActiveRef = useRef(ttsVoiceoverActive);
 
-    useEffect(() => {
-        if (isAudioMuted) {
-            stopTranscriptionService(dispatch, state);
-        }
-    }, [isAudioMuted]);
-
-    useEffect(() => {
-        ttsVoiceoverActiveRef.current = ttsVoiceoverActive;
-
-        if (ttsVoiceoverActiveRef.current === true) {
-            stopTranscriptionService(dispatch, state);
-        }
-
-        if (ttsVoiceoverActiveRef.current === false && isRecording) {
-            dispatch(
-                inPersonTranslateMicrosoftCont(
-                    langFromTranscription,
-                    langFromOtherPersonTranslation,
-                    personName,
-                    langFromTranscriptionId,
-                    langFromOtherPersonTranslationId
-                )
-            );
-        }
-    }, [ttsVoiceoverActive]);
-
     const handleStartRecording = async () => {
-        console.log("isRecording", isRecording);
-        if (isAudioMuted || isRecordingOther || !isRecording) {
+        if (isAudioMuted || isRecordingOther || !isRecording || isInActiveState.current === 1) {
             return;
         }
 
@@ -94,31 +72,61 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
     };
 
     const handleStopRecording = () => {
-        dispatch(stopTranscription());
+        // dispatch(stopTranscription());
         stopTranscriptionService(dispatch, state);
     };
 
     useEffect(() => {
-        if (isRecording && !isAudioMuted && !isRecordingOther) {
-            console.log("Starting recording via effect");
+        if (
+            isRecording &&
+            !isAudioMuted &&
+            !isRecordingOther &&
+            isInActiveState.current === 0 &&
+            !ttsVoiceoverActiveRef.current
+        ) {
             handleStartRecording();
+            isInActiveState.current = 1;
         } else {
             handleStopRecording();
+            isInActiveState.current = 0;
         }
     }, [isRecording, isAudioMuted, isRecordingOther]);
+
+    const handleButtonClick = () => {
+        handleDebouncedClick(() => {
+            if (isRecording) {
+                onStopRecording();
+            } else if (
+                !isRecording &&
+                !isRecordingOther &&
+                !isAudioMuted &&
+                isInActiveState.current === 0 &&
+                !ttsVoiceoverActiveRef.current
+            ) {
+                stopTranscriptionService(dispatch, state);
+                onStartRecording();
+            }
+        });
+    };
+
+    useEffect(() => {
+        ttsVoiceoverActiveRef.current = ttsVoiceoverActive;
+
+        if (ttsVoiceoverActiveRef.current === true) {
+            stopTranscriptionService(dispatch, state);
+        }
+
+        if (ttsVoiceoverActiveRef.current === false) {
+            handleStartRecording();
+        }
+    }, [ttsVoiceoverActive]);
 
     return (
         <Tooltip containerClassName="transcription-tooltip" content={tooltipContent} position="top">
             <div className="toolbox-icon">
                 <div
                     className="circle-region"
-                    onClick={() => {
-                        if (isRecording) {
-                            onStopRecording();
-                        } else {
-                            onStartRecording();
-                        }
-                    }}
+                    onClick={handleButtonClick}
                     style={{
                         backgroundColor: isRecording ? "green" : "transparent",
                         cursor: "pointer",

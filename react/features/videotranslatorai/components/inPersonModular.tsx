@@ -75,6 +75,17 @@ const InPersonModular: FC = () => {
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
     };
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null); // Shared debounce timeout
+
+    const handleDebouncedClick = (callback: () => void) => {
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+
+        debounceTimeout.current = setTimeout(() => {
+            callback();
+        }, 300); // Shared debounce time
+    };
 
     useEffect(() => {
         if (!isSoundOn) {
@@ -147,6 +158,7 @@ const InPersonModular: FC = () => {
             return providerPersonOne === "Microsoft" ? (
                 <InPersonToggleButtonMicrosoftCont
                     buttonTextValue={"1"}
+                    handleDebouncedClick={handleDebouncedClick} // Pass the debounced handler
                     isAudioMuted={isAudioMuted}
                     isRecording={isRecordingPersonOne}
                     isRecordingOther={isRecordingPersonTwo}
@@ -164,6 +176,7 @@ const InPersonModular: FC = () => {
             ) : (
                 <InPersonToggleButtonOpenAiCont
                     buttonTextValue={"1"}
+                    handleDebouncedClick={handleDebouncedClick} // Pass the debounced handler
                     isAudioMuted={isAudioMuted}
                     isRecording={isRecordingPersonOne}
                     isRecordingOther={isRecordingPersonTwo}
@@ -183,6 +196,7 @@ const InPersonModular: FC = () => {
         return providerPersonOne === "Microsoft" ? (
             <InPersonToggleButtonMicrosoftMan
                 buttonTextValue={"1"}
+                handleDebouncedClick={handleDebouncedClick} // Pass the debounced handler
                 isAudioMuted={isAudioMuted}
                 isRecording={isRecordingPersonOne}
                 isRecordingOther={isRecordingPersonTwo}
@@ -199,6 +213,7 @@ const InPersonModular: FC = () => {
         ) : (
             <InPersonToggleButtonOpenAiMan
                 buttonTextValue={"1"}
+                handleDebouncedClick={handleDebouncedClick} // Pass the debounced handler
                 isAudioMuted={isAudioMuted}
                 isRecording={isRecordingPersonOne}
                 isRecordingOther={isRecordingPersonTwo}
@@ -220,6 +235,7 @@ const InPersonModular: FC = () => {
             return providerPersonTwo === "Microsoft" ? (
                 <InPersonToggleButtonMicrosoftCont
                     buttonTextValue={"2"}
+                    handleDebouncedClick={handleDebouncedClick} // Pass the debounced handler
                     isAudioMuted={isAudioMuted}
                     isRecording={isRecordingPersonTwo}
                     isRecordingOther={isRecordingPersonOne}
@@ -237,6 +253,7 @@ const InPersonModular: FC = () => {
             ) : (
                 <InPersonToggleButtonOpenAiCont
                     buttonTextValue={"2"}
+                    handleDebouncedClick={handleDebouncedClick} // Pass the debounced handler
                     isAudioMuted={isAudioMuted}
                     isRecording={isRecordingPersonTwo}
                     isRecordingOther={isRecordingPersonOne}
@@ -256,6 +273,7 @@ const InPersonModular: FC = () => {
         return providerPersonTwo === "Microsoft" ? (
             <InPersonToggleButtonMicrosoftMan
                 buttonTextValue={"2"}
+                handleDebouncedClick={handleDebouncedClick} // Pass the debounced handler
                 isAudioMuted={isAudioMuted}
                 isRecording={isRecordingPersonTwo}
                 isRecordingOther={isRecordingPersonOne}
@@ -272,6 +290,7 @@ const InPersonModular: FC = () => {
         ) : (
             <InPersonToggleButtonOpenAiMan
                 buttonTextValue={"2"}
+                handleDebouncedClick={handleDebouncedClick} // Pass the debounced handler
                 isAudioMuted={isAudioMuted}
                 isRecording={isRecordingPersonTwo}
                 isRecordingOther={isRecordingPersonOne}

@@ -5,10 +5,12 @@ import Tooltip from "../../../base/tooltip/components/Tooltip";
 import "./transcriptionButton.css";
 
 import { inPersonTranslateMicrosoftMan } from "../../action.web";
+const debounceTimeout: NodeJS.Timeout | null = null;
 
 interface InPersonButtonMicrosoftManProps {
     // Add this prop
     buttonTextValue: string;
+    handleDebouncedClick: (callback: () => void) => void;
     isAudioMuted: boolean;
     isRecording: boolean;
     isRecordingOther: boolean;
@@ -37,6 +39,7 @@ const InPersonToggleButtonMicrosoftMan: FC<InPersonButtonMicrosoftManProps> = ({
     buttonTextValue,
     onStartRecording,
     onStopRecording,
+    handleDebouncedClick,
 }) => {
     const dispatch = useDispatch();
     const mediaRecorder = useRef<MediaRecorder | null>(null);
@@ -109,18 +112,22 @@ const InPersonToggleButtonMicrosoftMan: FC<InPersonButtonMicrosoftManProps> = ({
         }
     }, [isRecording, isAudioMuted, isRecordingOther]);
 
+    const handleButtonClick = () => {
+        handleDebouncedClick(() => {
+            if (isRecording) {
+                onStopRecording();
+            } else if (!isRecording && !isRecordingOther && !isAudioMuted) {
+                onStartRecording();
+            }
+        });
+    };
+
     return (
         <Tooltip containerClassName="transcription-tooltip" content={tooltipContent} position="top">
             <div className="toolbox-icon">
                 <div
                     className="circle-region"
-                    onClick={() => {
-                        if (isRecording) {
-                            onStopRecording();
-                        } else {
-                            onStartRecording();
-                        }
-                    }}
+                    onClick={handleButtonClick}
                     style={{
                         backgroundColor: isRecording ? "green" : "transparent",
                         cursor: "pointer",
