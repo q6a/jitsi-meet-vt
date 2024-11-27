@@ -69,8 +69,6 @@ const InPersonModular: FC = () => {
 
     const [previousMessages, setPreviousMessages] = useState(messages);
     const [isSoundOn, setIsSoundOn] = useState(true);
-    const mediaRecorder = useRef<MediaRecorder | null>(null);
-    const audioChunks = useRef<Blob[]>([]);
 
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
@@ -84,7 +82,7 @@ const InPersonModular: FC = () => {
 
         debounceTimeout.current = setTimeout(() => {
             callback();
-        }, 300); // Shared debounce time
+        }, 1000); // Shared debounce time
     };
 
     useEffect(() => {

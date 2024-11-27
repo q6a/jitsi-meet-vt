@@ -109,6 +109,22 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
         });
     };
 
+    const handleStartTTSRecording = async () => {
+        if (isAudioMuted || isRecordingOther || !isRecording || isInActiveState.current === 0) {
+            return;
+        }
+
+        dispatch(
+            inPersonTranslateMicrosoftCont(
+                langFromTranscription,
+                langFromOtherPersonTranslation,
+                personName,
+                langFromTranscriptionId,
+                langFromOtherPersonTranslationId
+            )
+        );
+    };
+
     useEffect(() => {
         ttsVoiceoverActiveRef.current = ttsVoiceoverActive;
 
@@ -117,7 +133,7 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
         }
 
         if (ttsVoiceoverActiveRef.current === false) {
-            handleStartRecording();
+            handleStartTTSRecording();
         }
     }, [ttsVoiceoverActive]);
 

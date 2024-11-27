@@ -116,8 +116,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     }, []);
 
     const handleStartVAD = async () => {
-        if(isAudioMuted)
-        {
+        if (isAudioMuted) {
             return;
         }
 
@@ -164,6 +163,8 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
             }
             if (isVoiceActive !== stateVar) {
                 isVoiceActive = stateVar;
+
+                console.log("stateVar", stateVar);
 
                 if (isVoiceActive && !isAudioMuted) {
                     if (offTimeout) {
