@@ -20,7 +20,6 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
         if (response.data) {
             const data = response.data.data;
 
-            console.log("data.participant_meetings", data.participant_meetings);
             const participants = data.participant_meetings.map((pm: IParticipantMeeting) => {
                 return {
                     participantId: pm.participant.participant_id,
@@ -31,7 +30,7 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
                               name: pm.participant.transcription_dialect.name,
                               dialectCode: pm.participant.transcription_dialect.dialect_code,
                               dialectId: pm.participant.transcription_dialect.dialect_id,
-                              provider: pm.participant.transcription_dialect.provider,
+                              provider: pm.participant.transcription_dialect?.provider ?? null,
                               language: {
                                   name: pm.participant.transcription_dialect.language.name,
                                   languageId: pm.participant.transcription_dialect.language.language_id,
@@ -42,7 +41,7 @@ export const getMeetingInformation = async (meetingId: string, token: string, in
                         name: pm.participant.translation_dialect.name,
                         dialectCode: pm.participant.translation_dialect.dialect_code,
                         dialectId: pm.participant.translation_dialect.dialect_id,
-                        provider: pm.participant.transcription_dialect.provider,
+                        provider: pm.participant.transcription_dialect?.provider ?? null,
                         language: {
                             name: pm.participant.translation_dialect.language.name,
                             languageId: pm.participant.translation_dialect.language.language_id,
