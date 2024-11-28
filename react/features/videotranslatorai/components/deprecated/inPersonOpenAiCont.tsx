@@ -110,7 +110,7 @@ const InPersonOpenAiCont: FC = () => {
         setIsSoundOn((prev) => !prev);
     };
 
-    function destroyRnnoiseProcessor(rnnoiseProcessor) {
+    function destroyRnnoiseProcessor(rnnoiseProcessor: any) {
         if (rnnoiseProcessor && !rnnoiseProcessor._destroyed) {
             try {
                 // Call the destroy function with the context handle
