@@ -11,12 +11,11 @@ import "./transcriptionButton.css";
 
 type VadScore = number;
 type IsVoiceActive = boolean;
-const vadScore$ = new Subject<number>(); // Specify Subject<number>
 
-let offTimeout: any = 0;
-let isVoiceActive = false; // Tracks current state (on/off)
+// const vadScore$ = new Subject<number>(); // Specify Subject<number>
 
-const debounceTimeout: NodeJS.Timeout | null = null;
+// let offTimeout: any = 0;
+// let isVoiceActive = false; // Tracks current state (on/off)
 
 interface InPersonButtonOpenAiContProps {
     buttonTextValue: string;
@@ -58,6 +57,11 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
     const mediaRecorder = useRef<MediaRecorder | null>(null);
     const audioChunks = useRef<Blob[]>([]);
     const stream = useRef<MediaStream | undefined>(undefined);
+
+    // Move these variables inside the component
+    const vadScore$ = useRef(new Subject<number>()).current;
+    const isVoiceActiveRef = useRef<boolean>(false);
+    const offTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const isRecordingLocal = useRef<Boolean>(false);
 
@@ -189,12 +193,12 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
 
             console.log("stateVar", stateVar);
 
-            if (isVoiceActive !== stateVar) {
-                isVoiceActive = stateVar;
+            if (isVoiceActiveRef.current !== stateVar) {
+                isVoiceActiveRef.current = stateVar;
 
-                if (isVoiceActive) {
-                    if (offTimeout) {
-                        clearTimeout(offTimeout);
+                if (isVoiceActiveRef.current) {
+                    if (offTimeoutRef.current) {
+                        clearTimeout(offTimeoutRef.current);
                     }
 
                     if (mediaRecorder.current === null) {
@@ -234,9 +238,9 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
                         );
                     }
                 } else {
-                    offTimeout = setTimeout(() => {
+                    offTimeoutRef.current = setTimeout(() => {
                         if (mediaRecorder.current && mediaRecorder.current.state === "recording") {
-                            if (audioChunks.current.length > 1 && !ttsVoiceoverActiveRef.current) {
+                            if (audioChunks.current.length > 1) {
                                 mediaRecorder.current?.requestData();
 
                                 const blobOptions: BlobOptions = { type: "audio/webm", lastModified: Date.now() };
@@ -276,7 +280,6 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
 
     useEffect(() => {
         if (isRecording && !isAudioMuted && !isRecordingOther) {
-            console.log("Starting recording via effect");
             handleStartRecording();
         } else {
             handleStopRecording();

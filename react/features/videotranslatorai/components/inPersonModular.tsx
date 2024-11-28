@@ -17,7 +17,7 @@ import InPersonToggleButtonMicrosoftMan from "./buttons/inPersonToggleButtonMicr
 import InPersonToggleButtonOpenAiCont from "./buttons/inPersonToggleButtonOpenAiCont";
 import InPersonToggleButtonOpenAiMan from "./buttons/inPersonToggleButtonOpenAiMan";
 import SoundToggleButton from "./buttons/soundToggleButton";
-let whichPerson = 0;
+import InPersonOpenAiCont from "./deprecated/inPersonOpenAiCont";
 
 const InPersonModular: FC = () => {
     const dispatch = useDispatch();
@@ -25,6 +25,7 @@ const InPersonModular: FC = () => {
     const isModerator = useSelector(isLocalParticipantModerator);
 
     const mode = toState(state)["features/videotranslatorai"].modeContOrMan;
+    const whichPerson = useRef<number>(0);
 
     const moderatorData = toState(state)["features/videotranslatorai"].moderatorData;
     const participantData = toState(state)["features/videotranslatorai"].participantData;
@@ -67,6 +68,10 @@ const InPersonModular: FC = () => {
         (state: IReduxState) => state["features/videotranslatorai"].inPersontextToSpeechCodePersonTwo
     );
 
+    // Define the conditional check
+    const bothAreOpenAiAndContinuous =
+        mode === "continuous" && providerPersonOne === "OpenAI" && providerPersonTwo === "OpenAI";
+
     const [previousMessages, setPreviousMessages] = useState(messages);
     const [isSoundOn, setIsSoundOn] = useState(true);
 
@@ -86,18 +91,18 @@ const InPersonModular: FC = () => {
     };
 
     useEffect(() => {
-        if (!isSoundOn) {
+        if (!isSoundOn || bothAreOpenAiAndContinuous) {
             return;
         }
         if (messages !== previousMessages) {
             const lastMessage = messages[messages.length - 1];
 
             if (lastMessage) {
-                if (isRecordingPersonOne || whichPerson === 1) {
+                if (isRecordingPersonOne || whichPerson.current === 1) {
                     dispatch(startTextToSpeech(lastMessage, ttsCodePersonTwo));
                 }
 
-                if (isRecordingPersonTwo || whichPerson === 2) {
+                if (isRecordingPersonTwo || whichPerson.current === 2) {
                     dispatch(startTextToSpeech(lastMessage, ttsCodePersonOne));
                 }
             }
@@ -105,14 +110,14 @@ const InPersonModular: FC = () => {
         }
 
         if (!isRecordingPersonOne && !isRecordingPersonTwo) {
-            whichPerson = 0;
+            whichPerson.current = 0;
         }
     }, [messages, previousMessages]);
 
     const handleStartTranscriptionOne = () => {
         if (!isAudioMuted && !isRecordingPersonTwo) {
             dispatch(inPersonStartRecordingPersonOne());
-            whichPerson = 1;
+            whichPerson.current = 1;
         }
     };
 
@@ -123,7 +128,7 @@ const InPersonModular: FC = () => {
     const handleStartTranscriptionTwo = () => {
         if (!isAudioMuted && !isRecordingPersonOne) {
             dispatch(inPersonStartRecordingPersonTwo());
-            whichPerson = 2;
+            whichPerson.current = 2;
         }
     };
 
@@ -309,9 +314,21 @@ const InPersonModular: FC = () => {
         <div>
             {/* Buttons */}
             <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
-                <SoundToggleButton isSoundOn={isSoundOn} toggleSound={toggleSound} />
-                {renderButtonForPersonOne()}
-                {renderButtonForPersonTwo()}
+                <div>
+                    {bothAreOpenAiAndContinuous ? (
+                        // If both are OpenAI and in continuous mode, render the unified component
+                        <div>
+                            <InPersonOpenAiCont />
+                        </div>
+                    ) : (
+                        // Otherwise, render the individual components
+                        <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
+                            <SoundToggleButton isSoundOn={isSoundOn} toggleSound={toggleSound} />
+                            {renderButtonForPersonOne()}
+                            {renderButtonForPersonTwo()}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

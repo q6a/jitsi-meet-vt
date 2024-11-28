@@ -17,16 +17,15 @@ import {
 } from "../../action.web";
 import InPersonButton from "../buttons/inPersonToggleButton";
 import SoundToggleButton from "../buttons/soundToggleButton";
-let whichPerson = 0;
 
 type VadScore = number;
 type IsVoiceActive = boolean;
 const vadScore$ = new Subject<number>(); // Specify Subject<number>
 // let audioChunks: any = [];
+let lastLogTime = 0; // Track the last time the log was printed
 
 let offTimeout: any = 0;
 let isVoiceActive = false; // Tracks current state (on/off)
-const lastStateChangeTime = Date.now(); // Tracks the last time the state changed
 const InPersonOpenAiCont: FC = () => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state);
@@ -69,15 +68,33 @@ const InPersonOpenAiCont: FC = () => {
         (state: IReduxState) => state["features/videotranslatorai"].inPersontextToSpeechCodePersonTwo
     );
 
+    // Use useSelector to get the latest ttsVoiceoverActive value
+    const ttsVoiceoverActive = useSelector((state: IReduxState) => state["features/videotranslatorai"].isPlayingTTS);
+    const whichPerson = useRef<number>(0);
+
+    // Use a ref to store ttsVoiceoverActive so it's accessible in the RxJS subscription
+    const ttsVoiceoverActiveRef = useRef(ttsVoiceoverActive);
+
+    useEffect(() => {
+        ttsVoiceoverActiveRef.current = ttsVoiceoverActive;
+
+        // // Stop recording when ttsVoiceoverActive becomes true
+        // if (ttsVoiceoverActive && isRecordingLocal.current) {
+        //     handleStopRecording();
+        // }
+    }, [ttsVoiceoverActive]);
+
     const [isSoundOn, setIsSoundOn] = useState(true);
 
     // const mediaRecorder = useRef<MediaRecorder | null>(null);
     const audioChunks = useRef<Blob[]>([]);
 
     const mediaRecorder = useRef<MediaRecorder | null>(null);
+    const rnnoiseProcesorRef = useRef<any | null>(null);
 
     const stream = useRef<MediaStream | undefined>(undefined);
     const [audioContext, setAudioContext] = useState<any | null>(null);
+    const audioContextRef = useRef<any | null>(null);
     const messages = useSelector((state: IReduxState) => state["features/videotranslatorai"].completedMessages);
     const [previousMessages, setPreviousMessages] = useState(messages);
 
@@ -85,13 +102,47 @@ const InPersonOpenAiCont: FC = () => {
     const [scriptProcessor, setScriptProcessor] = useState<ScriptProcessorNode | null>(null);
     const [rnnoiseProcessor, setRnnoiseProcessor] = useState<any | null>(null);
 
+    const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
+
     // const [startTTSForLastMessage, setStartTTSForLastMessage] = useState<boolean>(false);
 
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
     };
 
+    function destroyRnnoiseProcessor(rnnoiseProcessor) {
+        if (rnnoiseProcessor && !rnnoiseProcessor._destroyed) {
+            try {
+                // Call the destroy function with the context handle
+
+                if (rnnoiseProcessor._wasmInterface && rnnoiseProcessor._wasmInterface._rnnoise_destroy) {
+                    rnnoiseProcessor._wasmInterface._rnnoise_destroy(rnnoiseProcessor._context);
+                }
+
+                // Optionally free allocated memory
+                if (rnnoiseProcessor._wasmInterface && rnnoiseProcessor._wasmInterface._free) {
+                    rnnoiseProcessor._wasmInterface._free(rnnoiseProcessor._wasmPcmInput);
+                    rnnoiseProcessor._wasmInterface._free(rnnoiseProcessor._context);
+                }
+
+                // Mark the processor as destroyed
+
+                console.log("RnnoiseProcessor destroyed successfully.", rnnoiseProcessor);
+            } catch (error) {
+                console.error("Error destroying RnnoiseProcessor:", error);
+            }
+        } else {
+            console.log("RnnoiseProcessor is already destroyed or invalid.");
+        }
+    }
+
     const intializeStream = async () => {
+        // Ensure the stream is cleaned up if it exists
+        if (stream.current) {
+            stream.current.getTracks().forEach((track) => track.stop());
+            stream.current = undefined;
+        }
+
         const streamVar = await navigator.mediaDevices.getUserMedia({
             audio: {
                 sampleRate: 192000, // Sets the sample rate to 48 kHz (high quality)
@@ -104,12 +155,34 @@ const InPersonOpenAiCont: FC = () => {
         });
 
         stream.current = streamVar;
+
+        // Cleanup and create a new AudioContext
+        if (audioContextRef.current) {
+            audioContextRef.current.close();
+            audioContextRef.current = null;
+        }
+
         const audioContextVar = new AudioContext({ sampleRate: 44100 });
+
+        // Cleanup and create a new MediaRecorder
+        if (mediaRecorder.current) {
+            mediaRecorder.current.ondataavailable = null;
+            mediaRecorder.current.stream.getTracks().forEach((track) => track.stop());
+            mediaRecorder.current = null;
+        }
+
         const recorder = new MediaRecorder(stream.current);
 
-        setAudioContext(audioContextVar);
+        audioContextRef.current = audioContextVar;
 
         const source = audioContextVar.createMediaStreamSource(streamVar);
+
+        // Cleanup and create a new ScriptProcessor
+        if (scriptProcessorRef.current !== null) {
+            scriptProcessorRef.current.disconnect();
+            scriptProcessorRef.current = null;
+        }
+
         const scriptProcessorVar = audioContextVar.createScriptProcessor(512, 1, 1);
 
         // Collect audio chunks
@@ -126,21 +199,28 @@ const InPersonOpenAiCont: FC = () => {
 
         source.connect(scriptProcessorVar);
         scriptProcessorVar.connect(audioContextVar.destination);
-        setScriptProcessor(scriptProcessorVar);
+        scriptProcessorRef.current = scriptProcessorVar;
+
+        if (rnnoiseProcesorRef.current) {
+            destroyRnnoiseProcessor(rnnoiseProcesorRef.current);
+        }
+
+        if (rnnoiseProcesorRef.current === null) {
+            rnnoiseProcesorRef.current = await createRnnoiseProcessor();
+        }
 
         // Initialize RNNoise after mediaRecorder is set
-        const rnnoise = await createRnnoiseProcessor();
 
-        setRnnoiseProcessor(rnnoise);
-        if (!rnnoise) {
+        if (!rnnoiseProcesorRef.current) {
             return;
         }
+
         scriptProcessorVar.onaudioprocess = (event) => {
             const pcmFrame = event.inputBuffer.getChannelData(0);
 
             // Process pcmFrame with rnnoise
-            if (rnnoise) {
-                const vadScore = rnnoise.calculateAudioFrameVAD(pcmFrame);
+            if (rnnoiseProcesorRef.current) {
+                const vadScore = rnnoiseProcesorRef.current.calculateAudioFrameVAD(pcmFrame);
 
                 // Handle VAD score as per your logic
                 handleVADScore(vadScore);
@@ -160,9 +240,6 @@ const InPersonOpenAiCont: FC = () => {
         stream?.current?.getTracks().forEach((track) => track.stop());
         stream.current = undefined;
 
-        // Clear audio chunks immediately to prevent any further processing
-        audioChunks.current = [];
-
         // if (rnnoiseProcessor) {
         //     rnnoiseProcessor.destroy();
         //     setRnnoiseProcessor(null);
@@ -171,20 +248,20 @@ const InPersonOpenAiCont: FC = () => {
         setScriptProcessor(null);
         setRnnoiseProcessor(null);
 
-        whichPerson = 0;
+        whichPerson.current = 0;
         audioChunks.current = [];
     };
 
     // Stream processing
     vadScore$
         .pipe(
-            throttleTime(270),
+            throttleTime(200),
             map((vadScore: VadScore) => vadScore >= 0.99), // Convert vadScore to boolean
             distinctUntilChanged(), // Only emit on true/false change
             debounceTime(20) // Debounce to ensure stability
         )
         .subscribe((stateVar: IsVoiceActive) => {
-            if (whichPerson === 0) {
+            if (whichPerson.current === 0 || ttsVoiceoverActiveRef.current) {
                 return;
             }
 
@@ -202,7 +279,7 @@ const InPersonOpenAiCont: FC = () => {
                         audioChunks.current = [];
 
                         intializeStream();
-                        if (whichPerson === 0) {
+                        if (whichPerson.current === 0) {
                             handleStop();
 
                             return;
@@ -219,7 +296,7 @@ const InPersonOpenAiCont: FC = () => {
 
                         const audioBlob = new Blob(audioChunks.current, blobOptions);
 
-                        if (whichPerson === 1 && !isRecordingPersonTwo) {
+                        if (whichPerson.current === 1 && !isRecordingPersonTwo) {
                             dispatch(
                                 inPersonTranslateOpenAi(
                                     audioBlob,
@@ -235,7 +312,7 @@ const InPersonOpenAiCont: FC = () => {
                             );
                         }
 
-                        if (whichPerson === 2 && !isRecordingPersonOne) {
+                        if (whichPerson.current === 2 && !isRecordingPersonOne) {
                             dispatch(
                                 inPersonTranslateOpenAi(
                                     audioBlob,
@@ -261,7 +338,7 @@ const InPersonOpenAiCont: FC = () => {
 
                                 const audioBlob = new Blob(audioChunks.current, blobOptions);
 
-                                if (whichPerson === 1 && !isRecordingPersonTwo) {
+                                if (whichPerson.current === 1 && !isRecordingPersonTwo) {
                                     dispatch(
                                         inPersonTranslateOpenAi(
                                             audioBlob,
@@ -277,7 +354,7 @@ const InPersonOpenAiCont: FC = () => {
                                     );
                                 }
 
-                                if (whichPerson === 2 && !isRecordingPersonOne) {
+                                if (whichPerson.current === 2 && !isRecordingPersonOne) {
                                     dispatch(
                                         inPersonTranslateOpenAi(
                                             audioBlob,
@@ -312,13 +389,22 @@ const InPersonOpenAiCont: FC = () => {
 
     // Function to handle VAD score updates
     function handleVADScore(vadScore: VadScore): void {
+        const now = Date.now();
+
+        // Only log if 5 seconds have passed since the last log
+        if (now - lastLogTime >= 100) {
+            // console.log("vadScore", vadScore);
+            lastLogTime = now; // Update the last log time
+        }
+
+        // Continue with the rest of the logic (e.g., emitting to Subject)
         vadScore$.next(vadScore);
     }
 
     const handleStartTranscriptionOne = () => {
         if (!isAudioMuted && !isRecordingPersonTwo) {
             dispatch(inPersonStartRecordingPersonOne());
-            whichPerson = 1;
+            whichPerson.current = 1;
 
             intializeStream();
         }
@@ -332,7 +418,7 @@ const InPersonOpenAiCont: FC = () => {
     const handleStartTranscriptionTwo = () => {
         if (!isAudioMuted && !isRecordingPersonOne) {
             dispatch(inPersonStartRecordingPersonTwo());
-            whichPerson = 2;
+            whichPerson.current = 2;
 
             intializeStream();
         }
@@ -371,11 +457,11 @@ const InPersonOpenAiCont: FC = () => {
             const lastMessage = messages[messages.length - 1];
 
             if (lastMessage) {
-                if (whichPerson === 1) {
+                if (whichPerson.current === 1) {
                     dispatch(startTextToSpeech(lastMessage, ttsCodePersonTwo));
                 }
 
-                if (whichPerson === 2) {
+                if (whichPerson.current === 2) {
                     dispatch(startTextToSpeech(lastMessage, ttsCodePersonOne));
                 }
             }

@@ -285,9 +285,6 @@ export const startTextToSpeech = (text: string, textToSpeechCode: string) => asy
     dispatch({ type: START_TEXT_TO_SPEECH });
 
     try {
-        // Ensure only one playback at a time
-        dispatch(setIsPlayingTTS(true));
-
         const state: IReduxState = getState();
 
         // Call the playVoiceFromMessage function with the text and state
