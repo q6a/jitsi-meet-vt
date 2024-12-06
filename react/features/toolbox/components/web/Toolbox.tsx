@@ -38,15 +38,6 @@ interface IProps {
 
 const useStyles = makeStyles()(() => {
     return {
-        contextMenu: {
-            position: "relative",
-            right: "auto",
-            margin: 0,
-            marginBottom: "8px",
-            maxHeight: "calc(100dvh - 100px)",
-            minWidth: "240px",
-        },
-
         hangupMenu: {
             position: "relative",
             right: "auto",
@@ -54,9 +45,9 @@ const useStyles = makeStyles()(() => {
             flexDirection: "column",
             rowGap: "8px",
             margin: 0,
-            padding: "16px",
-            marginBottom: "4px",
-        },
+            padding: '16px',
+            marginBottom: '8px'
+        }
     };
 });
 
@@ -118,6 +109,8 @@ export default function Toolbox({ toolbarButtons }: IProps) {
     );
 
     const allButtons = useToolboxButtons(customToolbarButtons);
+    const isMobile = isMobileBrowser();
+    const endConferenceSupported = Boolean(conference?.isEndConferenceSupported() && isModerator);
 
     useKeyboardShortcuts(toolbarButtonsToUse);
 
@@ -165,7 +158,12 @@ export default function Toolbox({ toolbarButtons }: IProps) {
     );
 
     useEffect(() => {
-        if (hangupMenuVisible && !toolbarVisible) {
+
+        // On mobile web we want to keep both toolbox and hang up menu visible
+        // because they depend on each other.
+        if (endConferenceSupported && isMobile) {
+            hangupMenuVisible && dispatch(setToolboxVisible(true));
+        } else if (hangupMenuVisible && !toolbarVisible) {
             onSetHangupVisible(false);
             dispatch(setToolbarHovered(false));
         }
@@ -237,8 +235,6 @@ export default function Toolbox({ toolbarButtons }: IProps) {
         return null;
     }
 
-    const endConferenceSupported = Boolean(conference?.isEndConferenceSupported() && isModerator);
-    const isMobile = isMobileBrowser();
 
     const rootClassNames = `new-toolbox ${toolbarVisible ? "visible" : ""} ${
         toolbarButtonsToUse.length ? "" : "no-buttons"
