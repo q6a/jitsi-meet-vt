@@ -36,6 +36,7 @@ import {
     setTrackMuted
 } from './functions';
 import './subscriber';
+import { sendEventLogToServer, VtaiEventTypes } from '../../videotranslatorai/action.web';
 
 /**
  * Middleware that captures LIB_DID_DISPOSE and LIB_DID_INIT actions and,
@@ -191,6 +192,18 @@ function _setMuted(store: IStore, { ensureTrack, muted }: {
 
     if (mediaType === MEDIA_TYPE.SCREENSHARE && !muted) {
         return;
+    }
+
+
+    // Vtai server logs
+    if (muted) {
+        dispatch(sendEventLogToServer({
+            eventType: mediaType === MEDIA_TYPE.AUDIO ? VtaiEventTypes.MIC_MUTED : VtaiEventTypes.VIDEO_MUTED
+        }));
+    } else {
+        dispatch(sendEventLogToServer({
+            eventType: mediaType === MEDIA_TYPE.AUDIO ? VtaiEventTypes.MIC_UNMUTED : VtaiEventTypes.VIDEO_UNMUTED
+        }));
     }
 
     if (localTrack) {

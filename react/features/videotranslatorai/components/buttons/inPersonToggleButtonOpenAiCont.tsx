@@ -6,7 +6,7 @@ import { debounceTime, distinctUntilChanged, map, throttleTime } from "rxjs/oper
 import { IReduxState } from "../../../app/types";
 import Tooltip from "../../../base/tooltip/components/Tooltip";
 import { createRnnoiseProcessor } from "../../../stream-effects/rnnoise"; // Import the create function
-import { inPersonTranslateOpenAi } from "../../action.web";
+import { inPersonTranslateOpenAi, sendEventLogToServer, VtaiEventTypes } from "../../action.web";
 import "./transcriptionButton.css";
 
 type VadScore = number;
@@ -290,8 +290,14 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
         handleDebouncedClick(() => {
             if (isRecording) {
                 onStopRecording();
+
+                // sending logs to server
+                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.CONTINUOUS_TRANSCRIPTION_DISABLED }));
             } else if (!isRecording && !isRecordingOther && !isAudioMuted) {
                 onStartRecording();
+
+                // sending logs to server
+                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.CONTINUOUS_TRANSCRIPTION_ENABLED }));
             }
         });
     };

@@ -5,10 +5,12 @@ import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
 import { toState } from "../../base/redux/functions";
 import {
+    sendEventLogToServer,
     startRecordingMirosoftManual,
     startTextToSpeech,
     startTranslateMicrosoftManual,
     stopRecordingMirosoftManual,
+    VtaiEventTypes,
 } from "../action.web";
 
 import SoundToggleButton from "./buttons/soundToggleButton";
@@ -36,6 +38,11 @@ const TranscriptionAndTranslationButtonMicrosoftMan: FC = () => {
     const audioChunks = useRef<Blob[]>([]);
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
+        if (isSoundOn) {
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.VOICEOVER_DISABLED }));
+        } else {
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.VOICEOVER_ENABLED }));
+        }
     };
 
     useEffect(() => {

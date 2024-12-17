@@ -2,7 +2,7 @@ import React, { FC, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 
 import Tooltip from "../../../base/tooltip/components/Tooltip";
-import { inPersonTranslateOpenAi } from "../../action.web";
+import { inPersonTranslateOpenAi, sendEventLogToServer, VtaiEventTypes } from "../../action.web";
 import "./transcriptionButton.css";
 const debounceTimeout: NodeJS.Timeout | null = null;
 
@@ -119,9 +119,14 @@ const InPersonToggleButtonOpenAiMan: FC<InPersonButtonOpenAiManProps> = ({
     const handleButtonClick = () => {
         handleDebouncedClick(() => {
             if (isRecording) {
+                // sending logs to server
+                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.MANUAL_TRANSCRIPTION_DISABLED }));
                 onStopRecording();
             } else if (!isRecording && !isRecordingOther && !isAudioMuted) {
                 onStartRecording();
+
+                // sending logs to server
+                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.MANUAL_TRANSCRIPTION_ENABLED }));
             }
         });
     };
