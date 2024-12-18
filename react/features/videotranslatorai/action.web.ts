@@ -73,18 +73,21 @@ export enum VtaiEventTypes {
     API_CALL_MICROSOFT_CONT_TRANSLATE = 'api_call_microsoft_cont_translate',
     API_CALL_MICROSOFT_MAN_TRANSLATE = 'api_call_microsoft_man_translate',
     API_CALL_TRANSCRIPTION = 'api_call_transcription',
+    API_CALL_TRANSCRIPTION_OPENAI = 'api_call_transcription_openai',
     API_CALL_TRANSLATE_MICROSOFT_MANUAL = 'api_call_translate_microsoft_manual',
     API_CALL_VOICEOVER = 'api_call_voiceover',
     API_FAIL_INPERSON_OPENAI_TRANSLATE = 'api_fail_inperson_openai_translate',
     API_FAIL_MICROSOFT_CONT_TRANSLATE = 'api_fail_microsoft_cont_translate',
     API_FAIL_MICROSOFT_MAN_TRANSLATE = 'api_fail_microsoft_man_translate',
     API_FAIL_TRANSCRIPTION = 'api_fail_transcription',
+    API_FAIL_TRANSCRIPTION_OPENAI = 'api_fail_transcription_openai',
     API_FAIL_TRANSLATE_MICROSOFT_MANUAL = 'api_fail_translate_microsoft_manual',
     API_FAIL_VOICEOVER = 'api_fail_voiceover',
     API_SUCCESS_INPERSON_OPENAI_TRANSLATE = 'api_success_inperson_openai_translate',
     API_SUCCESS_MICROSOFT_CONT_TRANSLATE = 'api_success_microsoft_cont_translate',
     API_SUCCESS_MICROSOFT_MAN_TRANSLATE = 'api_success_microsoft_man_translate',
     API_SUCCESS_TRANSCRIPTION = 'api_success_transcription',
+    API_SUCCESS_TRANSCRIPTION_OPENAI = 'api_success_transcription_openai',
     API_SUCCESS_TRANSLATE_MICROSOFT_MANUAL = 'api_success_translate_microsoft_manual',
     API_SUCCESS_VOICEOVER = 'api_success_voiceover',
     CONTINUOUS_TRANSCRIPTION_DISABLED = 'continuous_transcription_disabled',
@@ -338,14 +341,20 @@ export const translateOpenAi
         try {
             // Dispatch action to stop the recording
             dispatch(setIsRecording(false));
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_CALL_TRANSCRIPTION_OPENAI }));
 
             // Call the async service and pass the recorded blob
             await transcribeAndTranslateServiceOpenAi(dispatch, getState, recordedBlobParam, isMessageCompleted);
+
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_SUCCESS_TRANSCRIPTION_OPENAI }));
+
 
             // Optionally handle results, such as dispatching success actions
             // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
         } catch (err) {
             console.error('Error in OpenAI translate service:', err);
+
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_FAIL_TRANSCRIPTION_OPENAI }));
 
             // Optionally dispatch a failure action if needed
             // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });

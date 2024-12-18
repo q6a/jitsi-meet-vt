@@ -11,7 +11,6 @@ export const transcribeAndTranslateServiceOpenAi = async (
     isMessageCompleted: boolean
 ) => {
     const state: IReduxState = getState();
-
     const tokenData = toState(state)["features/videotranslatorai"].jwtToken;
     const participantState = toState(state)["features/base/participants"];
     const participantName = toState(state)["features/videotranslatorai"].participantName;
