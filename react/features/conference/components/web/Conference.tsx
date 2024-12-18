@@ -214,7 +214,6 @@ class Conference extends AbstractConference<IProps, any> {
         } = this.props;
 
         return (
-        <div>
             <div
                 id="layout_wrapper"
                 onMouseEnter={this._onMouseEnter}
