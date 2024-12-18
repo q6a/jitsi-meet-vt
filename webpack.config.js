@@ -12,9 +12,9 @@ const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
  * The URL of the Jitsi Meet deployment to be proxy to in the context of
  * development with webpack-dev-server.
  */
-// const devServerProxyTarget = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || "https://meet.stg.videotranslator.ai";
+const devServerProxyTarget = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || "https://meet.stg.videotranslator.ai";
 
-const devServerProxyTarget = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || "https://127.0.0.1:8443";
+// const devServerProxyTarget = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || "https://127.0.0.1:8443";
 
 
 /**
