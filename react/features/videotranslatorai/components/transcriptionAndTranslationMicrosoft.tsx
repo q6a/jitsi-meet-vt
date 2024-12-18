@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
 import { toState } from "../../base/redux/functions";
-import { startTextToSpeech, startTranscription, stopTranscription } from "../action.web";
+import { sendEventLogToServer, startTextToSpeech, startTranscription, stopTranscription, VtaiEventTypes } from "../action.web";
 
 import SoundToggleButton from "./buttons/soundToggleButton";
 import TranscriptionButton from "./buttons/transcriptionButton"; // Import the TranscriptionButton
@@ -26,6 +26,11 @@ const TranscriptionAndTranslationButton: FC = () => {
 
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
+        if (isSoundOn) {
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.VOICEOVER_DISABLED }));
+        } else {
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.VOICEOVER_ENABLED }));
+        }
     };
 
     useEffect(() => {

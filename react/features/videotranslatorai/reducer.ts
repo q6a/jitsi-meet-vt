@@ -1,6 +1,6 @@
-import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
+import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
 
-import ReducerRegistry from "../base/redux/ReducerRegistry";
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     ADD_COMPLETED_MESSAGE,
@@ -41,8 +41,9 @@ import {
     STOP_RECORDING_OPENAI,
     STOP_TRANSCRIPTION,
     TRANSLATE_OPENAI,
-} from "./actionTypes";
-import { IVideoTranslatorAiState } from "./types";
+    VTAI_LOG_EVENT
+} from './actionTypes';
+import { IVideoTranslatorAiState } from './types';
 
 const INITIAL_STATE: IVideoTranslatorAiState = {
     toEmail: "",
@@ -386,6 +387,10 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                 };
 
             case DEBUGGING:
+                return {
+                    ...state,
+                };
+            case VTAI_LOG_EVENT:
                 return {
                     ...state,
                 };

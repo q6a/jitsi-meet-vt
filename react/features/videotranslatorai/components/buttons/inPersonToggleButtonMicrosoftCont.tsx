@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../../app/types";
 import Tooltip from "../../../base/tooltip/components/Tooltip";
-import { inPersonTranslateMicrosoftCont } from "../../action.web";
+import { inPersonTranslateMicrosoftCont, sendEventLogToServer, VtaiEventTypes } from "../../action.web";
 import { stopTranscriptionService } from "../../supervisors/inPersonServiceMicrosoftCont";
 import "./transcriptionButton.css";
 
@@ -96,6 +96,9 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
         handleDebouncedClick(() => {
             if (isRecording) {
                 onStopRecording();
+
+                // sending logs to server
+                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.CONTINUOUS_TRANSCRIPTION_DISABLED }));
             } else if (
                 !isRecording &&
                 !isRecordingOther &&
@@ -105,6 +108,9 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
             ) {
                 stopTranscriptionService(dispatch, state);
                 onStartRecording();
+
+                // sending logs to server
+                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.CONTINUOUS_TRANSCRIPTION_ENABLED }));
             }
         });
     };

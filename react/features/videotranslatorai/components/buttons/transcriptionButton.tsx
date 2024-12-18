@@ -3,6 +3,8 @@ import React, { FC, useRef } from "react";
 import Tooltip from "../../../base/tooltip/components/Tooltip";
 
 import "./transcriptionButton.css"; // Make sure to import your CSS file
+import { sendEventLogToServer, VtaiEventTypes } from "../../action.web";
+import { useDispatch } from "react-redux";
 
 interface TranscriptionButtonProps {
     handleStart: () => void;
@@ -12,6 +14,7 @@ interface TranscriptionButtonProps {
 
 const TranscriptionButton: FC<TranscriptionButtonProps> = ({ isRecording, handleStart, handleStop }) => {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+    const dispatch = useDispatch();
 
     const handleClick = () => {
         if (debounceTimeout.current) {
@@ -21,8 +24,14 @@ const TranscriptionButton: FC<TranscriptionButtonProps> = ({ isRecording, handle
         debounceTimeout.current = setTimeout(() => {
             if (isRecording) {
                 handleStop();
+
+                // sending logs to server
+                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.MANUAL_TRANSCRIPTION_DISABLED }));
             } else {
                 handleStart();
+
+                // sending logs to server
+                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.MANUAL_TRANSCRIPTION_ENABLED }));
             }
         }, 300); // Debounce time of 300ms
     };
