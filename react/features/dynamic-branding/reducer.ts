@@ -150,6 +150,7 @@ export interface IDynamicBrandingState {
     customizationFailed: boolean;
     customizationReady: boolean;
     defaultBranding: boolean;
+    defaultTranscriptionLanguage?: boolean;
     didPageUrl: string;
     inviteDomain: string;
     labels: Object | null;
@@ -159,6 +160,7 @@ export interface IDynamicBrandingState {
     premeetingBackground: string;
     sharedVideoAllowedURLDomains?: Array<string>;
     showGiphyIntegration?: boolean;
+    supportUrl?: string;
     useDynamicBrandingData: boolean;
     virtualBackgrounds: Array<Image>;
 }
@@ -184,6 +186,7 @@ ReducerRegistry.register<IDynamicBrandingState>(STORE_NAME, (state = DEFAULT_STA
             premeetingBackground,
             sharedVideoAllowedURLDomains,
             showGiphyIntegration,
+            supportUrl,
             virtualBackgrounds
         } = action.value;
 
@@ -202,6 +205,7 @@ ReducerRegistry.register<IDynamicBrandingState>(STORE_NAME, (state = DEFAULT_STA
             premeetingBackground,
             sharedVideoAllowedURLDomains,
             showGiphyIntegration,
+            supportUrl,
             customizationFailed: false,
             customizationReady: true,
             useDynamicBrandingData: true,

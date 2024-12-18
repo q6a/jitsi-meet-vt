@@ -260,6 +260,7 @@ export function showStartedRecordingNotification(
         if (mode !== JitsiMeetJS.constants.recording.mode.STREAM) {
             const recordingSharingUrl = getRecordingSharingUrl(state);
             const iAmRecordingInitiator = getLocalParticipant(state)?.id === initiatorId;
+            const { showRecordingLink } = state['features/base/config'].recordings || {};
 
             notifyProps.dialogProps = {
                 customActionHandler: undefined,
@@ -286,15 +287,17 @@ export function showStartedRecordingNotification(
                     }
 
                     // add the option to copy recording link
-                    notifyProps.dialogProps = {
-                        ...notifyProps.dialogProps,
-                        customActionNameKey: [ 'recording.copyLink' ],
-                        customActionHandler: [ () => copyText(link) ],
-                        titleKey: 'recording.on',
-                        descriptionKey: 'recording.linkGenerated'
-                    };
+                    if (showRecordingLink) {
+                        notifyProps.dialogProps = {
+                            ...notifyProps.dialogProps,
+                            customActionNameKey: [ 'recording.copyLink' ],
+                            customActionHandler: [ () => copyText(link) ],
+                            titleKey: 'recording.on',
+                            descriptionKey: 'recording.linkGenerated'
+                        };
 
-                    notifyProps.type = NOTIFICATION_TIMEOUT_TYPE.STICKY;
+                        notifyProps.type = NOTIFICATION_TIMEOUT_TYPE.STICKY;
+                    }
                 } catch (err) {
                     dispatch(showErrorNotification({
                         titleKey: 'recording.errorFetchingLink'
