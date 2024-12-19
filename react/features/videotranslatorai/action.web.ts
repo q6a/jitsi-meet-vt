@@ -6,6 +6,7 @@ import { toState } from '../base/redux/functions';
 
 import {
     ADD_COMPLETED_MESSAGE,
+    ADD_IN_PERSON_TRANSLATION,
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
     FETCH_MEETING_DATA,
@@ -31,6 +32,7 @@ import {
     SET_PRIVATE_MESSAGES,
     SET_RECORDING_BLOB_OPENAI,
     SET_ROOM_PARAMS,
+    SET_SELECTED_TAB,
     SET_TRANSCRIPTION_RESULT,
     START_RECORDING_MICROSOFT_MANUAL,
     START_RECORDING_OPENAI,
@@ -540,7 +542,6 @@ export const inPersonTranslateMicrosoftCont
     = (langFrom: any, langTo: any, participantName: any, dialectIdFrom: any = '', dialectIdTo: any = '') =>
         async (dispatch: any, getState: any) => {
             try {
-
                 dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_CALL_MICROSOFT_CONT_TRANSLATE }));
 
                 // Call the async service and pass the recorded blob
@@ -608,6 +609,20 @@ export const stopRecordingMirosoftManual = () => {
 export const addCompletedMessage = (message: string) => {
     return {
         type: ADD_COMPLETED_MESSAGE,
+        payload: message
+    };
+};
+
+export const setSelectedTab = (tab: string) => {
+    return {
+        type: SET_SELECTED_TAB,
+        payload: tab
+    };
+};
+
+export const addInpersonTranslation = (message: {original: string, translated: string, timestamp: string}) => {
+    return {
+        type: ADD_IN_PERSON_TRANSLATION,
         payload: message
     };
 };

@@ -30,6 +30,7 @@ import JitsiPortal from "../../../toolbox/components/web/JitsiPortal";
 import Toolbox from "../../../toolbox/components/web/Toolbox";
 import { LAYOUT_CLASSNAMES } from "../../../video-layout/constants";
 import { getCurrentLayout } from "../../../video-layout/functions.any";
+import VtaiChat from "../../../videotranslatorai/components/jitsi/VtaiChat";
 import VisitorsQueue from "../../../visitors/components/web/VisitorsQueue";
 import { showVisitorsQueue } from "../../../visitors/functions";
 import { init } from "../../actions.web";
@@ -221,7 +222,10 @@ class Conference extends AbstractConference<IProps, any> {
                 onMouseMove={this._onMouseMove}
                 ref={this._setBackground}
             >
-                <Chat />
+                {/* commented out original jitsi implementation */}
+                {/* <Chat /> */}
+                {/* Vtai implementation of the Chat component */}
+                <VtaiChat />
                 <div
                     className={_layoutClassName}
                     id="videoconference_page"
