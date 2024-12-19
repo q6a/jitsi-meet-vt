@@ -149,7 +149,7 @@ export interface IVideoTranslatorAiState {
     meetingType: string;
     messageNotification: boolean;
     messages: Array<IMessage>;
-    microsoftRecognizerSDK: speechsdk.TranslationRecognizer;
+    microsoftRecognizerSDK: speechsdk.TranslationRecognizer | speechsdk.SpeechRecognizer;
     modeContOrMan: string;
     moderatorData: Array<IModerator>;
     openAiRecordingBlob: any;

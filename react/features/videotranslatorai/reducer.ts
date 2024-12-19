@@ -111,7 +111,7 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     },
     displayName: "",
     displayDialect: "",
-    microsoftRecognizerSDK: null as unknown as speechsdk.TranslationRecognizer,
+    microsoftRecognizerSDK: null as unknown as speechsdk.TranslationRecognizer | speechsdk.SpeechRecognizer,
     privateMessages: [],
     messageNotification: false,
     messages: [],

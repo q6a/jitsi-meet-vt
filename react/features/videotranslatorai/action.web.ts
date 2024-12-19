@@ -43,6 +43,7 @@ import {
 import { createDisplayNameAndDialect } from "./services/displayNameAndDialectService";
 import { getMeetingInformation } from "./services/meetingService";
 import { playVoiceFromMessage } from "./services/voiceServiceMicrosoft";
+import { inPersonServiceMicrosoftAutoCont } from "./supervisors/inPersonServiceMicrosoftAutoCont";
 import { inPersonServiceMicrosoftCont } from "./supervisors/inPersonServiceMicrosoftCont";
 import { inPersonServiceMicrosoftMan } from "./supervisors/inPersonServiceMicrosoftMan";
 import { inPersonServiceOpenAi } from "./supervisors/inPersonServiceOpenAi";
@@ -92,7 +93,7 @@ export const messageNotification = () => {
     };
 };
 
-export const setMicrosoftRecognizerSDK = (params: speechsdk.TranslationRecognizer) => {
+export const setMicrosoftRecognizerSDK = (params: speechsdk.TranslationRecognizer | speechsdk.SpeechRecognizer) => {
     return {
         type: SET_MICROSOFT_RECOGNIZERSDK,
         payload: params,
@@ -438,6 +439,42 @@ export const inPersonTranslateMicrosoftCont =
 
             // Optionally dispatch a failure action if needed
             // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
+        }
+    };
+
+export const inPersonTranslateAutoCont =
+    (
+        langPersonOneTranscription: any,
+        langPersonOneTranslation: any,
+        langPersonTwoTranscription: any,
+        langPersonTwoTranslation: any,
+        personOneName: any,
+        personTwoName: any,
+        langPersonOneTranscriptionId: any,
+        langPersonOneTranslationId: any,
+        langPersonTwoTranscriptionId: any,
+        langPersonTwoTranslationId: any,
+        whichPerson: any
+    ) =>
+    async (dispatch: any, getState: any) => {
+        try {
+            await inPersonServiceMicrosoftAutoCont(
+                dispatch,
+                getState,
+                langPersonOneTranscription,
+                langPersonOneTranslation,
+                langPersonTwoTranscription,
+                langPersonTwoTranslation,
+                personOneName,
+                personTwoName,
+                langPersonOneTranscriptionId,
+                langPersonOneTranslationId,
+                langPersonTwoTranscriptionId,
+                langPersonTwoTranslationId,
+                whichPerson
+            );
+        } catch (err) {
+            console.error("Error in OpenAI translate service:", err);
         }
     };
 
