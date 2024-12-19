@@ -5,6 +5,24 @@ import { toState } from "../../base/redux/functions";
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioMicrosoft from "../services/transcribeAudioMicrosoft";
+import { addInpersonTranslation } from "../action.web";
+import { getLocalizedDurationFormatter } from "../../base/i18n/dateUtil";
+
+const getElapsedTime = (refValueUTC, currentValueUTC) => {
+    if (!refValueUTC || !currentValueUTC) {
+        return;
+    }
+
+    if (currentValueUTC < refValueUTC) {
+        return;
+    }
+
+    const timerMsValue = currentValueUTC - refValueUTC;
+
+    const localizedTime = getLocalizedDurationFormatter(timerMsValue);
+
+    return localizedTime;
+};
 
 export const inPersonServiceMicrosoftMan = async (
     dispatch: any,
@@ -20,6 +38,7 @@ export const inPersonServiceMicrosoftMan = async (
 ) => {
     const state: IReduxState = getState();
 
+    const conferenceStartTime = toState(state)['features/base/conference'].conferenceTimestamp;
     const tokenData = toState(state)["features/videotranslatorai"].jwtToken;
     const participantState = toState(state)["features/base/participants"];
     const participantData = toState(state)["features/videotranslatorai"].participantData;
@@ -33,6 +52,8 @@ export const inPersonServiceMicrosoftMan = async (
 
     const baseEndpoint = process.env.REACT_APP_TRANSCRIBE_MICROSOFT_API_ENDPOINT;
     const speechRegion = process.env.REACT_APP_SPEECH_REGION_MICROSOFT_SDK;
+
+    const elapsedTime = getElapsedTime(conferenceStartTime, new Date().getTime()) || '';
 
     // Error checking for environment variables
     if (!speechRegion || !baseEndpoint) {
@@ -85,6 +106,11 @@ export const inPersonServiceMicrosoftMan = async (
                             participantId = conference.myUserId();
                         }
 
+                        dispatch(addInpersonTranslation({
+                            original: transcriptionText,
+                            translated: translationText,
+                            timestamp: elapsedTime
+                        }));
                         // arrayPromises.push(await conference.sendPrivateTextMessage(participantId, translationSent));
                         await conference.sendPrivateTextMessage(participantId, translationSent);
                         const messageData: any = {

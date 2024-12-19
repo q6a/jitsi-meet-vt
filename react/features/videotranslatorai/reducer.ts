@@ -4,6 +4,7 @@ import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     ADD_COMPLETED_MESSAGE,
+    ADD_IN_PERSON_TRANSLATION,
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
     FETCH_MEETING_DATA,
@@ -32,6 +33,7 @@ import {
     SET_PRIVATE_MESSAGES,
     SET_RECORDING_BLOB_OPENAI,
     SET_ROOM_PARAMS,
+    SET_SELECTED_TAB,
     SET_TRANSCRIPTION_RESULT,
     START_RECORDING_MICROSOFT_MANUAL,
     START_RECORDING_OPENAI,
@@ -68,6 +70,8 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     inPersonIsRecordingPersonTwo: false,
     isRecordingMicrosoftMan: false,
     completedMessages: [],
+    inpersonTranslations: [],
+    selectedTab: "chat-tab",
     meetingType: "",
     modeContOrMan: "",
     transcriptionResults: [],
@@ -214,6 +218,23 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                 return {
                     ...state,
                     completedMessages,
+                };
+            }
+
+            case ADD_IN_PERSON_TRANSLATION: {
+                const inpersonTranslations = [...state.inpersonTranslations, action.payload];
+
+                return {
+                    ...state,
+                    inpersonTranslations,
+                };
+            }
+
+            case SET_SELECTED_TAB: {
+                const selectedTab = action.payload;
+                return {
+                    ...state,
+                    selectedTab
                 };
             }
 

@@ -139,6 +139,7 @@ export interface IVideoTranslatorAiState {
     inPersonStopTranscription: boolean;
     inPersontextToSpeechCodePersonOne: string;
     inPersontextToSpeechCodePersonTwo: string;
+    inpersonTranslations: { original: string; timestamp: string; translated: string; }[];
     isPlayingTTS: boolean;
     isRecording: boolean;
     isRecordingMicrosoftMan: boolean;
@@ -159,6 +160,7 @@ export interface IVideoTranslatorAiState {
     participantName: string;
     privateMessages: IMessage[];
     provider: string;
+    selectedTab: string;
     textToSpeechCode: string;
     thisEntityData: IEntityData;
     toEmail: string;
