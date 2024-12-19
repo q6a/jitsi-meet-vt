@@ -155,7 +155,6 @@ import {
     NOTIFICATION_TIMEOUT_TYPE
 } from './react/features/notifications/constants';
 import { isModerationNotificationDisplayed } from './react/features/notifications/functions';
-import { mediaPermissionPromptVisibilityChanged } from './react/features/overlay/actions';
 import { suspendDetected } from './react/features/power-monitor/actions';
 import { initPrejoin, isPrejoinPageVisible } from './react/features/prejoin/functions';
 import { disableReceiver, stopReceiver } from './react/features/remote-control/actions';
@@ -435,15 +434,6 @@ export default {
             requestedVideo = true;
         }
 
-        if (!config.disableInitialGUM) {
-            JitsiMeetJS.mediaDevices.addEventListener(
-                JitsiMediaDevicesEvents.PERMISSION_PROMPT_IS_SHOWN,
-                browserName =>
-                    APP.store.dispatch(
-                        mediaPermissionPromptVisibilityChanged(true, browserName))
-            );
-        }
-
         let tryCreateLocalTracks = Promise.resolve([]);
 
         // On Electron there is no permission prompt for granting permissions. That's why we don't need to
@@ -452,8 +442,7 @@ export default {
         const timeout = browser.isElectron() ? 15000 : 60000;
         const audioOptions = {
             devices: [ MEDIA_TYPE.AUDIO ],
-            timeout,
-            firePermissionPromptIsShownEvent: true
+            timeout
         };
 
         // Spot uses the _desktopSharingSourceDevice config option to use an external video input device label as
@@ -488,23 +477,13 @@ export default {
         } else if (requestedAudio || requestedVideo) {
             tryCreateLocalTracks = APP.store.dispatch(createInitialAVTracks({
                 devices: initialDevices,
-                timeout,
-                firePermissionPromptIsShownEvent: true
+                timeout
             }, recordTimeMetrics)).then(({ tracks, errors: pErrors }) => {
                 Object.assign(errors, pErrors);
 
                 return tracks;
             });
         }
-
-        // Hide the permissions prompt/overlay as soon as the tracks are created. Don't wait for the connection to
-        // be established, as in some cases like when auth is required, connection won't be established until the user
-        // inputs their credentials, but the dialog would be overshadowed by the overlay.
-        tryCreateLocalTracks.then(tracks => {
-            APP.store.dispatch(mediaPermissionPromptVisibilityChanged(false));
-
-            return tracks;
-        });
 
         return {
             tryCreateLocalTracks,
