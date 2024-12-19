@@ -3,47 +3,53 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { IReduxState } from "../../../app/types";
 import Tooltip from "../../../base/tooltip/components/Tooltip";
-import { inPersonTranslateMicrosoftCont, sendEventLogToServer, VtaiEventTypes } from "../../action.web";
-import { stopTranscriptionService } from "../../supervisors/inPersonServiceMicrosoftCont";
+import { inPersonTranslateAutoCont } from "../../action.web";
+import { stopTranscriptionAutoService } from "../../supervisors/inPersonServiceMicrosoftAutoCont";
 import "./transcriptionButton.css";
 
 const debounceTimeout: NodeJS.Timeout | null = null;
 
-interface InPersonButtonMicrosoftContProps {
+interface InPersonButtonAutoContProps {
     // Add this prop
     buttonTextValue: string;
     handleDebouncedClick: (callback: () => void) => void;
     isAudioMuted: boolean;
     isRecording: boolean;
-    isRecordingOther: boolean;
-    langFromOtherPersonTranslation: string;
-    langFromOtherPersonTranslationId: string;
-    langFromTranscription: string;
-    langFromTranscriptionId: string;
-    langFromTranslation: string;
-    langFromTranslationId: string;
+    langPersonOneTranscription: string;
+    langPersonOneTranscriptionId: string;
+    langPersonOneTranslation: string;
+    langPersonOneTranslationId: string;
+    langPersonTwoTranscription: string;
+    langPersonTwoTranscriptionId: string;
+    langPersonTwoTranslation: string;
+    langPersonTwoTranslationId: string;
     onStartRecording: () => void;
     onStopRecording: () => void;
-    personName: string;
+    personOneName: string;
+    personTwoName: string;
     tooltipContent: string;
+    whichPerson: React.MutableRefObject<number>;
 }
 
-const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = ({
+const InPersonToggleButtonAutoCont: FC<InPersonButtonAutoContProps> = ({
     isAudioMuted,
-    isRecordingOther,
     isRecording,
-    personName,
-    langFromTranscription,
-    langFromTranslation,
-    langFromTranscriptionId,
-    langFromOtherPersonTranslationId,
-    langFromTranslationId,
-    tooltipContent,
+    personOneName,
+    personTwoName,
     buttonTextValue,
-    langFromOtherPersonTranslation,
+    tooltipContent,
+    langPersonOneTranscription,
+    langPersonOneTranscriptionId,
+    langPersonOneTranslation,
+    langPersonOneTranslationId,
+    langPersonTwoTranscription,
+    langPersonTwoTranscriptionId,
+    langPersonTwoTranslation,
+    langPersonTwoTranslationId,
     onStartRecording,
     onStopRecording,
     handleDebouncedClick,
+    whichPerson,
 }) => {
     const dispatch = useDispatch();
     const state = useSelector((state: IReduxState) => state); // Access getState-like functionality
@@ -56,77 +62,70 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
     const ttsVoiceoverActiveRef = useRef(ttsVoiceoverActive);
 
     const handleStartRecording = async () => {
-        if (isAudioMuted || isRecordingOther || !isRecording || isInActiveState.current === 1) {
+        if (isAudioMuted || !isRecording || isInActiveState.current === 1) {
             return;
         }
 
         dispatch(
-            inPersonTranslateMicrosoftCont(
-                langFromTranscription,
-                langFromOtherPersonTranslation,
-                personName,
-                langFromTranscriptionId,
-                langFromOtherPersonTranslationId
+            inPersonTranslateAutoCont(
+                langPersonOneTranscription,
+                langPersonOneTranslation,
+                langPersonTwoTranscription,
+                langPersonTwoTranslation,
+                personOneName,
+                personTwoName,
+                langPersonOneTranscriptionId,
+                langPersonOneTranslationId,
+                langPersonTwoTranscriptionId,
+                langPersonTwoTranslationId,
+                whichPerson
             )
         );
     };
 
     const handleStopRecording = () => {
-        // dispatch(stopTranscription());
-        stopTranscriptionService(dispatch, state);
+        stopTranscriptionAutoService(dispatch, state);
     };
 
     useEffect(() => {
-        if (
-            isRecording &&
-            !isAudioMuted &&
-            !isRecordingOther &&
-            isInActiveState.current === 0 &&
-            !ttsVoiceoverActiveRef.current
-        ) {
+        if (isRecording && !isAudioMuted && isInActiveState.current === 0 && !ttsVoiceoverActiveRef.current) {
             handleStartRecording();
             isInActiveState.current = 1;
         } else {
             handleStopRecording();
             isInActiveState.current = 0;
         }
-    }, [isRecording, isAudioMuted, isRecordingOther]);
+    }, [isRecording, isAudioMuted]);
 
     const handleButtonClick = () => {
         handleDebouncedClick(() => {
             if (isRecording) {
                 onStopRecording();
-
-                // sending logs to server
-                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.CONTINUOUS_TRANSCRIPTION_DISABLED }));
-            } else if (
-                !isRecording &&
-                !isRecordingOther &&
-                !isAudioMuted &&
-                isInActiveState.current === 0 &&
-                !ttsVoiceoverActiveRef.current
-            ) {
-                stopTranscriptionService(dispatch, state);
+            } else if (!isRecording && !isAudioMuted) {
+                stopTranscriptionAutoService(dispatch, state);
                 onStartRecording();
-
-                // sending logs to server
-                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.CONTINUOUS_TRANSCRIPTION_ENABLED }));
             }
         });
     };
 
     const handleStartTTSRecording = async () => {
-        if (isAudioMuted || isRecordingOther || !isRecording || isInActiveState.current === 0) {
+        if (isAudioMuted || !isRecording || isInActiveState.current === 0) {
             return;
         }
 
         dispatch(
-            inPersonTranslateMicrosoftCont(
-                langFromTranscription,
-                langFromOtherPersonTranslation,
-                personName,
-                langFromTranscriptionId,
-                langFromOtherPersonTranslationId
+            inPersonTranslateAutoCont(
+                langPersonOneTranscription,
+                langPersonOneTranslation,
+                langPersonTwoTranscription,
+                langPersonTwoTranslation,
+                personOneName,
+                personTwoName,
+                langPersonOneTranscriptionId,
+                langPersonOneTranslationId,
+                langPersonTwoTranscriptionId,
+                langPersonTwoTranslationId,
+                whichPerson
             )
         );
     };
@@ -135,7 +134,7 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
         ttsVoiceoverActiveRef.current = ttsVoiceoverActive;
 
         if (ttsVoiceoverActiveRef.current === true) {
-            stopTranscriptionService(dispatch, state);
+            stopTranscriptionAutoService(dispatch, state);
         }
 
         if (ttsVoiceoverActiveRef.current === false) {
@@ -187,4 +186,4 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
     );
 };
 
-export default InPersonToggleButtonMicrosoftCont;
+export default InPersonToggleButtonAutoCont;

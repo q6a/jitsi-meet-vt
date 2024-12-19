@@ -39,6 +39,7 @@ import logger from '../../logger';
 import { hasDisplayName } from '../../utils';
 
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
+import { sendEventLogToServer, VtaiEventTypes } from '../../../videotranslatorai/action.web';
 
 interface IProps {
 
@@ -266,6 +267,9 @@ const Prejoin = ({
         }
 
         logger.info('Prejoin join button clicked.');
+
+        // Vtai event logger
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.JOIN_MEETING_CLICKED }));
 
         joinConference();
     };

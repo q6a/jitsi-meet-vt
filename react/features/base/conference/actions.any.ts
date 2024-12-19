@@ -2,6 +2,7 @@ import { createStartMutedConfigurationEvent } from '../../analytics/AnalyticsEve
 import { sendAnalytics } from '../../analytics/functions';
 import { IReduxState, IStore } from '../../app/types';
 import { transcriberJoined, transcriberLeft } from '../../transcribing/actions';
+import { sendEventLogToServer, VtaiEventTypes } from '../../videotranslatorai/action.web';
 import { endMeetingForAllParticipants } from '../../videotranslatorai/services/meetingService';
 import { setIAmVisitor } from '../../visitors/actions';
 import { iAmVisitor } from '../../visitors/functions';
@@ -734,7 +735,7 @@ export function endConference() {
         const token = toState(state)["features/videotranslatorai"].jwtToken;
         const meetingId = toState(state)["features/videotranslatorai"].meetingId;
         let response = await endMeetingForAllParticipants(meetingId, token);
-        
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.ENDED_MEETING }));
         conference?.end();
     };
 }

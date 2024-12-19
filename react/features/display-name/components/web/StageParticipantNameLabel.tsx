@@ -119,8 +119,8 @@ const StageParticipantNameLabel = () => {
                     classes.badgeContainer,
                     toolboxVisible && classes.containerElevated,
                     _isScreenShareParticipant && classes.screenSharing
-                )}
-            >
+                ) }
+                data-testid = 'stage-display-name' >
                 <DisplayNameBadge name={nameToDisplay} />
                 <DisplayNameBadge name={dialectToDisplay} />
             </div>

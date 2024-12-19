@@ -1,4 +1,4 @@
-import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
+import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
 
 export interface IMessage {
     displayName: string;
@@ -15,6 +15,7 @@ export interface IMessage {
 }
 
 export interface IRecognitionResultPayload {
+
     // Assuming translationMap is an object with key-value pairs
     participantId: string;
     transcription: string;
@@ -71,7 +72,7 @@ export interface IParticipant {
     participant_id: string;
     transcriptionDialect: IDialect;
     translationDialect: IDialect;
-    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
+    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could have other values as well
 }
 
 export interface IModerator {
@@ -80,14 +81,14 @@ export interface IModerator {
     name: string;
     transcriptionDialect: IDialect;
     translationDialect: IDialect;
-    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
+    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could have other values as well
 }
 
 export interface ILinguist {
     email: string;
     linguist_id: string;
     name: string;
-    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could have other values as well
+    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could have other values as well
 }
 
 export interface IUserCreated {
@@ -119,11 +120,12 @@ export interface IMeetingData {
 
 export interface IEntityData {
     email: string;
+    moderatorId: string;
     name: string;
     participant_id: string;
     transcriptionDialect: IDialect;
     translationDialect: IDialect;
-    type: "PARTICIPANT" | "MODERATOR" | "LINGUIST"; // Assuming 'type' could be other values as well
+    type: 'PARTICIPANT' | 'MODERATOR' | 'LINGUIST'; // Assuming 'type' could be other values as well
 }
 
 export interface IVideoTranslatorAiState {
@@ -137,6 +139,7 @@ export interface IVideoTranslatorAiState {
     inPersonStopTranscription: boolean;
     inPersontextToSpeechCodePersonOne: string;
     inPersontextToSpeechCodePersonTwo: string;
+    inpersonTranslations: { original: string; timestamp: string; translated: string; }[];
     isPlayingTTS: boolean;
     isRecording: boolean;
     isRecordingMicrosoftMan: boolean;
@@ -149,7 +152,7 @@ export interface IVideoTranslatorAiState {
     meetingType: string;
     messageNotification: boolean;
     messages: Array<IMessage>;
-    microsoftRecognizerSDK: speechsdk.TranslationRecognizer;
+    microsoftRecognizerSDK: speechsdk.TranslationRecognizer | speechsdk.SpeechRecognizer;
     modeContOrMan: string;
     moderatorData: Array<IModerator>;
     openAiRecordingBlob: any;
@@ -157,6 +160,7 @@ export interface IVideoTranslatorAiState {
     participantName: string;
     privateMessages: IMessage[];
     provider: string;
+    selectedTab: string;
     textToSpeechCode: string;
     thisEntityData: IEntityData;
     toEmail: string;

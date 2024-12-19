@@ -37,6 +37,8 @@ import {
     isJoinByPhoneDialogVisible
 } from './functions.any';
 import logger from './logger';
+import { sendEventLogToServer, VtaiEventTypes } from '../videotranslatorai/action.web';
+import { VTAI_LOG_EVENT } from '../videotranslatorai/actionTypes';
 
 const dialOutStatusToKeyMap = {
     INITIATED: 'presenceStatus.calling',
@@ -211,6 +213,10 @@ export function joinConference(options?: Object, ignoreJoiningInProgress = false
 
         logger.info('Dispatching connect from joinConference.');
         dispatch(connect(jid, password))
+        .then(() => {
+            // Vtai log event
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.JOINED_MEETING }))
+        })
         .catch(() => {
             // There is nothing to do here. This is handled and dispatched in base/connection/actions.
         });

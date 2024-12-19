@@ -1,9 +1,10 @@
-import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
+import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
 
-import ReducerRegistry from "../base/redux/ReducerRegistry";
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     ADD_COMPLETED_MESSAGE,
+    ADD_IN_PERSON_TRANSLATION,
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
     FETCH_MEETING_DATA,
@@ -32,6 +33,7 @@ import {
     SET_PRIVATE_MESSAGES,
     SET_RECORDING_BLOB_OPENAI,
     SET_ROOM_PARAMS,
+    SET_SELECTED_TAB,
     SET_TRANSCRIPTION_RESULT,
     START_RECORDING_MICROSOFT_MANUAL,
     START_RECORDING_OPENAI,
@@ -41,8 +43,9 @@ import {
     STOP_RECORDING_OPENAI,
     STOP_TRANSCRIPTION,
     TRANSLATE_OPENAI,
-} from "./actionTypes";
-import { IVideoTranslatorAiState } from "./types";
+    VTAI_LOG_EVENT
+} from './actionTypes';
+import { IVideoTranslatorAiState } from './types';
 
 const INITIAL_STATE: IVideoTranslatorAiState = {
     toEmail: "",
@@ -67,6 +70,8 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     inPersonIsRecordingPersonTwo: false,
     isRecordingMicrosoftMan: false,
     completedMessages: [],
+    inpersonTranslations: [],
+    selectedTab: "chat-tab",
     meetingType: "",
     modeContOrMan: "",
     transcriptionResults: [],
@@ -111,7 +116,7 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     },
     displayName: "",
     displayDialect: "",
-    microsoftRecognizerSDK: null as unknown as speechsdk.TranslationRecognizer,
+    microsoftRecognizerSDK: null as unknown as speechsdk.TranslationRecognizer | speechsdk.SpeechRecognizer,
     privateMessages: [],
     messageNotification: false,
     messages: [],
@@ -213,6 +218,23 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                 return {
                     ...state,
                     completedMessages,
+                };
+            }
+
+            case ADD_IN_PERSON_TRANSLATION: {
+                const inpersonTranslations = [...state.inpersonTranslations, action.payload];
+
+                return {
+                    ...state,
+                    inpersonTranslations,
+                };
+            }
+
+            case SET_SELECTED_TAB: {
+                const selectedTab = action.payload;
+                return {
+                    ...state,
+                    selectedTab
                 };
             }
 
@@ -386,6 +408,10 @@ ReducerRegistry.register<IVideoTranslatorAiState>(
                 };
 
             case DEBUGGING:
+                return {
+                    ...state,
+                };
+            case VTAI_LOG_EVENT:
                 return {
                     ...state,
                 };
