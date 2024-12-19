@@ -2,27 +2,11 @@ import { getWaveBlob } from "webm-to-wav-converter";
 
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
+import { getElapsedTime } from '../helpers';
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioMicrosoft from "../services/transcribeAudioMicrosoft";
 import { addInpersonTranslation } from "../action.web";
-import { getLocalizedDurationFormatter } from "../../base/i18n/dateUtil";
-
-const getElapsedTime = (refValueUTC, currentValueUTC) => {
-    if (!refValueUTC || !currentValueUTC) {
-        return;
-    }
-
-    if (currentValueUTC < refValueUTC) {
-        return;
-    }
-
-    const timerMsValue = currentValueUTC - refValueUTC;
-
-    const localizedTime = getLocalizedDurationFormatter(timerMsValue);
-
-    return localizedTime;
-};
 
 export const inPersonServiceMicrosoftMan = async (
     dispatch: any,

@@ -228,7 +228,6 @@ const VtaiChat = ({
     function renderChat() {
         return (
             <>
-                <p>{_selectedTab} {_isPollsTabFocused ? 'Hello' : 'Welcome'}</p>
                 {_isPollsEnabled && renderTabs()}
                 <div
                     aria-labelledby = { CHAT_TABS.CHAT }
