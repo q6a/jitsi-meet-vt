@@ -1,11 +1,15 @@
 import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 
-import { IReduxState } from "../app/types";
+import { IReduxState, IStore } from "../app/types";
+import { getLocalizedDurationFormatter } from "../base/i18n/dateUtil";
+import { toState } from "../base/redux/functions";
 
 import {
     ADD_COMPLETED_MESSAGE,
+    ADD_IN_PERSON_TRANSLATION,
     ADD_MESSAGE_VIDEOTRANSLATORAI,
     DEBUGGING,
+    FETCH_MEETING_DATA,
     INPERSON_SET_TTS_PARAMS,
     INPERSON_START_RECORDING_PERSONONE,
     INPERSON_START_RECORDING_PERSONTWO,
@@ -28,6 +32,7 @@ import {
     SET_PRIVATE_MESSAGES,
     SET_RECORDING_BLOB_OPENAI,
     SET_ROOM_PARAMS,
+    SET_SELECTED_TAB,
     SET_TRANSCRIPTION_RESULT,
     START_RECORDING_MICROSOFT_MANUAL,
     START_RECORDING_OPENAI,
@@ -39,8 +44,10 @@ import {
     STOP_TRANSCRIPTION,
     STOP_TRANSLATE_MICROSOFT_MANUAL,
     TRANSLATE_OPENAI,
+    VTAI_LOG_EVENT,
 } from "./actionTypes";
 import { createDisplayNameAndDialect } from "./services/displayNameAndDialectService";
+import { logEvent } from "./services/loggerService";
 import { getMeetingInformation } from "./services/meetingService";
 import { playVoiceFromMessage } from "./services/voiceServiceMicrosoft";
 import { inPersonServiceMicrosoftAutoCont } from "./supervisors/inPersonServiceMicrosoftAutoCont";
@@ -62,6 +69,95 @@ import {
     IRecognitionResultPayload,
     IRoomParams,
 } from "./types";
+
+export enum VtaiEventTypes {
+    API_CALL_INPERSON_OPENAI_TRANSLATE = "api_call_inperson_openai_translate",
+    API_CALL_MICROSOFT_CONT_TRANSLATE = "api_call_microsoft_cont_translate",
+    API_CALL_MICROSOFT_MAN_TRANSLATE = "api_call_microsoft_man_translate",
+    API_CALL_TRANSCRIPTION = "api_call_transcription",
+    API_CALL_TRANSCRIPTION_OPENAI = "api_call_transcription_openai",
+    API_CALL_TRANSLATE_MICROSOFT_MANUAL = "api_call_translate_microsoft_manual",
+    API_CALL_VOICEOVER = "api_call_voiceover",
+    API_FAIL_INPERSON_OPENAI_TRANSLATE = "api_fail_inperson_openai_translate",
+    API_FAIL_MICROSOFT_CONT_TRANSLATE = "api_fail_microsoft_cont_translate",
+    API_FAIL_MICROSOFT_MAN_TRANSLATE = "api_fail_microsoft_man_translate",
+    API_FAIL_TRANSCRIPTION = "api_fail_transcription",
+    API_FAIL_TRANSCRIPTION_OPENAI = "api_fail_transcription_openai",
+    API_FAIL_TRANSLATE_MICROSOFT_MANUAL = "api_fail_translate_microsoft_manual",
+    API_FAIL_VOICEOVER = "api_fail_voiceover",
+    API_SUCCESS_INPERSON_OPENAI_TRANSLATE = "api_success_inperson_openai_translate",
+    API_SUCCESS_MICROSOFT_CONT_TRANSLATE = "api_success_microsoft_cont_translate",
+    API_SUCCESS_MICROSOFT_MAN_TRANSLATE = "api_success_microsoft_man_translate",
+    API_SUCCESS_TRANSCRIPTION = "api_success_transcription",
+    API_SUCCESS_TRANSCRIPTION_OPENAI = "api_success_transcription_openai",
+    API_SUCCESS_TRANSLATE_MICROSOFT_MANUAL = "api_success_translate_microsoft_manual",
+    API_SUCCESS_VOICEOVER = "api_success_voiceover",
+    CONTINUOUS_TRANSCRIPTION_DISABLED = "continuous_transcription_disabled",
+    CONTINUOUS_TRANSCRIPTION_ENABLED = "continuous_transcription_enabled",
+    ENDED_MEETING = "end_meeting",
+    FETCH_MEETING_DATA_ERROR = "fetch_meeting_data_error",
+    FETCH_MEETING_DATA_SUCCESS = "fetch_meeting_data_success",
+    JOINED_MEETING = "joined_meeting",
+    JOIN_MEETING_CLICKED = "join_meeting_clicked",
+    LEFT_CALL = "left_call",
+    MANUAL_TRANSCRIPTION_DISABLED = "manual_transcription_disabled",
+    MANUAL_TRANSCRIPTION_ENABLED = "manual_transcription_enabled",
+    MIC_MUTED = "mic_muted",
+    MIC_UNMUTED = "mic_unmuted",
+    RECORDING_STARTED = "recording_started",
+    RECORDING_STOPPED = "recording_stopped",
+    TEXT_TO_SPEECH_API_CALLED = "text_to_speech_api_called",
+    TEXT_TO_SPEECH_API_RESPONDED = "text_to_speech_api_responded",
+    TRANSCRIBE_API_CALLED = "transcribe_api_called",
+    TRANSCRIBE_API_RESPONDED = "transcribe_api_responded",
+    TRANSCRIPTION_ERROR = "transcription_error",
+    TRANSLATE_API_CALLED = "translate_api_called",
+    TRANSLATE_API_RESPONDED = "translate_api_responded",
+    VIDEO_MUTED = "video_muted",
+    VIDEO_UNMUTED = "video_unmuted",
+    VOICEOVER_DISABLED = "voiceover_disabled",
+    VOICEOVER_ENABLED = "voiceover_enabled",
+}
+
+export const sendEventLogToServer =
+    ({ eventType }: { eventType: string }) =>
+    (dispatch: IStore["dispatch"], getState: IStore["getState"]) => {
+        const state = getState();
+        const token = toState(state)["features/videotranslatorai"].jwtToken;
+        const meetingId = toState(state)["features/videotranslatorai"].meetingId;
+        const clientId = toState(state)["features/videotranslatorai"].clientId;
+        const moderatorId = toState(state)["features/videotranslatorai"].thisEntityData.moderatorId;
+        const participantId = toState(state)["features/videotranslatorai"].thisEntityData.participant_id;
+        const userType = toState(state)["features/videotranslatorai"].thisEntityData.type;
+        const meetingType = toState(state)["features/videotranslatorai"].meetingType;
+
+        // time when the first user joined conference
+        const startTimestamp = toState(state)["features/base/conference"].conferenceTimestamp;
+        const currentTimestamp = new Date();
+        const elapsedTime = startTimestamp
+            ? getLocalizedDurationFormatter(currentTimestamp.getTime() - startTimestamp)
+            : currentTimestamp.toISOString();
+
+        logEvent({
+            event: {
+                eventType,
+                meetingId,
+                clientId,
+                moderatorId,
+                participantId,
+                userType,
+                meetingType,
+                localTimestamp: currentTimestamp.toISOString(),
+                elapsedTime,
+            },
+            token,
+        });
+        console.log("VTAI EVENT", eventType);
+
+        return {
+            type: VTAI_LOG_EVENT,
+        };
+    };
 
 export const setRecordingBlobOpenAi = (blob: any) => {
     return {
@@ -209,13 +305,15 @@ export const addMessageVideoTranslatorAI = (messageDetails: Object) => {
     };
 };
 
-export const fetchMeetingData = (params: IFetchMeetingData) => async (dispatch: any, getState: any) => {
+export const fetchMeetingData = (params: IFetchMeetingData) => async (dispatch: any) => {
     // Dispatch an action to store the parameters in the state
     try {
+        dispatch(sendEventLogToServer({ eventType: FETCH_MEETING_DATA }));
         const { meetingNameQuery, token, initialName, meetingId } = params;
         const data = await getMeetingInformation(meetingId, token, initialName);
 
         if (data) {
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.FETCH_MEETING_DATA_SUCCESS }));
             dispatch(setMeetingData(data.meetingData));
             dispatch(setModeratorData(data.moderatorData));
             dispatch(setLinguistData(data.linguistData));
@@ -234,8 +332,7 @@ export const fetchMeetingData = (params: IFetchMeetingData) => async (dispatch: 
         }
     } catch (error) {
         console.error("Error while fetching meeting information:", error);
-
-        // Optionally, dispatch an error action
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.FETCH_MEETING_DATA_ERROR }));
     }
 };
 
@@ -246,14 +343,19 @@ export const translateOpenAi =
         try {
             // Dispatch action to stop the recording
             dispatch(setIsRecording(false));
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_CALL_TRANSCRIPTION_OPENAI }));
 
             // Call the async service and pass the recorded blob
             await transcribeAndTranslateServiceOpenAi(dispatch, getState, recordedBlobParam, isMessageCompleted);
+
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_SUCCESS_TRANSCRIPTION_OPENAI }));
 
             // Optionally handle results, such as dispatching success actions
             // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
         } catch (err) {
             console.error("Error in OpenAI translate service:", err);
+
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_FAIL_TRANSCRIPTION_OPENAI }));
 
             // Optionally dispatch a failure action if needed
             // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
@@ -263,12 +365,14 @@ export const translateOpenAi =
 export const startTranscription = () => async (dispatch: any, getState: any) => {
     dispatch({ type: START_TRANSCRIPTION });
     try {
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_CALL_TRANSCRIPTION }));
         await transcribeAndTranslateService(dispatch, getState);
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_SUCCESS_TRANSCRIPTION }));
 
         // Handle success if needed
     } catch (err) {
         console.error("Error during transcription:", err);
-        dispatch(setIsTranscribing(false));
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_FAIL_TRANSCRIPTION }));
     }
 };
 
@@ -288,13 +392,17 @@ export const startTextToSpeech = (text: string, textToSpeechCode: string) => asy
     try {
         const state: IReduxState = getState();
 
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_CALL_VOICEOVER }));
+
         // Call the playVoiceFromMessage function with the text and state
         await playVoiceFromMessage(text, state, textToSpeechCode, dispatch);
 
         // Handle success if needed
     } catch (err) {
         console.error("Error during text-to-speech:", err);
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_FAIL_VOICEOVER }));
     } finally {
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_SUCCESS_VOICEOVER }));
     }
 };
 
@@ -350,6 +458,8 @@ export const inPersonTranslateOpenAi =
     ) =>
     async (dispatch: any, getState: any) => {
         try {
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_CALL_INPERSON_OPENAI_TRANSLATE }));
+
             // Dispatch action to stop the recording
             dispatch(setIsRecording(false));
 
@@ -368,10 +478,14 @@ export const inPersonTranslateOpenAi =
                 isContMode
             );
 
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_SUCCESS_INPERSON_OPENAI_TRANSLATE }));
+
             // Optionally handle results, such as dispatching success actions
             // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
         } catch (err) {
             console.error("Error in OpenAI translate service:", err);
+
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_FAIL_INPERSON_OPENAI_TRANSLATE }));
 
             // Optionally dispatch a failure action if needed
             // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
@@ -391,7 +505,7 @@ export const inPersonTranslateMicrosoftMan =
     ) =>
     async (dispatch: any, getState: any) => {
         try {
-            // Dispatch action to stop the recording
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_CALL_MICROSOFT_MAN_TRANSLATE }));
 
             // Call the async service and pass the recorded blob
             await inPersonServiceMicrosoftMan(
@@ -407,10 +521,14 @@ export const inPersonTranslateMicrosoftMan =
                 isMessageCompleted
             );
 
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_SUCCESS_MICROSOFT_MAN_TRANSLATE }));
+
             // Optionally handle results, such as dispatching success actions
             // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
         } catch (err) {
             console.error("Error in OpenAI translate service:", err);
+
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_FAIL_MICROSOFT_MAN_TRANSLATE }));
 
             // Optionally dispatch a failure action if needed
             // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
@@ -421,6 +539,8 @@ export const inPersonTranslateMicrosoftCont =
     (langFrom: any, langTo: any, participantName: any, dialectIdFrom: any = "", dialectIdTo: any = "") =>
     async (dispatch: any, getState: any) => {
         try {
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_CALL_MICROSOFT_CONT_TRANSLATE }));
+
             // Call the async service and pass the recorded blob
             await inPersonServiceMicrosoftCont(
                 dispatch,
@@ -432,10 +552,14 @@ export const inPersonTranslateMicrosoftCont =
                 dialectIdTo
             );
 
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_SUCCESS_MICROSOFT_CONT_TRANSLATE }));
+
             // Optionally handle results, such as dispatching success actions
             // dispatch({ type: TRANSLATE_OPENAI_SUCCESS, payload: result });
         } catch (err) {
             console.error("Error in OpenAI translate service:", err);
+
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_FAIL_MICROSOFT_CONT_TRANSLATE }));
 
             // Optionally dispatch a failure action if needed
             // dispatch({ type: TRANSLATE_OPENAI_FAILURE, payload: err });
@@ -481,16 +605,19 @@ export const inPersonTranslateAutoCont =
 export const startTranslateMicrosoftManual = (recordedBlobParam: any) => async (dispatch: any, getState: any) => {
     dispatch({ type: START_TRANSLATE_MICROSOFT_MANUAL });
     try {
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_CALL_TRANSLATE_MICROSOFT_MANUAL }));
         await transcribeAndTranslateServiceMicrosoftMan(dispatch, getState, recordedBlobParam);
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_SUCCESS_TRANSLATE_MICROSOFT_MANUAL }));
 
         // Handle success if needed
     } catch (err) {
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.API_FAIL_TRANSLATE_MICROSOFT_MANUAL }));
         console.error("Error during transcription:", err);
         dispatch(setIsTranscribing(false));
     }
 };
 
-export const stopTranslateMicrosoftManual = () => async (dispatch: any, getState: any) => {
+export const stopTranslateMicrosoftManual = () => async (dispatch: any) => {
     dispatch({ type: STOP_TRANSLATE_MICROSOFT_MANUAL });
     try {
         // await stopTranscriptionService(dispatch, getState);
@@ -515,6 +642,20 @@ export const stopRecordingMirosoftManual = () => {
 export const addCompletedMessage = (message: string) => {
     return {
         type: ADD_COMPLETED_MESSAGE,
+        payload: message,
+    };
+};
+
+export const setSelectedTab = (tab: string) => {
+    return {
+        type: SET_SELECTED_TAB,
+        payload: tab,
+    };
+};
+
+export const addInpersonTranslation = (message: { original: string; timestamp: string; translated: string }) => {
+    return {
+        type: ADD_IN_PERSON_TRANSLATION,
         payload: message,
     };
 };

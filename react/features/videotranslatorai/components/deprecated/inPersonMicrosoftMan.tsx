@@ -10,7 +10,9 @@ import {
     inPersonStopRecordingPersonOne,
     inPersonStopRecordingPersonTwo,
     inPersonTranslateMicrosoftMan,
+    sendEventLogToServer,
     startTextToSpeech,
+    VtaiEventTypes,
 } from "../../action.web";
 import InPersonButton from "../buttons/inPersonToggleButton";
 import SoundToggleButton from "../buttons/soundToggleButton";

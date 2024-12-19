@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import Tooltip from "../../../base/tooltip/components/Tooltip";
 import "./transcriptionButton.css";
 
-import { inPersonTranslateMicrosoftMan } from "../../action.web";
+import { inPersonTranslateMicrosoftMan, sendEventLogToServer, VtaiEventTypes } from "../../action.web";
 const debounceTimeout: NodeJS.Timeout | null = null;
 
 interface InPersonButtonMicrosoftManProps {
@@ -116,8 +116,14 @@ const InPersonToggleButtonMicrosoftMan: FC<InPersonButtonMicrosoftManProps> = ({
         handleDebouncedClick(() => {
             if (isRecording) {
                 onStopRecording();
+
+                // sending logs to server
+                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.MANUAL_TRANSCRIPTION_DISABLED }));
             } else if (!isRecording && !isRecordingOther && !isAudioMuted) {
                 onStartRecording();
+
+                // sending logs to server
+                dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.MANUAL_TRANSCRIPTION_ENABLED }));
             }
         });
     };

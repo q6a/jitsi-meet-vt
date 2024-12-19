@@ -9,7 +9,9 @@ import {
     inPersonStartRecordingPersonTwo,
     inPersonStopRecordingPersonOne,
     inPersonStopRecordingPersonTwo,
+    sendEventLogToServer,
     startTextToSpeech,
+    VtaiEventTypes,
 } from "../action.web";
 
 import InPersonToggleButtonAutoCont from "./buttons/inPersonToggleButtonAutoCont";
@@ -78,6 +80,11 @@ const InPersonModular: FC = () => {
 
     const toggleSound = () => {
         setIsSoundOn((prev) => !prev);
+        if (isSoundOn) {
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.VOICEOVER_DISABLED }));
+        } else {
+            dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.VOICEOVER_ENABLED }));
+        }
     };
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null); // Shared debounce timeout
 

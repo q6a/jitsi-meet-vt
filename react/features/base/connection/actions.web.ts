@@ -11,6 +11,7 @@ import LocalRecordingManager from '../../recording/components/Recording/LocalRec
 import { setJWT } from '../jwt/actions';
 
 import { _connectInternal } from './actions.any';
+import { sendEventLogToServer, VtaiEventTypes } from '../../videotranslatorai/action.web';
 
 export * from './actions.any';
 
@@ -79,7 +80,8 @@ export function hangup(requestFeedback = false, feedbackTitle?: string) {
                 setTimeout(res, 1000);
             });
         }
-
+        // vtai server logs
+        dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.LEFT_CALL }));
         return APP.conference.hangup(requestFeedback, feedbackTitle);
     };
 }

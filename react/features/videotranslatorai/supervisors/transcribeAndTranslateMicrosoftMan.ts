@@ -7,7 +7,6 @@ import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioMicrosoft from "../services/transcribeAudioMicrosoft";
 export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, getState: any, audioBlob: Blob) => {
     const state: IReduxState = getState();
-
     // const state: IReduxState = store.getState(); // Directly accessing the Redux state from the store
     const tokenData = toState(state)["features/videotranslatorai"].jwtToken;
     const participantState = toState(state)["features/base/participants"];
