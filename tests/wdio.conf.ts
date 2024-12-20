@@ -1,9 +1,13 @@
 import AllureReporter from '@wdio/allure-reporter';
 import { multiremotebrowser } from '@wdio/globals';
 import { Buffer } from 'buffer';
+import path from 'node:path';
 import process from 'node:process';
+import pretty from 'pretty';
 
+import WebhookProxy from './helpers/WebhookProxy';
 import { getLogs, initLogger, logInfo } from './helpers/browserLogger';
+import { IContext } from './helpers/types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const allure = require('allure-commandline');
@@ -24,7 +28,11 @@ const chromeArgs = [
     '--no-sandbox',
     '--disable-dev-shm-usage',
     '--disable-setuid-sandbox',
-    '--use-file-for-fake-audio-capture=tests/resources/fakeAudioStream.wav'
+
+    // Avoids - "You are checking for animations on an inactive tab, animations do not run for inactive tabs"
+    // when executing waitForStable()
+    '--disable-renderer-backgrounding',
+    `--use-file-for-fake-audio-capture=${process.env.REMOTE_RESOURCE_PATH || 'tests/resources'}/fakeAudioStream.wav`
 ];
 
 if (process.env.RESOLVER_RULES) {
@@ -56,7 +64,7 @@ export const config: WebdriverIO.MultiremoteConfig = {
     ],
     maxInstances: 1,
 
-    baseUrl: process.env.BASE_URL || 'https://alpha.jitsi.net/torture',
+    baseUrl: process.env.BASE_URL || 'https://alpha.jitsi.net/torture/',
     tsConfigPath: './tsconfig.json',
 
     // Default timeout for all waitForXXX commands.
@@ -69,10 +77,10 @@ export const config: WebdriverIO.MultiremoteConfig = {
     // Default request retries count
     connectionRetryCount: 3,
 
-    framework: 'jasmine',
+    framework: 'mocha',
 
-    jasmineOpts: {
-        defaultTimeoutInterval: 60_000
+    mochaOpts: {
+        timeout: 60_000
     },
 
     capabilities: {
@@ -105,6 +113,7 @@ export const config: WebdriverIO.MultiremoteConfig = {
                     prefs: chromePreferences
                 },
                 'wdio:exclude': [
+                    'specs/alone/**',
                     'specs/2way/**'
                 ]
             }
@@ -117,6 +126,8 @@ export const config: WebdriverIO.MultiremoteConfig = {
                     prefs: chromePreferences
                 },
                 'wdio:exclude': [
+                    'specs/alone/**',
+                    'specs/2way/**',
                     'specs/3way/**'
                 ]
             }
@@ -157,19 +168,64 @@ export const config: WebdriverIO.MultiremoteConfig = {
      *
      * @returns {Promise<void>}
      */
-    before() {
-        multiremotebrowser.instances.forEach((instance: string) => {
-            initLogger(multiremotebrowser.getInstance(instance), instance, TEST_RESULTS_DIR);
-        });
+    async before() {
+        await Promise.all(multiremotebrowser.instances.map(async (instance: string) => {
+            const bInstance = multiremotebrowser.getInstance(instance);
+
+            initLogger(bInstance, instance, TEST_RESULTS_DIR);
+
+            if (bInstance.isFirefox) {
+                return;
+            }
+
+            // if (process.env.GRID_HOST_URL) {
+            // TODO: make sure we use uploadFile only with chrome (it does not work with FF),
+            // we need to test it with the grid and FF, does it work there
+            const rpath = await bInstance.uploadFile('tests/resources/iframeAPITest.html');
+
+            // @ts-ignore
+            bInstance.iframePageBase = `file://${path.dirname(rpath)}`;
+        }));
+
+        const globalAny: any = global;
+        const roomName = `jitsimeettorture-${crypto.randomUUID()}`;
+
+        globalAny.ctx = {} as IContext;
+        globalAny.ctx.roomName = roomName;
+        globalAny.ctx.jwtPrivateKeyPath = process.env.JWT_PRIVATE_KEY_PATH;
+        globalAny.ctx.jwtKid = process.env.JWT_KID;
+    },
+
+    after() {
+        const { ctx }: any = global;
+
+        if (ctx.webhooksProxy) {
+            ctx.webhooksProxy.disconnect();
+        }
     },
 
     /**
      * Gets executed before the suite starts (in Mocha/Jasmine only).
      *
      * @param {Object} suite - Suite details.
-     * @returns {Promise<void>}
      */
     beforeSuite(suite) {
+        const { ctx }: any = global;
+
+        // If we are running the iFrameApi tests, we need to mark it as such and if needed to create the proxy
+        // and connect to it.
+        if (path.basename(suite.file).startsWith('iFrameApi')) {
+            ctx.iframeAPI = true;
+
+            if (!ctx.webhooksProxy
+                && process.env.WEBHOOKS_PROXY_URL && process.env.WEBHOOKS_PROXY_SHARED_SECRET) {
+                ctx.webhooksProxy = new WebhookProxy(
+                    `${process.env.WEBHOOKS_PROXY_URL}&room=${ctx.roomName}`,
+                    process.env.WEBHOOKS_PROXY_SHARED_SECRET);
+                ctx.webhooksProxy.connect();
+            }
+        }
+
         multiremotebrowser.instances.forEach((instance: string) => {
             logInfo(multiremotebrowser.getInstance(instance),
                 `---=== Begin ${suite.file.substring(suite.file.lastIndexOf('/') + 1)} ===---`);
@@ -180,11 +236,13 @@ export const config: WebdriverIO.MultiremoteConfig = {
      * Function to be executed before a test (in Mocha/Jasmine only).
      *
      * @param {Object} test - Test object.
-     * @returns {Promise<void>}
+     * @param {Object} context - The context object.
      */
-    beforeTest(test) {
+    beforeTest(test, context) {
+        ctx.skipSuiteTests && context.skip();
+
         multiremotebrowser.instances.forEach((instance: string) => {
-            logInfo(multiremotebrowser.getInstance(instance), `---=== Start test ${test.fullName} ===---`);
+            logInfo(multiremotebrowser.getInstance(instance), `---=== Start test ${test.title} ===---`);
         });
     },
 
@@ -198,7 +256,7 @@ export const config: WebdriverIO.MultiremoteConfig = {
      */
     async afterTest(test, context, { error }) {
         multiremotebrowser.instances.forEach((instance: string) =>
-            logInfo(multiremotebrowser.getInstance(instance), `---=== End test ${test.fullName} ===---`));
+            logInfo(multiremotebrowser.getInstance(instance), `---=== End test ${test.title} ===---`));
 
         if (error) {
             const allProcessing: Promise<any>[] = [];
@@ -217,7 +275,7 @@ export const config: WebdriverIO.MultiremoteConfig = {
                 AllureReporter.addAttachment(`console-logs-${instance}`, getLogs(bInstance) || '', 'text/plain');
 
                 allProcessing.push(bInstance.getPageSource().then(source => {
-                    AllureReporter.addAttachment(`html-source-${instance}`, source, 'text/plain');
+                    AllureReporter.addAttachment(`html-source-${instance}`, pretty(source), 'text/plain');
                 }));
             });
 
@@ -270,4 +328,4 @@ export const config: WebdriverIO.MultiremoteConfig = {
             });
         });
     }
-};
+} as WebdriverIO.MultiremoteConfig;

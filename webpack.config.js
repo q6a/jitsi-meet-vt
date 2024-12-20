@@ -14,6 +14,9 @@ const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
  */
 const devServerProxyTarget = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || "https://meet.stg.videotranslator.ai";
 
+// const devServerProxyTarget = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || "https://127.0.0.1:8443";
+
+
 /**
  * Build a Performance configuration object for the given size.
  * See: https://webpack.js.org/configuration/performance/
@@ -257,7 +260,10 @@ function getDevServerConfig() {
         server: process.env.CODESPACES ? "http" : "https",
         static: {
             directory: process.cwd(),
-        },
+            watch: {
+                ignored: file => file.endsWith('.log')
+            }
+        }
     };
 }
 
