@@ -330,7 +330,7 @@ const InPersonModular: FC = () => {
                     ) : (
                         <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                             <SoundToggleButton isSoundOn={isSoundOn} toggleSound={toggleSound} />
-                            {mode === "continuous_automatic" ? (
+                            {mode === "continuous_auto" ? (
                                 <InPersonToggleButtonAutoCont
                                     buttonTextValue={"Auto"}
                                     handleDebouncedClick={handleDebouncedClick}
@@ -352,7 +352,7 @@ const InPersonModular: FC = () => {
                                     whichPerson={whichPerson}
                                 />
                             ) : (
-                                <div>
+                                <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                                     {renderButtonForPersonOne()}
                                     {renderButtonForPersonTwo()}
                                 </div>

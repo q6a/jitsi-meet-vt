@@ -90,6 +90,7 @@ const INITIAL_STATE: IVideoTranslatorAiState = {
     },
     thisEntityData: {
         participant_id: "",
+        moderatorId: "",
         name: "",
         email: "",
         transcriptionDialect: {
