@@ -122,7 +122,7 @@ const InPersonModular: FC = () => {
                 if (whichPerson.current === 2) {
                     dispatch(startTextToSpeech(lastMessage, ttsCodePersonOne));
                 }
-            }s
+            }
 
             setPreviousMessages(messages);
         }
