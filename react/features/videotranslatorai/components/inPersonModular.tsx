@@ -71,7 +71,6 @@ const InPersonModular: FC = () => {
         (state: IReduxState) => state["features/videotranslatorai"].inPersontextToSpeechCodePersonTwo
     );
 
-    // Define the conditional check
     const bothAreOpenAiAndContinuous =
         mode === "continuous" && providerPersonOne === "OpenAI" && providerPersonTwo === "OpenAI";
 
@@ -86,7 +85,7 @@ const InPersonModular: FC = () => {
             dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.VOICEOVER_ENABLED }));
         }
     };
-    const debounceTimeout = useRef<NodeJS.Timeout | null>(null); // Shared debounce timeout
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null); 
 
     const handleDebouncedClick = (callback: () => void) => {
         if (debounceTimeout.current) {
@@ -95,7 +94,7 @@ const InPersonModular: FC = () => {
 
         debounceTimeout.current = setTimeout(() => {
             callback();
-        }, 1000); // Shared debounce time
+        }, 1000); 
     };
 
     useEffect(() => {
@@ -105,7 +104,7 @@ const InPersonModular: FC = () => {
         if (messages !== previousMessages) {
             const lastMessage = messages[messages.length - 1];
 
-            if (lastMessage) {
+            if (lastMessage && mode !== "continuous_auto") {
                 if (isRecordingPersonOne || whichPerson.current === 1) {
                     dispatch(startTextToSpeech(lastMessage, ttsCodePersonTwo));
                 }
@@ -114,6 +113,17 @@ const InPersonModular: FC = () => {
                     dispatch(startTextToSpeech(lastMessage, ttsCodePersonOne));
                 }
             }
+
+            if (lastMessage && mode === "continuous_auto") {
+                if (whichPerson.current === 1) {
+                    dispatch(startTextToSpeech(lastMessage, ttsCodePersonTwo));
+                }
+
+                if (whichPerson.current === 2) {
+                    dispatch(startTextToSpeech(lastMessage, ttsCodePersonOne));
+                }
+            }s
+
             setPreviousMessages(messages);
         }
 
@@ -145,7 +155,6 @@ const InPersonModular: FC = () => {
     };
 
     useEffect(() => {
-        // This will run only once when the component mounts
         if (isRecordingPersonOne) {
             dispatch(inPersonStopRecordingPersonOne());
         }
