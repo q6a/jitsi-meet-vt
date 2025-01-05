@@ -95,11 +95,12 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
                 await genericUsageIntake(
                     transcription,
-                    "transcription-microsoft",
+                    "speech-to-text-microsoft",
                     "microsoft",
                     meetingId,
                     clientId,
-                    tokenData
+                    tokenData,
+                    ((e.result.duration / 10_000_000) / 2).toString()
                 );
 
                 const translationMap = e.result.translations;
@@ -135,11 +136,12 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
                         await genericUsageIntake(
                             translationRecognizing,
-                            "translation-microsoft",
+                            "text-to-text-microsoft",
                             "microsoft",
                             meetingId,
                             clientId,
-                            tokenData
+                            tokenData,
+                            translationRecognizing.length
                         );
 
                         if (participantId) {
@@ -163,11 +165,12 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                 console.log("TRANSCRIPTION TEXT COMPLETED", transcription);
                 await genericUsageIntake(
                     transcription,
-                    "transcription-microsoft",
+                    "speech-to-text-microsoft",
                     "microsoft",
                     meetingId,
                     clientId,
-                    tokenData
+                    tokenData,
+                    ((e.result.duration / 10_000_000) / 2).toString()
                 );
 
                 if (translationMap) {
@@ -200,11 +203,12 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
                         await genericUsageIntake(
                             translationRecognized,
-                            "translation-microsoft",
+                            "text-to-text-microsoft",
                             "microsoft",
                             meetingId,
                             clientId,
-                            tokenData
+                            tokenData,
+                            translationRecognized.length
                         );
 
                         if (participantId) {

@@ -89,11 +89,12 @@ export const inPersonServiceMicrosoftCont = async (
 
                 await genericUsageIntake(
                     transcription,
-                    "transcription-microsoft",
+                    "speech-to-text-microsoft",
                     "microsoft",
                     meetingId,
                     clientId,
-                    tokenData
+                    tokenData,
+                    ((e.result.duration / 10_000_000) / 2).toString()
                 );
 
                 if (translationMap) {
@@ -114,11 +115,12 @@ export const inPersonServiceMicrosoftCont = async (
 
                     await genericUsageIntake(
                         translationRecognizing,
-                        "translation-microsoft",
+                        "text-to-text-microsoft",
                         "microsoft",
                         meetingId,
                         clientId,
-                        tokenData
+                        tokenData,
+                        translationRecognizing.length
                     );
 
                     if (participantId) {
@@ -140,11 +142,12 @@ export const inPersonServiceMicrosoftCont = async (
 
                 await genericUsageIntake(
                     transcription,
-                    "transcription-microsoft",
+                    "speech-to-text-microsoft",
                     "microsoft",
                     meetingId,
                     clientId,
-                    tokenData
+                    tokenData,
+                    ((e.result.duration / 10_000_000) / 2).toString()
                 );
 
                 if (translationMap) {
@@ -164,11 +167,12 @@ export const inPersonServiceMicrosoftCont = async (
 
                     await genericUsageIntake(
                         translationRecognized,
-                        "translation-microsoft",
+                        "text-to-text-microsoft",
                         "microsoft",
                         meetingId,
                         clientId,
-                        tokenData
+                        tokenData,
+                        translationRecognized.length
                     );
 
                     if (participantId) {
