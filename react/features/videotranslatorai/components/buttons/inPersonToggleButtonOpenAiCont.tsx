@@ -6,7 +6,7 @@ import { debounceTime, distinctUntilChanged, map, throttleTime } from "rxjs/oper
 import { IReduxState } from "../../../app/types";
 import Tooltip from "../../../base/tooltip/components/Tooltip";
 import { createRnnoiseProcessor } from "../../../stream-effects/rnnoise"; // Import the create function
-import { inPersonTranslateOpenAi, sendEventLogToServer, VtaiEventTypes } from "../../action.web";
+import { VtaiEventTypes, inPersonTranslateOpenAi, sendEventLogToServer } from "../../action.web";
 import "./transcriptionButton.css";
 
 type VadScore = number;
@@ -223,19 +223,19 @@ const InPersonToggleButtonOpenAiCont: FC<InPersonButtonOpenAiContProps> = ({
 
                         const audioBlob = new Blob(audioChunks.current, blobOptions);
 
-                        dispatch(
-                            inPersonTranslateOpenAi(
-                                audioBlob,
-                                langFromTranscription,
-                                personName,
-                                langFromTranslation,
-                                langFromTranscriptionId,
-                                langFromOtherPersonTranslationId,
-                                langFromTranslationId,
-                                false,
-                                true
-                            )
-                        );
+                        // dispatch(
+                        //     inPersonTranslateOpenAi(
+                        //         audioBlob,
+                        //         langFromTranscription,
+                        //         personName,
+                        //         langFromTranslation,
+                        //         langFromTranscriptionId,
+                        //         langFromOtherPersonTranslationId,
+                        //         langFromTranslationId,
+                        //         false,
+                        //         true
+                        //     )
+                        // );
                     }
                 } else {
                     offTimeoutRef.current = setTimeout(() => {
