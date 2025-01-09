@@ -138,18 +138,22 @@ export const sendEventLogToServer =
             ? getLocalizedDurationFormatter(currentTimestamp.getTime() - startTimestamp)
             : currentTimestamp.toISOString();
 
+        const event = {
+            eventType,
+            meetingId,
+            clientId,
+            moderatorId,
+            participantId,
+            userType,
+            meetingType,
+            localTimestamp: currentTimestamp.toISOString(),
+            elapsedTime,
+        };
+        if (participantId) {
+            event.participantId = participantId;
+        }
         logEvent({
-            event: {
-                eventType,
-                meetingId,
-                clientId,
-                moderatorId,
-                participantId,
-                userType,
-                meetingType,
-                localTimestamp: currentTimestamp.toISOString(),
-                elapsedTime,
-            },
+            event,
             token,
         });
         console.log("VTAI EVENT", eventType);

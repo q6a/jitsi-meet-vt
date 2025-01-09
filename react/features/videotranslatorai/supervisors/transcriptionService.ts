@@ -6,6 +6,7 @@ import { setIsTranscribing, setMicrosoftRecognizerSDK } from "../action.web";
 import fetchAzureToken from "../services/fetchAzureToken"; // Adjust the path as necessary
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import genericUsageIntake from "../services/usageService";
+import { getElapsedTime } from "../helpers";
 
 export const transcribeAndTranslateService = async (dispatch: any, getState: any) => {
     const state: IReduxState = getState();
@@ -23,6 +24,11 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
     const clientId = toState(state)["features/videotranslatorai"].clientId;
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const participantAndModeratorData = [...moderatorData, ...participantData];
+
+    const conferenceStartTime = toState(state)["features/base/conference"].conferenceTimestamp;
+    
+    const elapsedTime = getElapsedTime(conferenceStartTime, new Date().getTime(), true);
+
 
     try {
         let authToken = "";
@@ -100,7 +106,9 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                     meetingId,
                     clientId,
                     tokenData,
-                    ((e.result.duration / 10_000_000) / 2).toString()
+                    ((e.result.duration / 10_000_000) / 2).toString(),
+                    (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
+                    elapsedTime
                 );
 
                 const translationMap = e.result.translations;
@@ -141,7 +149,9 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                             meetingId,
                             clientId,
                             tokenData,
-                            translationRecognizing.length
+                            translationRecognizing.length,
+                            (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
+                            elapsedTime
                         );
 
                         if (participantId) {
@@ -170,7 +180,9 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                     meetingId,
                     clientId,
                     tokenData,
-                    ((e.result.duration / 10_000_000) / 2).toString()
+                    ((e.result.duration / 10_000_000) / 2).toString(),
+                    (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
+                    elapsedTime
                 );
 
                 if (translationMap) {
@@ -208,7 +220,9 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                             meetingId,
                             clientId,
                             tokenData,
-                            translationRecognized.length
+                            translationRecognized.length,
+                            (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
+                            elapsedTime
                         );
 
                         if (participantId) {

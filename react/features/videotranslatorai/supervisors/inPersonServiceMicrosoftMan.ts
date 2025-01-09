@@ -37,7 +37,9 @@ export const inPersonServiceMicrosoftMan = async (
     const baseEndpoint = process.env.REACT_APP_TRANSCRIBE_MICROSOFT_API_ENDPOINT;
     const speechRegion = process.env.REACT_APP_SPEECH_REGION_MICROSOFT_SDK;
 
-    const elapsedTime = getElapsedTime(conferenceStartTime, new Date().getTime()) || '';
+    const elapsedTime = getElapsedTime(conferenceStartTime, new Date().getTime(), false);
+
+    const elapsedTimeInMilliseconds = getElapsedTime(conferenceStartTime, new Date().getTime(), true);
 
     // Error checking for environment variables
     if (!speechRegion || !baseEndpoint) {
@@ -53,7 +55,9 @@ export const inPersonServiceMicrosoftMan = async (
             baseEndpoint,
             tokenData,
             meetingId,
-            clientId
+            clientId,
+            entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+            elapsedTimeInMilliseconds,
         );
 
         console.log("Transcription Text", transcriptionText);
@@ -73,7 +77,9 @@ export const inPersonServiceMicrosoftMan = async (
                             langFromTranslationId,
                             "australiaeast",
                             meetingId,
-                            clientId
+                            clientId,
+                            entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+                            elapsedTimeInMilliseconds
                         );
 
                         let translationSent = "";

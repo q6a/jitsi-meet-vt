@@ -7,6 +7,8 @@ export default async function genericUsageIntake(
     meeting_id: string,
     client_id: string,
     authToken: string,
+    sender_id: string,
+    elapsed_time: number,
     usage: string | number
 ): Promise<boolean> {
     try {
@@ -18,7 +20,7 @@ export default async function genericUsageIntake(
 
         const response = await axios.post(
             endpoint,
-            { text, type, provider, meeting_id, client_id, usage },
+            { text, type, provider, meeting_id, client_id, sender_id, elapsed_time, usage },
             {
                 headers: {
                     Authorization: `Bearer ${authToken}`,

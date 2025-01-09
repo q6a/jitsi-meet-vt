@@ -1,5 +1,6 @@
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
+import { getElapsedTime } from "../helpers";
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioOpenAi from "../services/transcribeAudioOpenAi";
@@ -19,11 +20,14 @@ export const transcribeAndTranslateServiceOpenAi = async (
     const moderatorData = toState(state)["features/videotranslatorai"].moderatorData;
     const entityData: any = toState(state)["features/videotranslatorai"].thisEntityData;
     const conference = toState(state)["features/base/conference"].conference;
+    const conferenceStartTime = toState(state)["features/base/conference"].conferenceTimestamp;
     const clientId = toState(state)["features/videotranslatorai"].clientId;
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const participantAndModeratorData = [...moderatorData, ...participantData];
 
     const apiEndpoint = process.env.REACT_APP_OPENAI_TRANSCRIBE_ENDPOINT_VIDEOTRANSLATORAI; // New API endpoint
+
+    const elapsedTime = getElapsedTime(conferenceStartTime, new Date().getTime(), true);
 
     if (!apiEndpoint) {
         throw new Error("One or more environment variables are not set.");
@@ -70,7 +74,9 @@ export const transcribeAndTranslateServiceOpenAi = async (
                             langFromTranslation,
                             "australiaeast",
                             meetingId,
-                            clientId
+                            clientId,
+                            entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+                            elapsedTime
                         );
 
                         let translationSent = "";

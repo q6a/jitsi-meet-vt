@@ -7,7 +7,9 @@ async function translateTextMicrosoft(
     langFromParam: any = "",
     regionParam: any = "australiaeast",
     meetingId: string,
-    clientId: string
+    clientId: string,
+    senderId: string,
+    elapsedTime: number
 ): Promise<string> {
     try {
 
@@ -26,6 +28,8 @@ async function translateTextMicrosoft(
                 region: regionParam,
                 meeting_id: meetingId,
                 client_id: clientId,
+                sender_id: senderId,
+                elapsed_time: elapsedTime
             },
             {
                 headers: {

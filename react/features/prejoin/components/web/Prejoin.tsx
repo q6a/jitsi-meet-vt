@@ -268,6 +268,7 @@ const Prejoin = ({
 
         logger.info('Prejoin join button clicked.');
 
+
         // Vtai event logger
         dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.JOIN_MEETING_CLICKED }));
 
