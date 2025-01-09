@@ -1,6 +1,6 @@
 import { getLocalizedDurationFormatter } from '../base/i18n/dateUtil';
 
-export const getElapsedTime = <T extends boolean>(refValueUTC, currentValueUTC, milliSeconds: T): T extends true ? number : string => {
+export const getElapsedTime = <T extends boolean>(refValueUTC: any, currentValueUTC: any, milliSeconds: T): T extends true ? number | undefined : string | undefined=> {
     if (!refValueUTC || !currentValueUTC) {
         return;
     }
@@ -11,7 +11,5 @@ export const getElapsedTime = <T extends boolean>(refValueUTC, currentValueUTC, 
 
     const timerMsValue = currentValueUTC - refValueUTC;
 
-    const localizedTime = milliSeconds ? timerMsValue : getLocalizedDurationFormatter(timerMsValue);
-
-    return localizedTime;
+    return (milliSeconds ? timerMsValue : getLocalizedDurationFormatter(timerMsValue)) as T extends true ? number : string;
 };

@@ -9,8 +9,11 @@
  * @param {string} clientId - The client ID for authorization.
  * @returns {Promise<string>} - A promise that resolves to the transcription text.
  */
-async function transcribeAudioMicrosoft(langFrom: any, recordedBlob: any, apiEndpoint:any, tokenData: any, meetingId:any, clientId: any, senderId: string, elapsedTime: number) {
+async function transcribeAudioMicrosoft(langFrom: any, recordedBlob: any, apiEndpoint:any, tokenData: any, meetingId:any, clientId: any, senderId: string, elapsedTime: number | undefined) {
     try {
+        const elapsedTimeValue = elapsedTime?.toString() || "0"; // Default to "0" if undefined
+
+
         const headers = {
             Authorization: `Bearer ${tokenData}`,
             "Content-Type": "audio/wav",
@@ -18,7 +21,7 @@ async function transcribeAudioMicrosoft(langFrom: any, recordedBlob: any, apiEnd
             "x-meeting-id": meetingId,
             "x-client-id": clientId,
             "x-sender-id": senderId,
-            "x-elapsed-time": elapsedTime.toString()
+            "x-elapsed-time": elapsedTimeValue
         };
 
         const response = await fetch(apiEndpoint, {

@@ -3,10 +3,10 @@ import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
 import { setMicrosoftRecognizerSDK } from "../action.web";
+import { getElapsedTime } from "../helpers";
 import fetchAzureToken from "../services/fetchAzureToken"; // Adjust the path as necessary
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import genericUsageIntake from "../services/usageService";
-import { getElapsedTime } from "../helpers";
 
 export const inPersonServiceMicrosoftCont = async (
     dispatch: any,
@@ -126,9 +126,9 @@ export const inPersonServiceMicrosoftCont = async (
                         meetingId,
                         clientId,
                         tokenData,
-                        translationRecognizing.length,
                         (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
-                        elapsedTime
+                        elapsedTime,
+                        translationRecognizing.length,
                     );
 
                     if (participantId) {
@@ -182,9 +182,9 @@ export const inPersonServiceMicrosoftCont = async (
                         meetingId,
                         clientId,
                         tokenData,
-                        translationRecognized.length,
                         (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
-                        elapsedTime
+                        elapsedTime,
+                        translationRecognized.length,
                     );
 
                     if (participantId) {

@@ -8,8 +8,8 @@ export default async function genericUsageIntake(
     client_id: string,
     authToken: string,
     sender_id: string,
-    elapsed_time: number,
-    usage: string | number
+    elapsed_time: number | undefined,
+    usage: string | number | undefined
 ): Promise<boolean> {
     try {
         const endpoint = process.env.REACT_APP_GENERIC_USAGE_INTAKE_API_ENDPOINT;

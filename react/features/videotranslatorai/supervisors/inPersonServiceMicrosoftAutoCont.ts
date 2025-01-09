@@ -3,10 +3,10 @@ import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
 import { setMicrosoftRecognizerSDK } from "../action.web";
+import { getElapsedTime } from "../helpers";
 import fetchAzureToken from "../services/fetchAzureToken"; // Adjust the path as necessary
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
-import { getElapsedTime } from "../helpers";
 let recording = false;
 
 export const inPersonServiceMicrosoftAutoCont = async (

@@ -657,7 +657,7 @@ export const setSelectedTab = (tab: string) => {
     };
 };
 
-export const addInpersonTranslation = (message: { original: string; timestamp: string; translated: string }) => {
+export const addInpersonTranslation = (message: { original: string; timestamp: string | undefined; translated: string }) => {
     return {
         type: ADD_IN_PERSON_TRANSLATION,
         payload: message,

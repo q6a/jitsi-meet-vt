@@ -9,7 +9,7 @@ async function translateTextMicrosoft(
     meetingId: string,
     clientId: string,
     senderId: string,
-    elapsedTime: number
+    elapsedTime: number | undefined
 ): Promise<string> {
     try {
 
