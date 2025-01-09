@@ -3,12 +3,17 @@ import axios from "axios";
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
 import { setIsPlayingTTS } from "../action.web";
+import { getElapsedTime } from "../helpers";
 export async function playVoiceFromMessage(text: any, state: IReduxState, textToSpeechCode: string, dispatch: any) {
     const region = "australiaeast"; // Your Azure region
     const authToken = toState(state)["features/videotranslatorai"].jwtToken;
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const clientId = toState(state)["features/videotranslatorai"].clientId;
+    const conferenceStartTime = toState(state)["features/base/conference"].conferenceTimestamp;
     const apiEndpoint = process.env.REACT_APP_TTS_MICROSOFT_API_ENDPOINT;
+    const entityData: any = toState(state)["features/videotranslatorai"].thisEntityData;
+
+    const elapsedTime = getElapsedTime(conferenceStartTime, new Date().getTime(), true);
 
     textToSpeechCode = textToSpeechCode.split(" ")[0];
 
@@ -26,6 +31,8 @@ export async function playVoiceFromMessage(text: any, state: IReduxState, textTo
                 textToSpeechCode,
                 meeting_id: meetingId,
                 client_id: clientId,
+                sender_id: (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
+                elapsed_time: elapsedTime
             },
             {
                 headers: {

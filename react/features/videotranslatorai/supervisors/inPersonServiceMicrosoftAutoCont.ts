@@ -6,6 +6,7 @@ import { setMicrosoftRecognizerSDK } from "../action.web";
 import fetchAzureToken from "../services/fetchAzureToken"; // Adjust the path as necessary
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
+import { getElapsedTime } from "../helpers";
 let recording = false;
 
 export const inPersonServiceMicrosoftAutoCont = async (
@@ -33,6 +34,7 @@ export const inPersonServiceMicrosoftAutoCont = async (
     const moderatorData = toState(state)["features/videotranslatorai"].moderatorData;
     const entityData: any = toState(state)["features/videotranslatorai"].thisEntityData;
     const conference = toState(state)["features/base/conference"].conference;
+    const conferenceStartTime = toState(state)["features/base/conference"].conferenceTimestamp;
     const clientId = toState(state)["features/videotranslatorai"].clientId;
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const participantAndModeratorData = [...moderatorData, ...participantData];
@@ -99,6 +101,8 @@ export const inPersonServiceMicrosoftAutoCont = async (
             let dialectIdFrom = "";
             let participantName = "";
 
+            const elapsedTime = getElapsedTime(conferenceStartTime, new Date().getTime(), true);
+
             if (detectedLanguage === langPersonOneTranscription) {
                 translationText = await translateTextMicrosoft(
                     transcriptionText,
@@ -107,7 +111,9 @@ export const inPersonServiceMicrosoftAutoCont = async (
                     langPersonOneTranslationId,
                     "australiaeast",
                     meetingId,
-                    clientId
+                    clientId,
+                    entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+                    elapsedTime
                 );
 
                 participantName = personOneName;
@@ -125,7 +131,9 @@ export const inPersonServiceMicrosoftAutoCont = async (
                     langPersonTwoTranslationId,
                     "australiaeast",
                     meetingId,
-                    clientId
+                    clientId,
+                    entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+                    elapsedTime
                 );
 
                 participantName = personTwoName;
@@ -155,6 +163,8 @@ export const inPersonServiceMicrosoftAutoCont = async (
                 const detectedLanguage = languageDetectionResult.language;
                 const transcriptionText = e.result.text;
 
+                const recognizerElapsedTime = getElapsedTime(conferenceStartTime, new Date().getTime(), true);
+
                 console.log(`Detected Language: ${detectedLanguage}`);
                 console.log(`Transcription: ${transcriptionText}`);
 
@@ -171,7 +181,9 @@ export const inPersonServiceMicrosoftAutoCont = async (
                         langPersonOneTranslationId,
                         "australiaeast",
                         meetingId,
-                        clientId
+                        clientId,
+                        entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+                        recognizerElapsedTime
                     );
 
                     participantName = personOneName;
@@ -189,7 +201,9 @@ export const inPersonServiceMicrosoftAutoCont = async (
                         langPersonTwoTranslationId,
                         "australiaeast",
                         meetingId,
-                        clientId
+                        clientId,
+                        entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+                        recognizerElapsedTime
                     );
 
                     participantName = personTwoName;

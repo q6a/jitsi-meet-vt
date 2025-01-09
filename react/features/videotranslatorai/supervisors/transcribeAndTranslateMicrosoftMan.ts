@@ -5,6 +5,7 @@ import { toState } from "../../base/redux/functions";
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioMicrosoft from "../services/transcribeAudioMicrosoft";
+import { getElapsedTime } from "../helpers";
 export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, getState: any, audioBlob: Blob) => {
     const state: IReduxState = getState();
     // const state: IReduxState = store.getState(); // Directly accessing the Redux state from the store
@@ -16,11 +17,14 @@ export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, g
     const moderatorData = toState(state)["features/videotranslatorai"].moderatorData;
     const entityData: any = toState(state)["features/videotranslatorai"].thisEntityData;
     const conference = toState(state)["features/base/conference"].conference;
+    const conferenceStartTime = toState(state)["features/base/conference"].conferenceTimestamp;
     const participantLanguageName = "";
     const clientId = toState(state)["features/videotranslatorai"].clientId;
     const meetingId = toState(state)["features/videotranslatorai"].meetingId;
     const participantAndModeratorData = [...moderatorData, ...participantData];
     const baseEndpoint = process.env.REACT_APP_TRANSCRIBE_MICROSOFT_API_ENDPOINT; // New API endpoint
+
+    const elapsedTime = getElapsedTime(conferenceStartTime, new Date().getTime(), true);
     // New API endpoint
 
     try {
@@ -52,7 +56,9 @@ export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, g
             baseEndpoint,
             tokenData,
             meetingId,
-            clientId
+            clientId,
+            entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+            elapsedTime,
         );
 
         console.log("TRANSCRIPTION TEXT", transcriptionText);
@@ -72,7 +78,9 @@ export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, g
                             langFromId,
                             "australiaeast",
                             meetingId,
-                            clientId
+                            clientId,
+                            entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+                            elapsedTime
                         );
 
                         const translationSent = `${participantName}: ${translationText} (videotranslatoraiservice)`;
