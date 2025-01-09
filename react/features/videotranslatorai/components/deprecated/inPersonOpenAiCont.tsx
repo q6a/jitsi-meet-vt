@@ -296,37 +296,37 @@ const InPersonOpenAiCont: FC = () => {
 
                         const audioBlob = new Blob(audioChunks.current, blobOptions);
 
-                        if (whichPerson.current === 1 && !isRecordingPersonTwo) {
-                            dispatch(
-                                inPersonTranslateOpenAi(
-                                    audioBlob,
-                                    langFromPersonOneTranscription,
-                                    personOneName,
-                                    langFromPersonOneTranslation,
-                                    langFromPersonOneTranscriptionId,
-                                    langFromPersonTwoTranslationId,
-                                    langFromPersonOneTranslationId,
-                                    false,
-                                    true
-                                )
-                            );
-                        }
+                        // if (whichPerson.current === 1 && !isRecordingPersonTwo) {
+                        //     dispatch(
+                        //         inPersonTranslateOpenAi(
+                        //             audioBlob,
+                        //             langFromPersonOneTranscription,
+                        //             personOneName,
+                        //             langFromPersonOneTranslation,
+                        //             langFromPersonOneTranscriptionId,
+                        //             langFromPersonTwoTranslationId,
+                        //             langFromPersonOneTranslationId,
+                        //             false,
+                        //             true
+                        //         )
+                        //     );
+                        // }
 
-                        if (whichPerson.current === 2 && !isRecordingPersonOne) {
-                            dispatch(
-                                inPersonTranslateOpenAi(
-                                    audioBlob,
-                                    langFromPersonTwoTranscription,
-                                    personTwoName,
-                                    langFromPersonTwoTranslation,
-                                    langFromPersonTwoTranscriptionId,
-                                    langFromPersonOneTranslationId,
-                                    langFromPersonTwoTranslationId,
-                                    false,
-                                    true
-                                )
-                            );
-                        }
+                        // if (whichPerson.current === 2 && !isRecordingPersonOne) {
+                        //     dispatch(
+                        //         inPersonTranslateOpenAi(
+                        //             audioBlob,
+                        //             langFromPersonTwoTranscription,
+                        //             personTwoName,
+                        //             langFromPersonTwoTranslation,
+                        //             langFromPersonTwoTranscriptionId,
+                        //             langFromPersonOneTranslationId,
+                        //             langFromPersonTwoTranslationId,
+                        //             false,
+                        //             true
+                        //         )
+                        //     );
+                        // }
                     }
                 } else {
                     offTimeout = setTimeout(() => {

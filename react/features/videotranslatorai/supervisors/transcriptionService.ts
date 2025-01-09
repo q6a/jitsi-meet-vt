@@ -101,11 +101,12 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
                 await genericUsageIntake(
                     transcription,
-                    "transcription-microsoft",
+                    "speech-to-text-microsoft",
                     "microsoft",
                     meetingId,
                     clientId,
                     tokenData,
+                    ((e.result.duration / 10_000_000) / 2).toString(),
                     (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
                     elapsedTime
                 );
@@ -143,11 +144,12 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
                         await genericUsageIntake(
                             translationRecognizing,
-                            "translation-microsoft",
+                            "text-to-text-microsoft",
                             "microsoft",
                             meetingId,
                             clientId,
                             tokenData,
+                            translationRecognizing.length,
                             (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
                             elapsedTime
                         );
@@ -173,11 +175,12 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                 console.log("TRANSCRIPTION TEXT COMPLETED", transcription);
                 await genericUsageIntake(
                     transcription,
-                    "transcription-microsoft",
+                    "speech-to-text-microsoft",
                     "microsoft",
                     meetingId,
                     clientId,
                     tokenData,
+                    ((e.result.duration / 10_000_000) / 2).toString(),
                     (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
                     elapsedTime
                 );
@@ -212,11 +215,12 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
                         await genericUsageIntake(
                             translationRecognized,
-                            "translation-microsoft",
+                            "text-to-text-microsoft",
                             "microsoft",
                             meetingId,
                             clientId,
                             tokenData,
+                            translationRecognized.length,
                             (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
                             elapsedTime
                         );

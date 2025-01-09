@@ -5,13 +5,13 @@ import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
 import { toState } from "../../base/redux/functions";
 import {
+    VtaiEventTypes,
     inPersonStartRecordingPersonOne,
     inPersonStartRecordingPersonTwo,
     inPersonStopRecordingPersonOne,
     inPersonStopRecordingPersonTwo,
     sendEventLogToServer,
     startTextToSpeech,
-    VtaiEventTypes,
 } from "../action.web";
 
 import InPersonToggleButtonAutoCont from "./buttons/inPersonToggleButtonAutoCont";
@@ -71,9 +71,8 @@ const InPersonModular: FC = () => {
         (state: IReduxState) => state["features/videotranslatorai"].inPersontextToSpeechCodePersonTwo
     );
 
-    // Define the conditional check
     const bothAreOpenAiAndContinuous =
-        mode === "continuous" && providerPersonOne === "OpenAI" && providerPersonTwo === "OpenAI";
+        mode === "continuous_default" && providerPersonOne === "OpenAI" && providerPersonTwo === "OpenAI";
 
     const [previousMessages, setPreviousMessages] = useState(messages);
     const [isSoundOn, setIsSoundOn] = useState(true);
@@ -86,7 +85,7 @@ const InPersonModular: FC = () => {
             dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.VOICEOVER_ENABLED }));
         }
     };
-    const debounceTimeout = useRef<NodeJS.Timeout | null>(null); // Shared debounce timeout
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const handleDebouncedClick = (callback: () => void) => {
         if (debounceTimeout.current) {
@@ -95,7 +94,7 @@ const InPersonModular: FC = () => {
 
         debounceTimeout.current = setTimeout(() => {
             callback();
-        }, 1000); // Shared debounce time
+        }, 1000);
     };
 
     useEffect(() => {
@@ -105,7 +104,7 @@ const InPersonModular: FC = () => {
         if (messages !== previousMessages) {
             const lastMessage = messages[messages.length - 1];
 
-            if (lastMessage) {
+            if (lastMessage && mode !== "continuous_auto") {
                 if (isRecordingPersonOne || whichPerson.current === 1) {
                     dispatch(startTextToSpeech(lastMessage, ttsCodePersonTwo));
                 }
@@ -114,6 +113,17 @@ const InPersonModular: FC = () => {
                     dispatch(startTextToSpeech(lastMessage, ttsCodePersonOne));
                 }
             }
+
+            if (lastMessage && mode === "continuous_auto") {
+                if (whichPerson.current === 1) {
+                    dispatch(startTextToSpeech(lastMessage, ttsCodePersonTwo));
+                }
+
+                if (whichPerson.current === 2) {
+                    dispatch(startTextToSpeech(lastMessage, ttsCodePersonOne));
+                }
+            }
+
             setPreviousMessages(messages);
         }
 
@@ -145,7 +155,6 @@ const InPersonModular: FC = () => {
     };
 
     useEffect(() => {
-        // This will run only once when the component mounts
         if (isRecordingPersonOne) {
             dispatch(inPersonStopRecordingPersonOne());
         }
@@ -165,7 +174,7 @@ const InPersonModular: FC = () => {
     }, [isAudioMuted]);
 
     const renderButtonForPersonOne = () => {
-        if (mode === "continuous") {
+        if (mode === "continuous_default") {
             return providerPersonOne === "Microsoft" ? (
                 <InPersonToggleButtonMicrosoftCont
                     buttonTextValue={"1"}
@@ -242,7 +251,7 @@ const InPersonModular: FC = () => {
     };
 
     const renderButtonForPersonTwo = () => {
-        if (mode === "continuous") {
+        if (mode === "continuous_default") {
             return providerPersonTwo === "Microsoft" ? (
                 <InPersonToggleButtonMicrosoftCont
                     buttonTextValue={"2"}
@@ -330,7 +339,7 @@ const InPersonModular: FC = () => {
                     ) : (
                         <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                             <SoundToggleButton isSoundOn={isSoundOn} toggleSound={toggleSound} />
-                            {mode === "continuous_automatic" ? (
+                            {mode === "continuous_auto" ? (
                                 <InPersonToggleButtonAutoCont
                                     buttonTextValue={"Auto"}
                                     handleDebouncedClick={handleDebouncedClick}
@@ -352,7 +361,7 @@ const InPersonModular: FC = () => {
                                     whichPerson={whichPerson}
                                 />
                             ) : (
-                                <div>
+                                <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
                                     {renderButtonForPersonOne()}
                                     {renderButtonForPersonTwo()}
                                 </div>

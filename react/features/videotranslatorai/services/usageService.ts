@@ -8,7 +8,8 @@ export default async function genericUsageIntake(
     client_id: string,
     authToken: string,
     sender_id: string,
-    elapsed_time: number
+    elapsed_time: number,
+    usage: string | number
 ): Promise<boolean> {
     try {
         const endpoint = process.env.REACT_APP_GENERIC_USAGE_INTAKE_API_ENDPOINT;
@@ -19,7 +20,7 @@ export default async function genericUsageIntake(
 
         const response = await axios.post(
             endpoint,
-            { text, type, provider, meeting_id, client_id, sender_id, elapsed_time },
+            { text, type, provider, meeting_id, client_id, sender_id, elapsed_time, usage },
             {
                 headers: {
                     Authorization: `Bearer ${authToken}`,

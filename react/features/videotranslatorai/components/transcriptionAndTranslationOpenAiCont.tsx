@@ -7,7 +7,7 @@ import { IReduxState } from "../../app/types";
 import { isLocalParticipantModerator } from "../../base/participants/functions";
 import { toState } from "../../base/redux/functions";
 import { createRnnoiseProcessor } from "../../stream-effects/rnnoise"; // Import the create function
-import { sendEventLogToServer, startTextToSpeech, translateOpenAi, VtaiEventTypes } from "../action.web";
+import { VtaiEventTypes, sendEventLogToServer, startTextToSpeech, translateOpenAi } from "../action.web";
 
 import SoundToggleButton from "./buttons/soundToggleButton";
 import TranscriptionButton from "./buttons/transcriptionButton";
@@ -193,7 +193,7 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
                         const audioBlob = new Blob(audioChunks, blobOptions);
 
-                        dispatch(translateOpenAi(audioBlob, false));
+                        // dispatch(translateOpenAi(audioBlob, false));
                     }
                 } else {
                     offTimeout = setTimeout(() => {
@@ -253,17 +253,16 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
     return (
         <div>
             <div style={{ display: "flex", gap: "5px", alignItems: "center" }}>
-                <SoundToggleButton 
-                    isSoundOn = { isSoundOn }
-                    toggleSound = { () => {
+                <SoundToggleButton
+                    isSoundOn={isSoundOn}
+                    toggleSound={() => {
                         setIsSoundOn(!isSoundOn);
                         if (isSoundOn) {
                             dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.VOICEOVER_DISABLED }));
                         } else {
                             dispatch(sendEventLogToServer({ eventType: VtaiEventTypes.VOICEOVER_ENABLED }));
                         }
-                    }
-                    }
+                    }}
                 />
                 {(meetingTypeVideoTranslatorAi !== "broadcast" || isModerator) && (
                     <TranscriptionButton
