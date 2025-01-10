@@ -18,6 +18,9 @@ local appId = module:get_option_string("app_id");
 local acceptedIssuers = module:get_option_array('asap_accepted_issuers',{appId});
 local acceptedAudiences = module:get_option_array('asap_accepted_audiences',{'*'});
 -- end qbl changes
+local json = require "util.json"
+local util = module:require "util"
+
 
 
 local DEBUG = false;
@@ -109,6 +112,44 @@ local function send_custom_data(session, meetingName, participantName, jwtToken)
 end
 
 
+local function get_client_credits_from_meetingcode(meetingCode)
+    local http = require("socket.http")
+    local ltn12 = require("ltn12")
+    local cjson = require("cjson")
+
+
+    local jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN0Zy5zdXBlckBleGFtcGxlLmNvbSIsInVzZXJfaWQiOiI1ZmY3NTQwOC0wZGY2LTQ3ZmItYjY2Mi03ZmExZjY5Y2VmYzMiLCJjbGllbnRfaWQiOiI4MjFmYmExMS04NTk3LTQ4NTMtYWM1OC01ZTNjMDMxNDhhYWMiLCJwZXJtaXNzaW9ucyI6WyJTdXBlckFkbWluIiwiU3VwZXJMYW5ndWFnZXMiLCJTdXBlclVzZXJzIiwiU3VwZXJIaXN0b3J5IiwiU3VwZXJFbnRlcnByaXNlIl0sImlhdCI6MTg4MTUzOTc5MSwiZXhwIjoxODgxNTc1NzkxfQ.xQ26vxmWuGWi6oCXZgheQGCuaaS3jl6VXkibpXlY-C8"
+
+    local response_body = {}
+    local endpoint = "https://api.stg.videotranslator.ai/v1/meetingprojects?meeting_project_id=" .. meetingCode
+
+    local res, code, response_headers, status = http.request{
+        url = endpoint,
+        method = "GET",
+        headers = {
+            ["Content-Type"] = "application/json",
+            ["Authorization"] = "Bearer " .. jwtToken
+        },
+        sink = ltn12.sink.table(response_body)
+    }
+
+    if code == 200 then
+        local response_str = table.concat(response_body)
+        local response_json = cjson.decode(response_str)
+        if response_json and response_json.data and response_json.data.meetingprojects then
+            local clientCredits = response_json.data.meetingprojects[1].client.credits
+            module:log("error", "Room %s has Credits %s", tostring(meetingCode), tostring(clientCredits))
+            return clientCredits
+        else
+            module:log("error", "Invalid response format or missing credits information")
+            return nil
+        end
+    else
+        module:log("error", "HTTP request failed with status: %s", tostring(status))
+        return nil
+    end
+end
+
 
 -- verify user and whether he is allowed to join a room based on the token information
 local function verify_user(session, stanza, event)     
@@ -125,11 +166,21 @@ local function verify_user(session, stanza, event)
     	if claims and session.full_jid then
         	local room = event.room;
         	local occupant = event.occupant;
+            local meetingIdEx = claims.context.user.meetingId;
 
         	module:log("error", "ROOM %s OCCUPANT %s ISUSERMODERATOR %s", room, occupant, claims.context.user.moderator);
             module:log("error", "ROOM %s OCCUPANT %s MEETINGNAME %s", room, occupant, claims.context.user.meetingName);
             module:log("error", "ROOM %s OCCUPANT %s participantName %s", room, occupant, claims.context.user.participantName);
             module:log("error", "SESSION FULL_JID %s", session.full_jid);
+
+
+
+            -- check if credits are enough to go forward with
+            local credits = get_client_credits_from_meetingcode(meetingIdEx);
+            if tonumber(credits) == nil or tonumber(credits) <= 0 then
+                module:log("error", "Credits are nil, 0, or less than 0 for meeting %s.", tostring(meetingIdEx))
+                return false;
+            end
 
     		if room and occupant and claims.context.user.moderator then
        			occupant.role = "moderator";
@@ -183,8 +234,6 @@ local function verify_user(session, stanza, event)
     end
 
     -- end qbl changes
-
-
 
     if DEBUG then
         module:log("debug", "Session token: %s, session room: %s",
