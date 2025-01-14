@@ -175,7 +175,7 @@ local function verify_user(session, stanza, event)
 
 
 
-            -- check if credits are enough to go forward with
+            -- check credits, if no credits then he cannot enter room
             local credits = get_client_credits_from_meetingcode(meetingIdEx);
             if tonumber(credits) == nil or tonumber(credits) <= 0 then
                 module:log("error", "Credits are nil, 0, or less than 0 for meeting %s.", tostring(meetingIdEx))
@@ -203,7 +203,7 @@ local function verify_user(session, stanza, event)
                 local cjson = require("cjson")
                 local response_body = {}
                 local res, code, response_headers, status = http.request{
-                    url =  "https://api.stg.qbl-media.com/v1/meetingprojects/" .. meetingId,
+                    url =  "https://api.stg.videotranslator.ai/v1/meetingprojects/" .. meetingId,
                     method = "GET",
                     headers = {
                         ["Content-Type"] = "application/json",
