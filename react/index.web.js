@@ -76,6 +76,7 @@ globalNS.renderEntryPoint = ({
     props = {},
     elementId = 'react'
 }) => {
+    /* eslint-disable-next-line react/no-deprecated */
     ReactDOM.render(
         <Component { ...props } />,
         document.getElementById(elementId)

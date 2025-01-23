@@ -112,8 +112,9 @@ function _connectionFailed({ dispatch, getState }: IStore, next: Function, actio
  */
 function _isMaybeSplitBrainError(getState: IStore["getState"], action: AnyAction) {
     const { error } = action;
-    const isShardChangedError =
-        error && error.message === "item-not-found" && error.details && error.details.shard_changed;
+    const isShardChangedError = error
+        && error.message === 'item-not-found'
+        && error.details?.shard_changed;
 
     if (isShardChangedError) {
         const state = getState();

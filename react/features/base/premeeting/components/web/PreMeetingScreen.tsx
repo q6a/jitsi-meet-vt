@@ -1,8 +1,7 @@
 import clsx from "clsx";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
 import { makeStyles } from "tss-react/mui";
-
 import { IReduxState } from "../../../../app/types";
 import DeviceStatus from "../../../../prejoin/components/web/preview/DeviceStatus";
 import { isRoomNameEnabled } from "../../../../prejoin/functions";
@@ -11,6 +10,7 @@ import { isButtonEnabled } from "../../../../toolbox/functions.web";
 import { PREMEETING_BUTTONS, THIRD_PARTY_PREJOIN_BUTTONS } from "../../../config/constants";
 import { toState } from "../../../redux/functions";
 import { withPixelLineHeight } from "../../../styles/functions.web";
+import Tooltip from "../../../tooltip/components/Tooltip";
 import { isPreCallTestEnabled } from "../../functions";
 
 import ConnectionStatus from "./ConnectionStatus";
@@ -159,15 +159,20 @@ const useStyles = makeStyles()((theme) => {
                 display: "none",
             },
         },
+        roomNameContainer: {
+            width: "100%",
+            textAlign: "center",
+            marginBottom: theme.spacing(4),
+        },
+
         roomName: {
             ...withPixelLineHeight(theme.typography.heading5),
             color: theme.palette.text01,
-            marginBottom: theme.spacing(4),
+            display: "inline-block",
             overflow: "hidden",
-            textAlign: "center",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            width: "100%",
+            maxWidth: "100%",
         },
     };
 });
@@ -196,6 +201,19 @@ const PreMeetingScreen = ({
           }
         : {};
 
+    const roomNameRef = useRef<HTMLSpanElement | null>(null);
+    const [isOverflowing, setIsOverflowing] = useState(false);
+
+    useEffect(() => {
+        if (roomNameRef.current) {
+            const element = roomNameRef.current;
+            const elementStyles = window.getComputedStyle(element);
+            const elementWidth = Math.floor(parseFloat(elementStyles.width));
+
+            setIsOverflowing(element.scrollWidth > elementWidth + 1);
+        }
+    }, [_roomName]);
+
     return (
         <div className={clsx("premeeting-screen", classes.container, className)}>
             <div style={style}>
@@ -204,7 +222,21 @@ const PreMeetingScreen = ({
 
                     <div className={classes.contentControls}>
                         <h1 className={classes.title}>{title}</h1>
-                        {_roomName && <span className={classes.roomName}>{_roomName}</span>}
+                        {_roomName && (
+                            <span className={classes.roomNameContainer}>
+                                {isOverflowing ? (
+                                    <Tooltip content={_roomName}>
+                                        <span className={classes.roomName} ref={roomNameRef}>
+                                            {_roomName}
+                                        </span>
+                                    </Tooltip>
+                                ) : (
+                                    <span className={classes.roomName} ref={roomNameRef}>
+                                        {_roomName}
+                                    </span>
+                                )}
+                            </span>
+                        )}
                         {children}
                         {_buttons.length && <Toolbox toolbarButtons={_buttons} />}
                         {skipPrejoinButton}

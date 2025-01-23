@@ -361,17 +361,16 @@ module.exports = (_env, argv) => {
                     "./react/features/stream-effects/noise-suppression/NoiseSuppressorWorklet.ts",
             },
 
-            module: {
-                rules: [
-                    ...config.module.rules,
-                    {
-                        test: resolve(__dirname, "node_modules/webpack-dev-server/client"),
-                        loader: "null-loader",
-                    },
-                ],
-            },
-            plugins: [],
-            performance: getPerformanceHints(perfHintOptions, 200 * 1024),
+            module: { rules: [
+                ...config.module.rules,
+                {
+                    test: resolve(__dirname, 'node_modules/webpack-dev-server/client'),
+                    loader: 'null-loader'
+                }
+            ] },
+            plugins: [
+            ],
+            performance: getPerformanceHints(perfHintOptions, 1024 * 1024 * 2),
 
             output: {
                 ...config.output,
