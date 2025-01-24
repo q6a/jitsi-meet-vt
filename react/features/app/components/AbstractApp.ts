@@ -29,7 +29,7 @@ export class AbstractApp<P extends IProps = IProps> extends BaseApp<P> {
     /**
      * The deferred for the initialization {{promise, resolve, reject}}.
      */
-    _init: PromiseWithResolvers<any>;
+    declare _init: PromiseWithResolvers<any>;
 
     /**
      * Initializes the app.
