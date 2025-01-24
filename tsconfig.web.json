@@ -7,14 +7,13 @@
     ],
     "compilerOptions": {
         "allowSyntheticDefaultImports": true,
-        "module": "es2022",
-        "target": "esnext",
+        "module": "es2020",
+        "target": "es2020",
         "jsx": "react",
         "lib": [
-            "esnext",
-            "dom",
+            "ES2020",
             "ES2024.Promise",
-            "es6"
+            "DOM"
         ],
         "skipLibCheck": true,
         "moduleResolution": "Node",
