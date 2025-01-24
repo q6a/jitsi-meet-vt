@@ -12,10 +12,12 @@ import { inIframe } from "../base/util/iframeUtils";
 import { setTileView } from "../video-layout/actions.any";
 import { debugging, fetchMeetingData, inPersonSetTTSParams, setRoomParams } from "../videotranslatorai/action.web"; // Make sure this is the correct path to your action creator
 // import { addIqHandler } from "../videotranslatorai/videotranslatoraixmppapplistener"; // Adjust the path as needed
+import { JitsiRecordingConstants } from '../base/lib-jitsi-meet';
 
 import { reloadNow } from "./actions";
 import { _getRouteToRender } from "./getRouteToRender";
-import { IStore } from "./types";
+import { IReduxState, IStore } from "./types";
+
 
 MiddlewareRegistry.register((store) => (next) => (action) => {
     switch (action.type) {
@@ -247,6 +249,17 @@ function _setRoom(store: IStore, next: Function, action: AnyAction) {
  */
 function _participantJoinedConference(store: IStore, next: Function, action: AnyAction) {
     const result = next(action);
+    let state = store.getState();
+    const { conference } = state['features/base/conference'];
+    const options = {
+        'file_recording_metadata': {
+            share: isRecordingSharingEnabled(state)
+        }
+    };
+    conference?.startRecording({
+        mode: JitsiRecordingConstants.mode.FILE,
+        appData: JSON.stringify(options)
+    });
 
     store.dispatch(setTileView(true));
     store.dispatch(debugging());
@@ -270,4 +283,9 @@ function _participantJoinedRoom(store: IStore, next: Function, action: AnyAction
     return result;
 }
 
+export function isRecordingSharingEnabled(state: IReduxState) {
+    const { recordingService } = state['features/base/config'];
+
+    return recordingService?.sharingEnabled ?? false;
+}
 // videotranslatorai
