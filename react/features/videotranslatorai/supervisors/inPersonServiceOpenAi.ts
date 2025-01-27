@@ -51,7 +51,8 @@ export const inPersonServiceOpenAi = async (
             apiEndpoint,
             tokenData,
             meetingId,
-            clientId
+            clientId,
+            entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
         );
 
         if (transcriptionText === previousTranscription && countTheAmountSameString < 2 && isContMode) {
