@@ -53,6 +53,7 @@ export const inPersonServiceOpenAi = async (
             meetingId,
             clientId,
             entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+            elapsedTime
         );
 
         if (transcriptionText === previousTranscription && countTheAmountSameString < 2 && isContMode) {
@@ -123,22 +124,7 @@ export const inPersonServiceOpenAi = async (
 
                         await createMessageStorageSendTranslationToDatabase(messageData, tokenData);
 
-                        // dispatch(
-                        //     addMessageVideoTranslatorAI({
-                        //         displayName: participantName,
-                        //         hasRead: true,
-                        //         participantId,
-                        //         messageType: "local",
-                        //         message: translationSent,
-                        //         privateMessage: true,
-                        //         timestamp: Date.now(),
-                        //         isReaction: false,
-                        //         recipient: participant.name,
-                        //         error: null,
-                        //         messageId: null,
-                        //         lobbyChat: null,
-                        //     })
-                        // );
+  
                     } catch (error) {
                         console.error(`Error during translation for participant ${participant.name}:`, error);
                     }

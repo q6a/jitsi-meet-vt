@@ -1,4 +1,5 @@
 import axios from "axios";
+import { each } from "lodash";
 
 /**
  * Transcribes audio using the specified API endpoint.
@@ -18,7 +19,8 @@ async function transcribeAudioOpenAi(
     tokenData: any,
     meetingId: any,
     clientId: any,
-    senderId: any
+    senderId: any,
+    elapsedTime: number | undefined
 ) {
     try {
         const lastModifiedDate = new Date();
@@ -37,11 +39,13 @@ async function transcribeAudioOpenAi(
 
         const formData = new FormData();
 
+
         formData.append("file", audioFile);
         formData.append("langFrom", langFrom);
         formData.append("meeting_id", meetingId);
         formData.append("client_id", clientId);
         formData.append("sender_id", senderId)
+        formData.append("elapsed_time", elapsedTime?.toString() || "");
 
         const response = await axios.post(apiEndpoint, formData, {
             headers: {
