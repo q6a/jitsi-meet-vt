@@ -17,7 +17,8 @@ async function transcribeAudioOpenAi(
     apiEndpoint: any,
     tokenData: any,
     meetingId: any,
-    clientId: any
+    clientId: any,
+    senderId: any
 ) {
     try {
         const lastModifiedDate = new Date();
@@ -40,6 +41,7 @@ async function transcribeAudioOpenAi(
         formData.append("langFrom", langFrom);
         formData.append("meeting_id", meetingId);
         formData.append("client_id", clientId);
+        formData.append("sender_id", senderId)
 
         const response = await axios.post(apiEndpoint, formData, {
             headers: {

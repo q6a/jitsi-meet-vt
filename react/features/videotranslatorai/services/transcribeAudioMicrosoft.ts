@@ -6,6 +6,7 @@
  * @param {string} apiEndpoint - The API endpoint for transcription.
  * @param {string} tokenData - The authorization token for the API.
  * @param {string} meetingId - The meeting ID for tracking.
+ * @param {string} senderId - The sender ID for tracking.
  * @param {string} clientId - The client ID for authorization.
  * @returns {Promise<string>} - A promise that resolves to the transcription text.
  */
