@@ -53,6 +53,7 @@ export const transcribeAndTranslateServiceOpenAi = async (
             meetingId,
             clientId,
             entityData.type === 'MODERATOR' ? entityData.moderatorId : entityData.participantId,
+            elapsedTime
         );
 
         if (!transcriptionText || transcriptionText.trim() === "") {
