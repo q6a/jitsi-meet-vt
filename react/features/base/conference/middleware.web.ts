@@ -189,12 +189,12 @@ MiddlewareRegistry.register(store => next => action => {
                 });
             });
         } else {
-            promise.then(({ tracks }: any) => {
-                let tracksToUse: any = tracks ?? [];
+            promise.then(({ tracks }) => {
+                let tracksToUse = tracks ?? [];
 
                 if (iAmVisitor(getState())) {
                     tracksToUse = [];
-                    tracks.forEach((track: any) => track.dispose().catch(logger.error));
+                    tracks.forEach(track => track.dispose().catch(logger.error));
                     dispatch(gumPending([ MEDIA_TYPE.AUDIO, MEDIA_TYPE.VIDEO ], IGUMPendingState.NONE));
                 }
 
