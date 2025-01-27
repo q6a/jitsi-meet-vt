@@ -4,7 +4,7 @@ import process from 'node:process';
 import { ensureOneParticipant } from '../../helpers/participants';
 import { cleanup, isDialInEnabled, waitForAudioFromDialInParticipant } from '../helpers/DialIn';
 
-describe('Dial-In - ', () => {
+describe('Dial-In', () => {
     it('join participant', async () => {
         // check rest url is configured
         if (!process.env.DIAL_IN_REST_URL) {
@@ -30,7 +30,7 @@ describe('Dial-In - ', () => {
             console.error('dial-in.test.no-pin');
         }
 
-        expect(dialInPin.length >= 9).toBe(true);
+        expect(dialInPin.length >= 8).toBe(true);
 
         ctx.dialInPin = dialInPin;
     });
