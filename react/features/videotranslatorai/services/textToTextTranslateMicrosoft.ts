@@ -19,6 +19,10 @@ async function translateTextMicrosoft(
             throw new Error("Envrionment variable not set");
         }
 
+
+        const texts = [{ text: transcriptionTextParam, fragment: "", fragmentKey: "" }];
+
+
         const response = await axios.post(
             backendEndpoint,
             {
@@ -29,7 +33,7 @@ async function translateTextMicrosoft(
                 meeting_id: meetingId,
                 client_id: clientId,
                 sender_id: senderId,
-                elapsed_time: elapsedTime
+                elapsed_time: elapsedTime?.toString() || "0",
             },
             {
                 headers: {
