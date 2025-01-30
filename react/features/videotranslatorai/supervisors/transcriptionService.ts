@@ -1,4 +1,5 @@
 import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
+import { addInpersonTranslation } from "../action.web";
 
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
@@ -99,18 +100,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
 
                 console.log("TRANSCRIPTION TEXT", transcription);
 
-                await genericUsageIntake(
-                    transcription,
-                    "speech-to-text-microsoft",
-                    "microsoft",
-                    meetingId,
-                    clientId,
-                    tokenData,
-                    ((e.result.duration / 10_000_000) / 2).toString(),
-                    (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
-                    elapsedTime
-                );
-
                 const translationMap = e.result.translations;
                 let languagesRecognizing: any[] = [];
 
@@ -173,17 +162,6 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                 let languagesRecognized: any[] = [];
 
                 console.log("TRANSCRIPTION TEXT COMPLETED", transcription);
-                await genericUsageIntake(
-                    transcription,
-                    "speech-to-text-microsoft",
-                    "microsoft",
-                    meetingId,
-                    clientId,
-                    tokenData,
-                    ((e.result.duration / 10_000_000) / 2).toString(),
-                    (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
-                    elapsedTime
-                );
 
                 if (translationMap) {
                     languagesRecognized = translationMap.languages;
@@ -224,6 +202,15 @@ export const transcribeAndTranslateService = async (dispatch: any, getState: any
                             elapsedTime,
                             translationRecognized.length,
                         );
+
+                        const elapsedTimeChat = getElapsedTime(conferenceStartTime, new Date().getTime(), false);
+
+                        
+                        dispatch(addInpersonTranslation({
+                            original: transcription,
+                            translated: translationRecognized,
+                            timestamp: elapsedTimeChat?.toString()
+                        }));
 
                         if (participantId) {
                             const translationSentRecognized = `${participantName}: ${translationRecognized}(videotranslatoraiservice:::) (completed)`;

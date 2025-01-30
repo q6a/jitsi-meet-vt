@@ -2,9 +2,9 @@ import React, { FC, useRef } from "react";
 
 import Tooltip from "../../../base/tooltip/components/Tooltip";
 
-import "./transcriptionButton.css"; // Make sure to import your CSS file
-import { sendEventLogToServer, VtaiEventTypes } from "../../action.web";
 import { useDispatch } from "react-redux";
+import { sendEventLogToServer, VtaiEventTypes } from "../../action.web";
+import "./transcriptionButton.css"; // Make sure to import your CSS file
 
 interface TranscriptionButtonProps {
     handleStart: () => void;
@@ -38,7 +38,7 @@ const TranscriptionButton: FC<TranscriptionButtonProps> = ({ isRecording, handle
 
     return (
         <Tooltip containerClassName="transcription-tooltip" content="Transcription/Translation" position="top">
-            <div className={`toolbox-icon ${isRecording ? "on" : ""}`} onClick={handleClick}>
+            <div className={`toolbox-icon ${isRecording ? "on" : ""}`} onClick={handleClick} onTouchStart={handleClick}>
                 <div className="jitsi-icon jitsi-icon-default">
                     <div>
                         {isRecording ? (

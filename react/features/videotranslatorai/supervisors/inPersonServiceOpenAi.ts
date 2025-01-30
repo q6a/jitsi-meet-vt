@@ -1,6 +1,9 @@
+import { getWaveBlob } from "webm-to-wav-converter";
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
+import { addInpersonTranslation } from "../action.web";
 import { getElapsedTime } from "../helpers";
+
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioOpenAi from "../services/transcribeAudioOpenAi";
@@ -44,10 +47,13 @@ export const inPersonServiceOpenAi = async (
 
     const elapsedTime = getElapsedTime(conferenceStartTime, new Date().getTime(), true);
 
+
+    const audioBlobConvert = await getWaveBlob(recordedBlobParam, true);
+    
     try {
         const transcriptionText = await transcribeAudioOpenAi(
             langFrom,
-            recordedBlobParam,
+            audioBlobConvert,
             apiEndpoint,
             tokenData,
             meetingId,
@@ -104,6 +110,16 @@ export const inPersonServiceOpenAi = async (
                         if (conference) {
                             participantId = conference.myUserId();
                         }
+
+
+                        const elapsedTimeChat = getElapsedTime(conferenceStartTime, new Date().getTime(), false);
+
+
+                        dispatch(addInpersonTranslation({
+                            original: transcriptionText,
+                            translated: translationText,
+                            timestamp: elapsedTimeChat?.toString()
+                        }));
 
                         // arrayPromises.push(await conference.sendPrivateTextMessage(participantId, translationSent));
                         await conference.sendPrivateTextMessage(participantId, translationSent);

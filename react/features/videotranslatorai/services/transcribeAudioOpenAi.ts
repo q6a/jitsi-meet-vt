@@ -1,5 +1,4 @@
 import axios from "axios";
-import { each } from "lodash";
 
 /**
  * Transcribes audio using the specified API endpoint.
@@ -27,10 +26,18 @@ async function transcribeAudioOpenAi(
         const lastModified = lastModifiedDate.getTime();
 
 
-        const audioFile = new File([recordedBlob], "audio.webm", {
-            type: "audio/webm",
+
+        // // Create a File object from the Blob with the appropriate properties
+        const audioFile = new File([recordedBlob], "audio.wav", {
+            type: "audio/wav",
             lastModified,
         });
+
+
+        // const audioFile = new File([recordedBlob], "audio.webm", {
+        //     type: "audio/webm",
+        //     lastModified,
+        // });
 
         const formData = new FormData();
 

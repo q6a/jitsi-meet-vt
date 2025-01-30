@@ -1,6 +1,8 @@
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
 import { getElapsedTime } from "../helpers";
+import { addInpersonTranslation } from "../action.web";
+
 import { createMessageStorageSendTranslationToDatabase } from "../services/messageService";
 import translateTextMicrosoft from "../services/textToTextTranslateMicrosoft";
 import transcribeAudioOpenAi from "../services/transcribeAudioOpenAi";
@@ -96,6 +98,15 @@ export const transcribeAndTranslateServiceOpenAi = async (
                                 participantId = key;
                             }
                         }
+
+                        const elapsedTimeChat = getElapsedTime(conferenceStartTime, new Date().getTime(), false);
+
+ 
+                        dispatch(addInpersonTranslation({
+                            original: transcriptionText,
+                            translated: translationText,
+                            timestamp: elapsedTimeChat?.toString()
+                        }));
 
                         await conference.sendPrivateTextMessage(participantId, translationSent);
                         const messageData: any = {

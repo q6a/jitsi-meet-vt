@@ -1,4 +1,5 @@
 import { getWaveBlob } from "webm-to-wav-converter";
+import { addInpersonTranslation } from "../action.web";
 
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
@@ -92,6 +93,17 @@ export const transcribeAndTranslateServiceMicrosoftMan = async (dispatch: any, g
                                 participantId = key;
                             }
                         }
+
+
+                        const elapsedTimeChat = getElapsedTime(conferenceStartTime, new Date().getTime(), false);
+
+                        
+                        dispatch(addInpersonTranslation({
+                            original: transcriptionText,
+                            translated: translationText,
+                            timestamp: elapsedTimeChat?.toString()
+                        }));
+
 
                         await conference.sendPrivateTextMessage(participantId, translationSent);
                         const messageData: any = {

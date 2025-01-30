@@ -1,4 +1,5 @@
 import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
+import { addInpersonTranslation } from "../action.web";
 
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
@@ -91,17 +92,6 @@ export const inPersonServiceMicrosoftCont = async (
                 const translationMap = e.result.translations;
                 let languagesRecognizing: any[] = [];
 
-                await genericUsageIntake(
-                    transcription,
-                    "speech-to-text-microsoft",
-                    "microsoft",
-                    meetingId,
-                    clientId,
-                    tokenData,
-                    ((e.result.duration / 10_000_000) / 2).toString(),
-                    (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
-                    elapsedTime
-                );
 
                 if (translationMap) {
                     languagesRecognizing = translationMap.languages;
@@ -148,18 +138,6 @@ export const inPersonServiceMicrosoftCont = async (
                 const translationMap = e.result.translations;
                 let languagesRecognized: any[] = [];
 
-                await genericUsageIntake(
-                    transcription,
-                    "speech-to-text-microsoft",
-                    "microsoft",
-                    meetingId,
-                    clientId,
-                    tokenData,
-                    ((e.result.duration / 10_000_000) / 2).toString(),
-                    (entityData.type === "MODERATOR") ? entityData.moderatorId : entityData.participantId,
-                    elapsedTime
-                );
-
                 if (translationMap) {
                     languagesRecognized = translationMap.languages;
                 }
@@ -175,6 +153,7 @@ export const inPersonServiceMicrosoftCont = async (
                         participantId = conference.myUserId();
                     }
 
+
                     await genericUsageIntake(
                         translationRecognized,
                         "text-to-text-microsoft",
@@ -186,6 +165,15 @@ export const inPersonServiceMicrosoftCont = async (
                         elapsedTime,
                         translationRecognized.length,
                     );
+                    
+                    const elapsedTimeChat = getElapsedTime(conferenceStartTime, new Date().getTime(), false);
+
+                
+                    dispatch(addInpersonTranslation({
+                        original: transcription,
+                        translated: translationRecognized,
+                        timestamp: elapsedTimeChat?.toString()
+                    }));
 
                     if (participantId) {
                         const translationSentRecognized = `${participantName}: ${translationRecognized}(videotranslatoraiservice:::) (completed)`;

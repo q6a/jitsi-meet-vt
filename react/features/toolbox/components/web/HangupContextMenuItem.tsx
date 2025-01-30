@@ -62,12 +62,15 @@ export const HangupContextMenuItem = (props: IProps) => {
     }, []);
 
     return (
-        <Button
-            accessibilityLabel = { props.accessibilityLabel }
-            fullWidth = { true }
-            label = { props.label }
-            onClick = { _onClick }
-            type = { props.buttonType } />
+        <div onTouchStart={_onClick}>
+            <Button
+                accessibilityLabel = { props.accessibilityLabel }
+                fullWidth = { true }
+                label = { props.label }
+                onClick = { _onClick }
+                type = { props.buttonType } />
+        </div>
     );
+    
 };
 

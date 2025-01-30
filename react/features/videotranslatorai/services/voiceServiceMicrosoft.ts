@@ -55,7 +55,7 @@ export async function playVoiceFromMessage(text: any, state: IReduxState, textTo
 }
 
 function playAudioFromArrayBuffer(arrayBuffer: any, dispatch: any) {
-    const blobOptions: BlobOptions = { type: "audio/mp3", lastModified: Date.now() };
+    const blobOptions: BlobOptions = { type: "audio/wav", lastModified: Date.now() };
 
     const audioBlob = new Blob([arrayBuffer], blobOptions);
     const audioUrl = URL.createObjectURL(audioBlob);

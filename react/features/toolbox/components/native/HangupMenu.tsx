@@ -55,6 +55,7 @@ function HangupMenu() {
                     accessibilityLabel = 'toolbar.endConference'
                     labelKey = 'toolbar.endConference'
                     onClick = { handleEndConference }
+                    onTouchStart={ handleEndConference }
                     style = { _styles.hangupButton }
                     type = { DESTRUCTIVE } /> }
                 <Button

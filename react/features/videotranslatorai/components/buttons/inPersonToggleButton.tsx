@@ -24,6 +24,7 @@ const InPersonToggleButton: FC<InPersonButtonProps> = ({
             <div
                 className="circle-region"
                 onClick={isRecording ? handleStop : handleStart}
+                // onTouchStart={isRecording ? handleStop : handleStart}
                 style={{
                     backgroundColor: isRecording ? "green" : "transparent",
                     cursor: "pointer",

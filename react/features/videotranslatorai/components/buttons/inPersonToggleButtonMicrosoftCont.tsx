@@ -149,6 +149,7 @@ const InPersonToggleButtonMicrosoftCont: FC<InPersonButtonMicrosoftContProps> = 
                 <div
                     className="circle-region"
                     onClick={handleButtonClick}
+                    onTouchStart={handleButtonClick}
                     style={{
                         backgroundColor: isRecording ? "green" : "transparent",
                         cursor: "pointer",

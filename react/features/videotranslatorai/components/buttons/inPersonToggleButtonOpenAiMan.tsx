@@ -56,14 +56,7 @@ const InPersonToggleButtonOpenAiMan: FC<InPersonButtonOpenAiManProps> = ({
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    sampleRate: 48000,
-                    channelCount: 2,
-                    sampleSize: 16,
-                    echoCancellation: false,
-                    noiseSuppression: false,
-                    autoGainControl: false,
-                },
+                audio: true, // Use default audio settings for better compatibility
             });
             const recorder = new MediaRecorder(stream);
 
@@ -137,6 +130,7 @@ const InPersonToggleButtonOpenAiMan: FC<InPersonButtonOpenAiManProps> = ({
                 <div
                     className="circle-region"
                     onClick={handleButtonClick}
+                    onTouchStart={handleButtonClick}
                     style={{
                         backgroundColor: isRecording ? "green" : "transparent",
                         cursor: "pointer",

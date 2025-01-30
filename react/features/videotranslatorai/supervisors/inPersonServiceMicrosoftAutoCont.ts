@@ -1,4 +1,5 @@
 import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
+import { addInpersonTranslation } from "../action.web";
 
 import { IReduxState } from "../../app/types";
 import { toState } from "../../base/redux/functions";
@@ -136,6 +137,7 @@ export const inPersonServiceMicrosoftAutoCont = async (
                     elapsedTime
                 );
 
+            
                 participantName = personTwoName;
                 dialectIdTo = langPersonOneTranslationId;
                 dialectIdFrom = langPersonTwoTranslationId;
@@ -186,6 +188,8 @@ export const inPersonServiceMicrosoftAutoCont = async (
                         recognizerElapsedTime
                     );
 
+
+
                     participantName = personOneName;
                     dialectIdTo = langPersonTwoTranslationId;
                     dialectIdFrom = langPersonOneTranslationId;
@@ -215,6 +219,14 @@ export const inPersonServiceMicrosoftAutoCont = async (
                 }
 
                 let participantId = "";
+
+                const elapsedTimeChat = getElapsedTime(conferenceStartTime, new Date().getTime(), false);
+
+                dispatch(addInpersonTranslation({
+                    original: transcriptionText,
+                    translated: translationText,
+                    timestamp: elapsedTimeChat?.toString()
+                }));
 
                 if (conference) {
                     participantId = conference.myUserId();
