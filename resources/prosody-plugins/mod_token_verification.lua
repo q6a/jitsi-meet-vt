@@ -113,7 +113,7 @@ end
 
 
 local function get_client_credits_from_meetingcode(meetingCode)
-    local http = require("socket.http")
+    local http = require("ssl.https")
     local ltn12 = require("ltn12")
     local cjson = require("cjson")
 
@@ -198,7 +198,7 @@ local function verify_user(session, stanza, event)
                 local jwtToken = session.auth_token;
                 module:log("error", "EXTRACTED meetingName: %s, meetingId: %s , participantName: %s", tostring(meetingName), tostring(meetingId), tostring(participantName));
 
-                local http = require("socket.http")
+                local http = require("ssl.https")
                 local ltn12 = require("ltn12")
                 local cjson = require("cjson")
                 local response_body = {}
@@ -222,11 +222,11 @@ local function verify_user(session, stanza, event)
                     end
                 else
                     module:log("error", "Meeting cannot fetch or is not active %s", status)
-                    return false
+                   return false
                 end
                 -- Send the IQ message to the user
 
-                -- timer.add_task(1, function()
+             -- timer.add_task(1, function()
                 --     send_custom_data(session, meetingName, participantName, jwtToken)
                 -- end)
             end
