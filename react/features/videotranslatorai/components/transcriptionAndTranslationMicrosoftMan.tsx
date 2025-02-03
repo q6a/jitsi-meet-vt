@@ -111,11 +111,12 @@ const TranscriptionAndTranslationButtonMicrosoftMan: FC = () => {
     };
 
     useEffect(() => {
-        setIsSoundOn(false);
-
-        if (!isAudioMuted) {
-            handleStartTranscription()        
+        // This will run only once when the component mounts
+        if (isRecording) {
+            dispatch(stopRecordingMirosoftManual());
         }
+
+        setIsSoundOn(false);
     }, []);
 
     useEffect(() => {

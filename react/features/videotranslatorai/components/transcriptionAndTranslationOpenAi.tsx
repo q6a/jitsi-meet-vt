@@ -103,13 +103,10 @@ const TranscriptionAndTranslationOpenAi: FC = () => {
     };
 
     useEffect(() => {
-        // Stop any existing recording when component mounts or audio is muted
-
-        setIsSoundOn(false);
-
-        if (!isAudioMuted) {
-            handleStartTranscription();
+        if (isRecording) {
+            handleStopTranscription();
         }
+        setIsSoundOn(false);
     }, []);
 
     useEffect(() => {

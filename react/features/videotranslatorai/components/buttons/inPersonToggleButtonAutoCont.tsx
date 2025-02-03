@@ -142,7 +142,14 @@ const InPersonToggleButtonAutoCont: FC<InPersonButtonAutoContProps> = ({
         }
     }, [ttsVoiceoverActive]);
 
-    useEffect(() => {  handleButtonClick() },[])
+    useEffect(() => {  
+        
+        if(!isAudioMuted)
+        {
+            handleButtonClick() 
+        }
+
+    },[])
 
     return (
         <Tooltip containerClassName="transcription-tooltip" content={tooltipContent} position="top">
