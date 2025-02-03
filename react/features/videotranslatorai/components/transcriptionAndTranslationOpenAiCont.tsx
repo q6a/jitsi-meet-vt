@@ -113,6 +113,13 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
 
     useEffect(() => {
         setIsSoundOn(false);
+
+
+        if (!isAudioMuted) {
+            handleStartVAD();
+        }
+
+
     }, []);
 
     const handleStartVAD = async () => {
@@ -249,6 +256,8 @@ const TranscriptionAndTranslationOpenAiCont: FC = () => {
             setPreviousMessages(messages);
         }
     }, [messages, previousMessages]);
+
+    
 
     return (
         <div>

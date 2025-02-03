@@ -60,11 +60,10 @@ const TranscriptionAndTranslationButton: FC = () => {
     };
 
     useEffect(() => {
-        // This will run only once when the component mounts
-        if (isTranscribing) {
-            dispatch(stopTranscription());
+        if (!isAudioMuted) {
+            handleStartTranscription()        
         }
-
+        
         setIsSoundOn(false);
     }, []);
 

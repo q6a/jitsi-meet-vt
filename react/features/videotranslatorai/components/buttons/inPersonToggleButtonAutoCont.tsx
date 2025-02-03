@@ -142,6 +142,8 @@ const InPersonToggleButtonAutoCont: FC<InPersonButtonAutoContProps> = ({
         }
     }, [ttsVoiceoverActive]);
 
+    useEffect(() => {  handleButtonClick() },[])
+
     return (
         <Tooltip containerClassName="transcription-tooltip" content={tooltipContent} position="top">
             <div className="toolbox-icon">
